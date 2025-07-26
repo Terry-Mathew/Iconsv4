@@ -309,7 +309,7 @@ export default function ProfileBuilderPage() {
   }
 
   const isFieldVisible = (fieldName: string): boolean => {
-    return TIER_CONFIG[selectedTier].fields.includes(fieldName)
+    return TIER_CONFIG[selectedTier].fields.includes(fieldName as any)
   }
 
   if (loading) {

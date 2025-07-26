@@ -1,25 +1,26 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { createServerClient } from '@/lib/supabase/server'
+import { createPublicServerClient } from '@/lib/supabase/server'
 import { ProfileData, ThemeSettings, EnhancedProfileData } from '@/types/profile'
 import { RisingTemplate } from '@/components/templates/RisingTemplate'
 import { EliteTemplate } from '@/components/templates/EliteTemplate'
 import { LegacyTemplate } from '@/components/templates/LegacyTemplate'
 
 interface ProfilePageProps {
-  params: {
+  params: Promise<{
     slug: string
-  }
+  }>
 }
 
 // Generate metadata for SEO and social sharing
 export async function generateMetadata({ params }: ProfilePageProps): Promise<Metadata> {
-  const supabase = await createServerClient()
-  
+  const { slug } = await params
+  const supabase = createPublicServerClient()
+
   const { data: profile } = await supabase
     .from('profiles')
     .select('*')
-    .eq('slug', params.slug)
+    .eq('slug', slug)
     .eq('status', 'published')
     .single()
 
@@ -30,15 +31,15 @@ export async function generateMetadata({ params }: ProfilePageProps): Promise<Me
     }
   }
 
-  const profileData = profile.data as ProfileData
+  const profileData = profile.content as unknown as ProfileData
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://iconsherald.com'
-  const profileUrl = `${baseUrl}/profile/${params.slug}`
+  const profileUrl = `${baseUrl}/profile/${slug}`
 
   const tierLabel = profile.tier === 'elite' ? 'Elite' :
                    profile.tier === 'legacy' ? 'Legacy' : 'Rising'
   const description = profile.tier === 'elite' ?
     `Discover ${profileData.name}'s commanding legacy in our exclusive archive—crafted with AI precision for timeless impact.` :
-    profileData.bio.substring(0, 160) + '...'
+    ((profileData as any).bio?.original || (profileData as any).bio || '').substring(0, 160) + '...'
 
   return {
     title: `${profileData.name} - ${tierLabel} Icon Profile | ICONS HERALD`,
@@ -92,14 +93,14 @@ export async function generateMetadata({ params }: ProfilePageProps): Promise<Me
     other: {
       'profile:first_name': profileData.name.split(' ')[0],
       'profile:last_name': profileData.name.split(' ').slice(1).join(' '),
-      'profile:username': params.slug,
+      'profile:username': slug,
     },
   }
 }
 
 // Generate static params for ISR
 export async function generateStaticParams() {
-  const supabase = await createServerClient()
+  const supabase = createPublicServerClient()
   
   const { data: profiles } = await supabase
     .from('profiles')
@@ -113,12 +114,13 @@ export async function generateStaticParams() {
 }
 
 export default async function ProfilePage({ params }: ProfilePageProps) {
-  const supabase = await createServerClient()
-  
+  const { slug } = await params
+  const supabase = createPublicServerClient()
+
   const { data: profile, error } = await supabase
     .from('profiles')
     .select('*')
-    .eq('slug', params.slug)
+    .eq('slug', slug)
     .eq('status', 'published')
     .single()
 
@@ -126,26 +128,26 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     notFound()
   }
 
-  const profileData = profile.data as ProfileData
-  const themeSettings = profile.theme_settings as ThemeSettings
+  const profileData = profile.content as unknown as ProfileData
+  const themeSettings = {} as ThemeSettings // Default theme settings
 
-  // Transform data for Elite template
+  // Transform data for template compatibility
   const transformedProfile = {
     id: profile.id,
     name: profileData.name,
     tagline: profileData.tagline,
     heroImage: profileData.profileImage,
-    biography: profileData.bio,
-    aiPolishedBio: profileData.aiPolishedBio,
+    biography: profileData.bio?.original || profileData.bio,
+    aiPolishedBio: profileData.bio?.ai_polished,
     tier: profile.tier,
     achievements: profileData.achievements || [],
     quote: profileData.quote || null,
     gallery: profileData.gallery || [],
-    links: profileData.socialLinks ? Object.entries(profileData.socialLinks).map(([type, url]) => ({
-      title: type.charAt(0).toUpperCase() + type.slice(1),
-      url: url as string,
-      type: type as 'website' | 'linkedin' | 'twitter' | 'other'
-    })) : [],
+    timeline: profileData.timeline || [],
+    tributes: profileData.tributes || [],
+    enduringContributions: profileData.enduringContributions,
+    sections: profileData.sections || {},
+    links: profileData.links || [],
     publishedAt: profile.published_at,
     slug: profile.slug,
   }
@@ -156,7 +158,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
       case 'elite':
         return <EliteTemplate profile={transformedProfile} />
       case 'legacy':
-        return <LegacyTemplate data={profileData as any} theme={themeSettings} />
+        return <LegacyTemplate profile={transformedProfile} />
       case 'rising':
       default:
         return <RisingTemplate data={profileData as any} theme={themeSettings} />

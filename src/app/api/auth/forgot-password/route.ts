@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const supabase = createClient()
+    const supabase = await createClient()
 
     // Check if user exists (prevent email enumeration by always returning success)
     const { data: user } = await supabase
@@ -129,14 +129,12 @@ export async function POST(request: NextRequest) {
       } else {
         // Log password reset request
         await supabase
-          .from('audit_logs')
+          .from('analytics_events')
           .insert({
             user_id: user.id,
-            action: 'password_reset_requested',
-            details: {
-              email: user.email,
-              ip_address: clientIP,
-              user_agent: request.headers.get('user-agent') || 'unknown'
+            event_type: 'password_reset_requested',
+            metadata: {
+              email: user.email
             },
             ip_address: clientIP,
             user_agent: request.headers.get('user-agent') || 'unknown'
@@ -162,9 +160,11 @@ export async function POST(request: NextRequest) {
 // Cleanup expired rate limit entries periodically
 setInterval(() => {
   const now = Date.now()
-  for (const [key, record] of rateLimitStore.entries()) {
+  const keysToDelete: string[] = []
+  rateLimitStore.forEach((record, key) => {
     if (now > record.resetTime) {
-      rateLimitStore.delete(key)
+      keysToDelete.push(key)
     }
-  }
+  })
+  keysToDelete.forEach(key => rateLimitStore.delete(key))
 }, 5 * 60 * 1000) // Clean up every 5 minutes

@@ -22,16 +22,11 @@ interface BreadcrumbConfig {
 
 const breadcrumbConfig: BreadcrumbConfig = {
   '': { label: 'Home', href: '/' },
-  'about': { label: 'About', href: '/about' },
-  'process': { label: 'Process', href: '/process' },
-  'contact': { label: 'Contact', href: '/contact' },
-  'nominate': { label: 'Nominate', href: '/nominate' },
   'builder': { label: 'Profile Builder', href: '/builder' },
   'dashboard': { label: 'Dashboard', href: '/dashboard' },
   'admin': { label: 'Admin', href: '/admin' },
   'auth': { label: 'Authentication' },
   'signin': { label: 'Sign In' },
-  'set-password': { label: 'Set Password' },
   'reset-password': { label: 'Reset Password' },
   'profile': { label: 'Profiles' }
 }

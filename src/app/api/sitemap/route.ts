@@ -36,7 +36,7 @@ export async function GET() {
   ${profiles?.map(profile => `
   <url>
     <loc>${baseUrl}/profile/${profile.slug}</loc>
-    <lastmod>${new Date(profile.updated_at).toISOString()}</lastmod>
+    <lastmod>${new Date(profile.updated_at || new Date()).toISOString()}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>`).join('') || ''}

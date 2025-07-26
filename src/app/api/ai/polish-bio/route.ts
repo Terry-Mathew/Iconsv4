@@ -13,7 +13,7 @@ const polishBioSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     // Rate limiting - more restrictive for AI endpoints
-    const identifier = request.ip ?? 'anonymous'
+    const identifier = request.headers.get('x-forwarded-for') ?? 'anonymous'
     const { success } = await rateLimit.limit(identifier, {
       requests: 5,
       window: '1h'
@@ -81,19 +81,22 @@ export async function POST(request: NextRequest) {
         originalBio: bio,
         tone,
         tier,
-        userTier: userData.tier
+        userTier: userData.tier || 'rising'
       })
 
       // Log AI usage for analytics
       await supabase
-        .from('ai_usage_logs')
+        .from('analytics_events')
         .insert({
           user_id: user.id,
-          feature: 'bio_polish',
-          input_length: bio.length,
-          output_length: polishedBio.length,
-          tier,
-          tone
+          event_type: 'ai_bio_polish',
+          metadata: {
+            feature: 'bio_polish',
+            input_length: bio.length,
+            output_length: polishedBio.length,
+            tier,
+            tone
+          }
         })
 
       return NextResponse.json({
@@ -171,10 +174,10 @@ export async function GET(request: NextRequest) {
     
     // Get usage stats for the current user
     const { data: usageStats, error: usageError } = await supabase
-      .from('ai_usage_logs')
+      .from('analytics_events')
       .select('created_at')
       .eq('user_id', user.id)
-      .eq('feature', 'bio_polish')
+      .eq('event_type', 'ai_bio_polish')
       .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()) // Last 24 hours
 
     const dailyUsage = usageStats?.length || 0

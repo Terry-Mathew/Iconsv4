@@ -8,7 +8,6 @@ import {
   Button,
   HStack
 } from '@chakra-ui/react'
-import { Crown, Home, ArrowLeft } from 'lucide-react'
 
 export default function NotFound() {
   return (
@@ -16,7 +15,7 @@ export default function NotFound() {
       <VStack spacing={8} textAlign="center">
         {/* Logo */}
         <HStack spacing={2}>
-          <Crown size={32} color="#D4AF37" />
+          <Text fontSize="3xl" color="#D4AF37">👑</Text>
           <Heading
             as="h1"
             fontSize="2xl"
@@ -61,7 +60,6 @@ export default function NotFound() {
         <VStack spacing={4} w="full">
           <Link href="/">
             <Button
-              leftIcon={<Home size={20} />}
               bg="#D4AF37"
               color="white"
               _hover={{ bg: "#B8941F" }}
@@ -69,12 +67,11 @@ export default function NotFound() {
               fontFamily="'Lato', sans-serif"
               fontWeight="600"
             >
-              Go Home
+              🏠 Go Home
             </Button>
           </Link>
-          
+
           <Button
-            leftIcon={<ArrowLeft size={20} />}
             variant="outline"
             borderColor="#D4AF37"
             color="#D4AF37"
@@ -84,7 +81,7 @@ export default function NotFound() {
             fontWeight="600"
             onClick={() => window.history.back()}
           >
-            Go Back
+            ← Go Back
           </Button>
         </VStack>
 

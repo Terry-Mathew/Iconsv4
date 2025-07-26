@@ -166,12 +166,14 @@ src/
 ├── app/                 # Next.js 14 app directory
 │   ├── admin/          # Admin dashboard
 │   ├── api/            # API routes
-│   ├── auth/           # Authentication pages
+│   ├── auth/           # Authentication pages (signin, callback)
 │   ├── builder/        # Profile builder
-│   ├── nominate/       # Nomination form
+│   ├── dashboard/      # User dashboard
+│   ├── demo/           # Demo profiles (rising, elite, legacy)
 │   ├── payment/        # Payment page
 │   ├── profile/        # Profile pages (ISR)
-│   └── profiles/       # Profile listing
+│   ├── profiles/       # Profile listing
+│   └── unauthorized/   # Access control page
 ├── components/         # React components
 │   ├── admin/         # Admin components
 │   ├── forms/         # Form components

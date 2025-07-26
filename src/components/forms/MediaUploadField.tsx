@@ -26,6 +26,7 @@ import {
 } from '@chakra-ui/react'
 import { Upload, X, ExternalLink, Play } from 'lucide-react'
 import { createClientClient } from '@/lib/supabase/client'
+import { useAuth } from '@/lib/auth/AuthProvider'
 
 interface MediaUploadFieldProps {
   value?: string
@@ -54,6 +55,7 @@ export function MediaUploadField({
   const fileInputRef = useRef<HTMLInputElement>(null)
   const toast = useToast()
   const supabase = createClientClient()
+  const { user } = useAuth()
 
   // Client-side file validation
   const validateFile = (file: File): string | null => {
@@ -96,10 +98,14 @@ export function MediaUploadField({
     setUploadProgress(0)
 
     try {
-      // Generate unique filename
+      if (!user) {
+        throw new Error('User must be authenticated to upload files')
+      }
+
+      // Generate unique filename with user folder structure
       const fileExt = file.name.split('.').pop()
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
-      const bucket = type === 'image' ? 'profile-images' : 'profile-videos'
+      const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
+      const bucket = type === 'image' ? 'profile-images' : 'media-gallery'
 
       // Upload to Supabase Storage
       const { data, error: uploadError } = await supabase.storage

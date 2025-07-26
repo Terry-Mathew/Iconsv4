@@ -21,15 +21,16 @@ import {
   Container,
   Badge
 } from '@chakra-ui/react'
-import { Menu, X, Crown, LogIn } from 'lucide-react'
+// Icons replaced with emoji for server-side compatibility
 import { useAuth } from '@/lib/auth/auth-context'
 // import { useImpersonation } from '@/lib/auth/impersonation'
 
 const navLinks = [
-  { href: '/', label: 'Home' },
-  { href: '/about', label: 'About' },
-  { href: '/process', label: 'Process' },
-  { href: '/contact', label: 'Contact' }
+  { href: '/', label: 'Home', isAnchor: false },
+  { href: '/#about', label: 'About', isAnchor: true },
+  { href: '/#process', label: 'Process', isAnchor: true },
+  { href: '/#tiers', label: 'Tiers', isAnchor: true },
+  { href: '/#nominate', label: 'Contact', isAnchor: true }
 ]
 
 export function Navbar() {
@@ -49,26 +50,81 @@ export function Navbar() {
 
   const isActiveLink = (href: string) => {
     if (href === '/') {
-      return pathname === '/'
+      return pathname === '/' && !window.location.hash
+    }
+    // For anchor links, check if we're on the home page and the hash matches
+    if (href.includes('#')) {
+      const hash = href.split('#')[1]
+      return pathname === '/' && window.location.hash === `#${hash}`
     }
     return pathname.startsWith(href)
   }
 
-  const NavLink = ({ href, label, mobile = false }: { href: string; label: string; mobile?: boolean }) => (
-    <Link href={href} onClick={mobile ? onClose : undefined}>
-      <Text
-        fontFamily="'Lato', sans-serif"
-        fontWeight={isActiveLink(href) ? '600' : '400'}
-        color={isActiveLink(href) ? '#D4AF37' : '#1A1A1A'}
-        fontSize={mobile ? 'lg' : 'md'}
-        _hover={{ color: '#D4AF37' }}
-        transition="color 0.2s"
-        cursor="pointer"
+  const NavLink = ({ href, label, isAnchor, mobile = false }: {
+    href: string;
+    label: string;
+    isAnchor?: boolean;
+    mobile?: boolean
+  }) => {
+    const handleClick = (e: React.MouseEvent) => {
+      if (mobile) onClose()
+
+      if (isAnchor && href.includes('#')) {
+        e.preventDefault()
+        const hash = href.split('#')[1]
+        if (hash) {
+          const element = document.getElementById(hash)
+          if (element && (window as any).lenis) {
+            // Update URL hash
+            window.history.pushState(null, '', `#${hash}`)
+
+            // Smooth scroll with luxury easing
+            ;(window as any).lenis.scrollTo(element, {
+              offset: -80,
+              duration: 1.4,
+              easing: (t: number) => 1 - Math.pow(1 - t, 4) // Luxury quartic easing
+            })
+          }
+        }
+      }
+    }
+
+    return (
+      <Link
+        href={href}
+        onClick={handleClick}
+        aria-current={isActiveLink(href) ? 'page' : undefined}
+        role="menuitem"
       >
-        {label}
-      </Text>
-    </Link>
-  )
+        <Text
+          fontFamily="body"
+          fontWeight={isActiveLink(href) ? '600' : '400'}
+          color={isActiveLink(href) ? 'gold.500' : 'charcoal.900'}
+          fontSize={mobile ? 'lg' : 'md'}
+          _hover={{
+            color: 'gold.500',
+            transform: 'translateY(-1px)'
+          }}
+          _focus={{
+            outline: '2px solid',
+            outlineColor: 'gold.600',
+            outlineOffset: '2px',
+            color: 'gold.500'
+          }}
+          _focusVisible={{
+            outline: '2px solid',
+            outlineColor: 'gold.600',
+            outlineOffset: '2px'
+          }}
+          transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+          cursor="pointer"
+          tabIndex={0}
+        >
+          {label}
+        </Text>
+      </Link>
+    )
+  }
 
   return (
     <>
@@ -78,7 +134,7 @@ export function Navbar() {
           <Container maxW="7xl">
             <Flex justify="space-between" align="center">
               <HStack spacing={2}>
-                <Crown size={16} />
+                <Text fontSize="lg">👑</Text>
                 <Text fontSize="sm" fontWeight="600">
                   Impersonating: {targetUser?.email}
                 </Text>
@@ -98,25 +154,34 @@ export function Navbar() {
 
       {/* Main Navbar */}
       <Box
-        bg="white"
+        bg="ivory.50"
         borderBottom="1px solid"
-        borderColor="gray.200"
+        borderColor="cream.300"
         position="sticky"
         top="0"
         zIndex="sticky"
-        shadow="sm"
+        shadow="0 2px 20px rgba(212, 175, 55, 0.1)"
+        backdropFilter="blur(10px)"
       >
         <Container maxW="7xl">
           <Flex h="16" align="center" justify="space-between">
             {/* Logo */}
             <Link href="/">
-              <HStack spacing={2} cursor="pointer">
-                <Crown size={24} color="#D4AF37" />
+              <HStack
+                spacing={3}
+                cursor="pointer"
+                _hover={{
+                  transform: 'scale(1.02)',
+                }}
+                transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+              >
+                <Text fontSize="2xl" color="gold.500">👑</Text>
                 <Text
-                  fontFamily="'Playfair Display', serif"
+                  fontFamily="heading"
                   fontSize="xl"
-                  fontWeight="600"
-                  color="#1A1A1A"
+                  fontWeight="bold"
+                  color="charcoal.900"
+                  letterSpacing="tight"
                 >
                   ICONS HERALD
                 </Text>
@@ -124,7 +189,12 @@ export function Navbar() {
             </Link>
 
             {/* Desktop Navigation */}
-            <HStack spacing={8} display={{ base: 'none', md: 'flex' }}>
+            <HStack
+              spacing={8}
+              display={{ base: 'none', md: 'flex' }}
+              role="menubar"
+              aria-label="Main navigation"
+            >
               {navLinks.map((link) => (
                 <NavLink key={link.href} {...link} />
               ))}
@@ -148,10 +218,7 @@ export function Navbar() {
                   )}
                   <Link href="/dashboard">
                     <Button
-                      variant="outline"
-                      borderColor="#D4AF37"
-                      color="#D4AF37"
-                      _hover={{ bg: "#D4AF37", color: "white" }}
+                      variant="secondary"
                       size="sm"
                     >
                       Dashboard
@@ -161,39 +228,65 @@ export function Navbar() {
               ) : (
                 <Link href="/auth/signin">
                   <Button
-                    leftIcon={<LogIn size={16} />}
-                    bg="#D4AF37"
-                    color="white"
-                    _hover={{ bg: "#B8941F" }}
+                    variant="primary"
                     size="sm"
                   >
-                    Sign In
+                    🔐 Sign In
                   </Button>
                 </Link>
               )}
             </HStack>
 
             {/* Mobile Menu Button */}
-            <IconButton
+            <Button
               display={{ base: 'flex', md: 'none' }}
-              aria-label="Open menu"
-              icon={<Menu size={20} />}
+              aria-label="Open navigation menu"
+              aria-expanded={isOpen}
+              aria-controls="mobile-navigation"
               variant="ghost"
               onClick={onOpen}
-            />
+              fontSize="xl"
+              _focus={{
+                outline: '2px solid',
+                outlineColor: 'gold.600',
+                outlineOffset: '2px'
+              }}
+            >
+              ☰
+            </Button>
           </Flex>
         </Container>
       </Box>
 
       {/* Mobile Drawer */}
-      <Drawer isOpen={isOpen} placement="right" onClose={onClose}>
+      <Drawer
+        isOpen={isOpen}
+        placement="right"
+        onClose={onClose}
+        size="sm"
+      >
         <DrawerOverlay />
-        <DrawerContent>
-          <DrawerCloseButton />
-          <DrawerHeader borderBottomWidth="1px">
-            <HStack spacing={2}>
-              <Crown size={20} color="#D4AF37" />
-              <Text fontFamily="'Playfair Display', serif" fontSize="lg">
+        <DrawerContent
+          bg="ivory.50"
+          borderLeft="2px solid"
+          borderColor="gold.500"
+          id="mobile-navigation"
+          role="dialog"
+          aria-label="Mobile navigation menu"
+        >
+          <DrawerCloseButton
+            color="charcoal.900"
+            aria-label="Close navigation menu"
+            _focus={{
+              outline: '2px solid',
+              outlineColor: 'gold.600',
+              outlineOffset: '2px'
+            }}
+          />
+          <DrawerHeader borderBottomWidth="1px" borderColor="cream.300">
+            <HStack spacing={3}>
+              <Text fontSize="xl" color="gold.500" aria-hidden="true">👑</Text>
+              <Text fontFamily="heading" fontSize="lg" fontWeight="bold" color="charcoal.900">
                 ICONS HERALD
               </Text>
             </HStack>
@@ -209,7 +302,7 @@ export function Navbar() {
               </VStack>
 
               {/* Mobile Auth */}
-              <Box pt={4} borderTop="1px solid" borderColor="gray.200">
+              <Box pt={4} borderTop="1px solid" borderColor="cream.300">
                 {user ? (
                   <VStack spacing={3} align="stretch">
                     {isAdmin && (
@@ -227,9 +320,7 @@ export function Navbar() {
                     )}
                     <Link href="/dashboard" onClick={onClose}>
                       <Button
-                        variant="outline"
-                        borderColor="#D4AF37"
-                        color="#D4AF37"
+                        variant="secondary"
                         w="full"
                         justifyContent="flex-start"
                       >
@@ -240,14 +331,11 @@ export function Navbar() {
                 ) : (
                   <Link href="/auth/signin" onClick={onClose}>
                     <Button
-                      leftIcon={<LogIn size={16} />}
-                      bg="#D4AF37"
-                      color="white"
-                      _hover={{ bg: "#B8941F" }}
+                      variant="primary"
                       w="full"
                       justifyContent="flex-start"
                     >
-                      Sign In
+                      🔐 Sign In
                     </Button>
                   </Link>
                 )}
