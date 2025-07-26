@@ -1,3 +1,4 @@
+import React from 'react'
 import {
   Cpu,
   TrendingUp,
@@ -17,7 +18,7 @@ export interface CategoryData {
   id: string
   name: string
   description: string
-  icon: any
+  icon: React.ComponentType<{ size?: number }>
   color: string
   gradient: string
 }

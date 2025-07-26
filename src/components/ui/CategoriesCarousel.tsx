@@ -46,10 +46,6 @@ export function CategoriesCarousel({
   // Responsive settings
   const cardsToShow = useBreakpointValue({ base: 1, md: 2, lg: 3, xl: 4 }) || 1
   const cardWidth = useBreakpointValue({ base: '100%', md: '50%', lg: '33.333%', xl: '25%' }) || '100%'
-  const isMobile = useBreakpointValue({ base: true, md: false })
-
-  // Motion values for drag
-  const x = useMotionValue(0)
   const dragConstraints = {
     left: -(categories.length - cardsToShow) * (100 / cardsToShow),
     right: 0
@@ -104,7 +100,7 @@ export function CategoriesCarousel({
     setIsAutoScrollPaused(true)
   }
 
-  const handleDragEnd = (event: any, info: PanInfo) => {
+  const handleDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     setIsDragging(false)
     setIsAutoScrollPaused(false)
 
@@ -164,7 +160,7 @@ export function CategoriesCarousel({
           >
             <MotionFlex
               ref={containerRef}
-              drag={isMobile ? 'x' : false}
+              drag="x"
               dragConstraints={dragConstraints}
               dragElastic={0.1}
               onDragStart={handleDragStart}
