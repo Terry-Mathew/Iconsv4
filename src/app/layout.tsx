@@ -3,6 +3,8 @@ import { Inter, Playfair_Display, Lato } from 'next/font/google'
 import { ChakraProvider } from '@chakra-ui/react'
 import { AuthProvider } from '@/lib/auth/auth-context'
 import { Navbar } from '@/components/ui/Navbar'
+import { LenisProvider } from '@/components/providers/LenisProvider'
+import { BackToTop } from '@/components/ui/BackToTop'
 import '@/styles/globals.css'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -51,8 +53,11 @@ export default function RootLayout({
       <body className={`${inter.className} ${playfair.variable} ${lato.variable}`}>
         <ChakraProvider>
           <AuthProvider>
-            <Navbar />
-            {children}
+            <LenisProvider>
+              <Navbar />
+              {children}
+              <BackToTop />
+            </LenisProvider>
           </AuthProvider>
         </ChakraProvider>
       </body>

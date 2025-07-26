@@ -10,9 +10,9 @@
   --font-lato: 'Lato', sans-serif;
 }
 
-/* Smooth scrolling for the entire page */
-html {
-  scroll-behavior: smooth;
+/* Scroll margin for anchor links to account for sticky navbar */
+[id] {
+  scroll-margin-top: 80px;
 }
 
 /* Reduced motion for accessibility */
@@ -134,10 +134,7 @@ a {
   background: #a8a8a8;
 }
 
-/* Smooth scrolling */
-html {
-  scroll-behavior: smooth;
-}
+/* Smooth scrolling handled by Lenis */
 
 /* Custom utilities */
 @layer utilities {

@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { scrollToElement } from '@/components/providers/LenisProvider'
+import { useScrollSpy } from '@/hooks/useScrollSpy'
 import {
   Box,
   Flex,
@@ -27,9 +29,9 @@ import { useAuth } from '@/lib/auth/auth-context'
 
 const navLinks = [
   { href: '/', label: 'Home' },
-  { href: '/about', label: 'About' },
-  { href: '/process', label: 'Process' },
-  { href: '/contact', label: 'Contact' }
+  { href: '#about', label: 'About' },
+  { href: '#process', label: 'Process' },
+  { href: '#contact', label: 'Contact' }
 ]
 
 export function Navbar() {
@@ -37,6 +39,12 @@ export function Navbar() {
   const { user } = useAuth()
   // const { isImpersonating, targetUser, endImpersonation } = useImpersonation()
   const { isOpen, onOpen, onClose } = useDisclosure()
+
+  // Scroll spy for active section highlighting
+  const activeSection = useScrollSpy({
+    sectionIds: ['about', 'process', 'contact'],
+    offset: 80
+  })
 
   // Temporary: disable impersonation features for now
   const isImpersonating = false
@@ -49,26 +57,60 @@ export function Navbar() {
 
   const isActiveLink = (href: string) => {
     if (href === '/') {
-      return pathname === '/'
+      return pathname === '/' && !activeSection
+    }
+    if (href.startsWith('#')) {
+      // For anchor links, check if the section is active
+      const sectionId = href.substring(1)
+      return activeSection === sectionId
     }
     return pathname.startsWith(href)
   }
 
-  const NavLink = ({ href, label, mobile = false }: { href: string; label: string; mobile?: boolean }) => (
-    <Link href={href} onClick={mobile ? onClose : undefined}>
-      <Text
-        fontFamily="'Lato', sans-serif"
-        fontWeight={isActiveLink(href) ? '600' : '400'}
-        color={isActiveLink(href) ? '#D4AF37' : '#1A1A1A'}
-        fontSize={mobile ? 'lg' : 'md'}
-        _hover={{ color: '#D4AF37' }}
-        transition="color 0.2s"
-        cursor="pointer"
-      >
-        {label}
-      </Text>
-    </Link>
-  )
+  const handleNavClick = (href: string) => {
+    if (mobile) onClose()
+
+    if (href.startsWith('#')) {
+      // Handle anchor links with Lenis smooth scrolling
+      // Offset by navbar height (64px) to prevent content hiding
+      scrollToElement(href, -80)
+    }
+  }
+
+  const NavLink = ({ href, label, mobile = false }: { href: string; label: string; mobile?: boolean }) => {
+    if (href.startsWith('#')) {
+      return (
+        <Text
+          fontFamily="'Lato', sans-serif"
+          fontWeight={isActiveLink(href) ? '600' : '400'}
+          color={isActiveLink(href) ? '#D4AF37' : '#1A1A1A'}
+          fontSize={mobile ? 'lg' : 'md'}
+          _hover={{ color: '#D4AF37' }}
+          transition="color 0.2s"
+          cursor="pointer"
+          onClick={() => handleNavClick(href)}
+        >
+          {label}
+        </Text>
+      )
+    }
+
+    return (
+      <Link href={href} onClick={mobile ? onClose : undefined}>
+        <Text
+          fontFamily="'Lato', sans-serif"
+          fontWeight={isActiveLink(href) ? '600' : '400'}
+          color={isActiveLink(href) ? '#D4AF37' : '#1A1A1A'}
+          fontSize={mobile ? 'lg' : 'md'}
+          _hover={{ color: '#D4AF37' }}
+          transition="color 0.2s"
+          cursor="pointer"
+        >
+          {label}
+        </Text>
+      </Link>
+    )
+  }
 
   return (
     <>
