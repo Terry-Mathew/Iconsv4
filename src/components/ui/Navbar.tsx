@@ -50,12 +50,12 @@ export function Navbar() {
 
   const isActiveLink = (href: string) => {
     if (href === '/') {
-      return pathname === '/' && !window.location.hash
+      return pathname === '/' && (typeof window === 'undefined' || !window.location.hash)
     }
     // For anchor links, check if we're on the home page and the hash matches
     if (href.includes('#')) {
       const hash = href.split('#')[1]
-      return pathname === '/' && window.location.hash === `#${hash}`
+      return pathname === '/' && (typeof window !== 'undefined' && window.location.hash === `#${hash}`)
     }
     return pathname.startsWith(href)
   }
