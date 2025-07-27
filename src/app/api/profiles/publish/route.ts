@@ -56,74 +56,37 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if a published profile with this slug already exists
-    const { data: existingPublished } = await supabase
+    // Transform the draft content for publishing
+    const transformedContent = transformProfileBuilderData(draftProfile.content, draftProfile.tier)
+
+    // Update the draft profile to published status (no need to create new profile)
+    const { data: publishedProfile, error: publishError } = await supabase
       .from('profiles')
-      .select('id')
-      .eq('slug', slug)
-      .eq('status', 'published')
+      .update({
+        content: transformedContent,
+        tier: draftProfile.tier,
+        slug: draftProfile.slug,
+        status: 'published',
+        is_published: true,
+        published_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        meta_title: `${transformedContent.name} - ${draftProfile.tier.charAt(0).toUpperCase() + draftProfile.tier.slice(1)} Profile | ICONS HERALD`,
+        meta_description: transformedContent.bio?.original?.substring(0, 160) || `Discover ${transformedContent.name}'s profile in our exclusive archive.`
+      })
+      .eq('id', draftProfile.id)
+      .select()
       .single()
 
-    let publishedProfile
-
-    if (existingPublished) {
-      // Transform and update existing published profile
-      const transformedContent = transformProfileBuilderData(draftProfile.content, draftProfile.tier)
-
-      const { data, error: updateError } = await supabase
-        .from('profiles')
-        .update({
-          content: transformedContent,
-          tier: draftProfile.tier,
-          updated_at: new Date().toISOString(),
-          meta_title: `${transformedContent.name} - ${draftProfile.tier.charAt(0).toUpperCase() + draftProfile.tier.slice(1)} Profile | ICONS HERALD`,
-          meta_description: transformedContent.bio?.original?.substring(0, 160) || `Discover ${transformedContent.name}'s profile in our exclusive archive.`
-        })
-        .eq('id', existingPublished.id)
-        .select()
-        .single()
-
-      if (updateError) {
-        return NextResponse.json(
-          { error: 'Failed to update published profile' },
-          { status: 500 }
-        )
-      }
-
-      publishedProfile = data
-    } else {
-      // Transform and create new published profile
-      const transformedContent = transformProfileBuilderData(draftProfile.content, draftProfile.tier)
-
-      const { data, error: createError } = await supabase
-        .from('profiles')
-        .insert({
-          user_id: user.id,
-          content: transformedContent,
-          tier: draftProfile.tier,
-          slug: draftProfile.slug,
-          status: 'published',
-          is_published: true,
-          published_at: new Date().toISOString(),
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          meta_title: `${transformedContent.name} - ${draftProfile.tier.charAt(0).toUpperCase() + draftProfile.tier.slice(1)} Profile | ICONS HERALD`,
-          meta_description: transformedContent.bio?.original?.substring(0, 160) || `Discover ${transformedContent.name}'s profile in our exclusive archive.`
-        })
-        .select()
-        .single()
-
-      if (createError) {
-        return NextResponse.json(
-          { error: 'Failed to create published profile' },
-          { status: 500 }
-        )
-      }
-
-      publishedProfile = data
+    if (publishError) {
+      console.error('Publish error:', publishError)
+      return NextResponse.json(
+        {
+          error: 'Failed to publish profile',
+          details: publishError.message
+        },
+        { status: 500 }
+      )
     }
-
-    // Remove this block since we handle errors in the if/else above
 
     // Revalidate ISR for the public profile
     try {
@@ -154,7 +117,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       profile: publishedProfile,
-      publicUrl: `/profile/${slug}`,
+      profileUrl: `/profile/${slug}`,
+      publicUrl: `/profile/${slug}`, // Keep both for backward compatibility
       message: 'Profile published successfully!'
     })
 
