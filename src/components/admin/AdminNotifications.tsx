@@ -20,7 +20,7 @@ import {
 } from '@chakra-ui/react'
 import { Bell, User, FileText, Clock, CheckCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import { useAuth } from '@/lib/auth/AuthProvider'
+import { useAuth } from '@/lib/auth/auth-context'
 
 interface AdminNotification {
   id: string
@@ -30,6 +30,34 @@ interface AdminNotification {
   notification_message: string
   notification_type: 'nomination' | 'profile' | 'system'
 }
+
+// Mock notifications function
+const getMockNotifications = (): AdminNotification[] => [
+  {
+    id: '1',
+    event_type: 'new_nomination',
+    notification_message: 'A new Rising tier profile has been nominated for review.',
+    created_at: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 minutes ago
+    notification_type: 'nomination',
+    metadata: { actionUrl: '/admin/nominations', title: 'New Profile Nomination' }
+  },
+  {
+    id: '2',
+    event_type: 'profile_published',
+    notification_message: 'Elite profile for "Dr. Sarah Chen" has been published successfully.',
+    created_at: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
+    notification_type: 'profile',
+    metadata: { actionUrl: '/admin/profiles', title: 'Profile Published' }
+  },
+  {
+    id: '3',
+    event_type: 'payment_received',
+    notification_message: 'Legacy tier payment of ₹20,000 received from John Smith.',
+    created_at: new Date(Date.now() - 1000 * 60 * 60 * 4).toISOString(), // 4 hours ago
+    notification_type: 'system',
+    metadata: { actionUrl: '/admin/payments', title: 'Payment Received' }
+  }
+]
 
 export function AdminNotifications() {
   const [notifications, setNotifications] = useState<AdminNotification[]>([])
@@ -80,15 +108,11 @@ export function AdminNotifications() {
 
   const loadNotifications = async () => {
     try {
-      const { data, error } = await supabase
-        .from('admin_notifications')
-        .select('*')
-        .limit(50)
-
-      if (error) throw error
-
-      setNotifications(data || [])
-      setUnreadCount(data?.length || 0)
+      // For now, use mock data since admin_notifications table doesn't exist
+      // TODO: Create admin_notifications table in Supabase
+      const mockData = getMockNotifications()
+      setNotifications(mockData)
+      setUnreadCount(mockData.length)
     } catch (error) {
       console.error('Error loading notifications:', error)
       toast({

@@ -77,21 +77,45 @@ export function LegacyTemplate({ profile }: LegacyTemplateProps) {
 
   return (
     <>
-      <Box minH="100vh" bg="#FFFFF0" color="#1A1A1A">
-      <Container maxW="6xl" py={20}>
-        <VStack spacing={8} textAlign="center">
-          <Badge
-            variant="outline"
-            fontSize="sm"
-            px={4}
-            py={2}
-            borderRadius="full"
-            bg="rgba(139, 115, 85, 0.1)"
-            borderColor="#8B7355"
-            color="#8B7355"
-          >
-            Legacy Tier Profile - Forever Remembered
-          </Badge>
+      <Box
+        minH="100vh"
+        bg="linear-gradient(135deg, #F5F5DC 0%, #F0E68C 25%, #DDD8C0 50%, #C8C3A0 75%, #B8B08A 100%)"
+        color="#2F1B14"
+        position="relative"
+        filter="sepia(0.15)"
+      >
+        {/* Classic paper texture overlay */}
+        <Box
+          position="absolute"
+          top={0}
+          left={0}
+          right={0}
+          bottom={0}
+          opacity={0.1}
+          backgroundImage="radial-gradient(circle at 25% 25%, #D4AF37 1px, transparent 1px), radial-gradient(circle at 75% 75%, #B8860B 1px, transparent 1px)"
+          backgroundSize="40px 40px"
+          backgroundPosition="0 0, 20px 20px"
+        />
+
+        <Container maxW="6xl" py={20} position="relative" zIndex={1}>
+          <VStack spacing={12} textAlign="center">
+            <Badge
+              variant="solid"
+              fontSize="lg"
+              px={8}
+              py={4}
+              borderRadius="none"
+              bg="linear-gradient(135deg, #8B4513 0%, #A0522D 50%, #CD853F 100%)"
+              color="#FFF8DC"
+              fontFamily="'Playfair Display', serif"
+              fontWeight="700"
+              textTransform="uppercase"
+              letterSpacing="2px"
+              boxShadow="inset 0 2px 4px rgba(0,0,0,0.3), 0 4px 20px rgba(139, 69, 19, 0.4)"
+              border="2px solid #D4AF37"
+            >
+              👑 Legacy Tier - Forever Remembered
+            </Badge>
           
           <Heading
             as="h1"

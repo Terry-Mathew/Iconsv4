@@ -15,7 +15,7 @@ interface AnimatedButtonProps extends MotionButtonProps {
   className?: string
 }
 
-const MotionButton = motion(Button)
+const MotionButton = motion.create(Button)
 
 const animationVariants = {
   scale: {
@@ -134,6 +134,16 @@ export const AnimatedButton = forwardRef<HTMLButtonElement, AnimatedButtonProps>
     const animationConfig = animationVariants[animation]
     const styleConfig = variantStyles[variant]
 
+    // Separate motion props from button props to avoid conflicts
+    const {
+      onAnimationStart,
+      onAnimationEnd,
+      onDragStart,
+      onDragEnd,
+      onDrag,
+      ...buttonProps
+    } = props
+
     return (
       <MotionButton
         ref={ref}
@@ -142,9 +152,9 @@ export const AnimatedButton = forwardRef<HTMLButtonElement, AnimatedButtonProps>
         loadingText={loadingText}
         whileHover={animationConfig.hover}
         whileTap={animationConfig.tap}
-        transition={animationConfig.transition}
+        transition={animationConfig.transition as any}
         {...styleConfig}
-        {...props}
+        {...buttonProps}
         style={{
           borderRadius: 'full',
           fontWeight: '700',

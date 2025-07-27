@@ -81,7 +81,7 @@ export class RealtimeManager {
         },
         (payload) => {
           callback({
-            id: payload.new?.id || payload.old?.id,
+            id: (payload.new as any)?.id || (payload.old as any)?.id,
             event_type: `nomination_${payload.eventType.toLowerCase()}`,
             metadata: payload.new || payload.old,
             created_at: new Date().toISOString(),
@@ -149,7 +149,7 @@ export class RealtimeManager {
     const channel = this.supabase
       .channel(config.channel)
       .on(
-        'postgres_changes',
+        'postgres_changes' as any,
         {
           event: config.event,
           schema: config.schema || 'public',

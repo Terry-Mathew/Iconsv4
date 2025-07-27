@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import {
   Box,
@@ -20,7 +20,7 @@ interface ProfileFooterProps {
   tier: 'rising' | 'elite' | 'legacy'
 }
 
-export function ProfileFooter({ tier }: ProfileFooterProps) {
+function ProfileFooterContent({ tier }: ProfileFooterProps) {
   const [isVisible, setIsVisible] = useState(false)
   const searchParams = useSearchParams()
   const isEmbedded = searchParams.get('embed') === 'true'
@@ -153,5 +153,13 @@ export function ProfileFooter({ tier }: ProfileFooterProps) {
         </Container>
       </Box>
     </MotionBox>
+  )
+}
+
+export function ProfileFooter({ tier }: ProfileFooterProps) {
+  return (
+    <Suspense fallback={null}>
+      <ProfileFooterContent tier={tier} />
+    </Suspense>
   )
 }

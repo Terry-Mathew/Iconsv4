@@ -171,7 +171,7 @@ export function SystemSettings({ globalSearch, adminUser, onRefresh }: SystemSet
           as={motion.div}
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.1 }}
+          transition={{ delay: 0.1 } as any}
         >
           <CardHeader>
             <HStack spacing={3}>
@@ -262,7 +262,7 @@ export function SystemSettings({ globalSearch, adminUser, onRefresh }: SystemSet
           as={motion.div}
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: 0.2 } as any}
         >
           <CardHeader>
             <HStack spacing={3}>
@@ -343,7 +343,7 @@ export function SystemSettings({ globalSearch, adminUser, onRefresh }: SystemSet
           as={motion.div}
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: 0.3 } as any}
         >
           <CardHeader>
             <HStack spacing={3}>

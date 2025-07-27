@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
@@ -23,6 +23,7 @@ import {
 } from '@chakra-ui/react'
 // Icons replaced with emoji for server-side compatibility
 import { useAuth } from '@/lib/auth/auth-context'
+import { UnifiedSignInModal } from '@/components/modals/UnifiedSignInModal'
 // import { useImpersonation } from '@/lib/auth/impersonation'
 
 const navLinks = [
@@ -30,7 +31,8 @@ const navLinks = [
   { href: '/#about', label: 'About', isAnchor: true },
   { href: '/#process', label: 'Process', isAnchor: true },
   { href: '/#tiers', label: 'Tiers', isAnchor: true },
-  { href: '/#nominate', label: 'Contact', isAnchor: true }
+  { href: '/profiles', label: 'Icons', isAnchor: false },
+  { href: '/#request-invitation', label: 'Contact', isAnchor: true }
 ]
 
 export function Navbar() {
@@ -38,10 +40,22 @@ export function Navbar() {
   const { user } = useAuth()
   // const { isImpersonating, targetUser, endImpersonation } = useImpersonation()
   const { isOpen, onOpen, onClose } = useDisclosure()
+  const { isOpen: isSignInOpen, onOpen: onSignInOpen, onClose: onSignInClose } = useDisclosure()
+  const [isScrolled, setIsScrolled] = useState(false)
 
   // Temporary: disable impersonation features for now
   const isImpersonating = false
   const isAdmin = false
+
+  // Handle scroll for sticky header with shadow
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10)
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   // Don't show navbar on auth pages or admin dashboard
   if (pathname.startsWith('/auth') || pathname.startsWith('/admin')) {
@@ -74,15 +88,17 @@ export function Navbar() {
         const hash = href.split('#')[1]
         if (hash) {
           const element = document.getElementById(hash)
-          if (element && (window as any).lenis) {
+          if (element) {
             // Update URL hash
             window.history.pushState(null, '', `#${hash}`)
 
-            // Smooth scroll with luxury easing
-            ;(window as any).lenis.scrollTo(element, {
-              offset: -80,
-              duration: 1.4,
-              easing: (t: number) => 1 - Math.pow(1 - t, 4) // Luxury quartic easing
+            // Native smooth scroll with offset for sticky header
+            const elementPosition = element.getBoundingClientRect().top + window.pageYOffset
+            const offsetPosition = elementPosition - 80 // Account for sticky header
+
+            window.scrollTo({
+              top: offsetPosition,
+              behavior: 'smooth'
             })
           }
         }
@@ -154,14 +170,15 @@ export function Navbar() {
 
       {/* Main Navbar */}
       <Box
-        bg="ivory.50"
+        bg={isScrolled ? "rgba(255, 255, 255, 0.95)" : "ivory.50"}
         borderBottom="1px solid"
-        borderColor="cream.300"
+        borderColor={isScrolled ? "rgba(212, 175, 55, 0.2)" : "cream.300"}
         position="sticky"
         top="0"
         zIndex="sticky"
-        shadow="0 2px 20px rgba(212, 175, 55, 0.1)"
+        shadow={isScrolled ? "0 4px 30px rgba(212, 175, 55, 0.15)" : "0 2px 20px rgba(212, 175, 55, 0.1)"}
         backdropFilter="blur(10px)"
+        transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
       >
         <Container maxW="7xl">
           <Flex h="16" align="center" justify="space-between">
@@ -226,14 +243,13 @@ export function Navbar() {
                   </Link>
                 </HStack>
               ) : (
-                <Link href="/auth/signin">
-                  <Button
-                    variant="primary"
-                    size="sm"
-                  >
-                    🔐 Sign In
-                  </Button>
-                </Link>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={onSignInOpen}
+                >
+                  🔐 Sign In
+                </Button>
               )}
             </HStack>
 
@@ -329,21 +345,26 @@ export function Navbar() {
                     </Link>
                   </VStack>
                 ) : (
-                  <Link href="/auth/signin" onClick={onClose}>
-                    <Button
-                      variant="primary"
-                      w="full"
-                      justifyContent="flex-start"
-                    >
-                      🔐 Sign In
-                    </Button>
-                  </Link>
+                  <Button
+                    variant="primary"
+                    w="full"
+                    justifyContent="flex-start"
+                    onClick={() => {
+                      onClose()
+                      onSignInOpen()
+                    }}
+                  >
+                    🔐 Sign In
+                  </Button>
                 )}
               </Box>
             </VStack>
           </DrawerBody>
         </DrawerContent>
       </Drawer>
+
+      {/* Unified Sign In Modal */}
+      <UnifiedSignInModal isOpen={isSignInOpen} onClose={onSignInClose} />
     </>
   )
 }

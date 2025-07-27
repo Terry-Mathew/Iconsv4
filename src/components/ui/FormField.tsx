@@ -41,10 +41,10 @@ interface SelectFieldProps extends BaseFormFieldProps, SelectProps {
 
 type FormFieldProps = InputFieldProps | TextareaFieldProps | SelectFieldProps
 
-const MotionFormControl = motion(FormControl)
-const MotionInput = motion(Input)
-const MotionTextarea = motion(Textarea)
-const MotionSelect = motion(Select)
+const MotionFormControl = motion.create(FormControl)
+const MotionInput = motion.create(Input)
+const MotionTextarea = motion.create(Textarea)
+const MotionSelect = motion.create(Select)
 
 const fieldVariants = {
   initial: {
@@ -148,16 +148,34 @@ export const FormField = forwardRef<
   const renderField = () => {
     switch (props.fieldType) {
       case 'input':
+        const {
+          transition: inputTransition,
+          onAnimationStart,
+          onAnimationEnd,
+          onDragStart,
+          onDragEnd,
+          onDrag,
+          ...inputProps
+        } = props as InputFieldProps
         return (
           <MotionInput
             ref={ref as React.Ref<HTMLInputElement>}
             variants={fieldVariants}
             animate={getFieldState()}
             {...commonProps}
-            {...(props as InputFieldProps)}
+            {...inputProps}
           />
         )
       case 'textarea':
+        const {
+          transition: textareaTransition,
+          onAnimationStart: textareaAnimationStart,
+          onAnimationEnd: textareaAnimationEnd,
+          onDragStart: textareaDragStart,
+          onDragEnd: textareaDragEnd,
+          onDrag: textareaDrag,
+          ...textareaProps
+        } = props as TextareaFieldProps
         return (
           <MotionTextarea
             ref={ref as React.Ref<HTMLTextAreaElement>}
@@ -165,17 +183,26 @@ export const FormField = forwardRef<
             animate={getFieldState()}
             resize="vertical"
             {...commonProps}
-            {...(props as TextareaFieldProps)}
+            {...textareaProps}
           />
         )
       case 'select':
+        const {
+          transition: selectTransition,
+          onAnimationStart: selectAnimationStart,
+          onAnimationEnd: selectAnimationEnd,
+          onDragStart: selectDragStart,
+          onDragEnd: selectDragEnd,
+          onDrag: selectDrag,
+          ...selectProps
+        } = props as SelectFieldProps
         return (
           <MotionSelect
             ref={ref as React.Ref<HTMLSelectElement>}
             variants={fieldVariants}
             animate={getFieldState()}
             {...commonProps}
-            {...(props as SelectFieldProps)}
+            {...selectProps}
           >
             {(props as SelectFieldProps).children}
           </MotionSelect>

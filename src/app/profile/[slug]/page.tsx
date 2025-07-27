@@ -1,28 +1,62 @@
 import { Metadata } from 'next'
-import { notFound } from 'next/navigation'
-import { createPublicServerClient } from '@/lib/supabase/server'
-import { ProfileData, ThemeSettings, EnhancedProfileData } from '@/types/profile'
+import { notFound, redirect } from 'next/navigation'
+import { createPublicServerClient, createServerClient } from '@/lib/supabase/server'
+import { ProfileData } from '@/types/profile'
 import { RisingTemplate } from '@/components/templates/RisingTemplate'
 import { EliteTemplate } from '@/components/templates/EliteTemplate'
 import { LegacyTemplate } from '@/components/templates/LegacyTemplate'
+import { PreviewWatermark } from '@/components/ui/PreviewWatermark'
 
 interface ProfilePageProps {
   params: Promise<{
     slug: string
   }>
+  searchParams: Promise<{
+    preview?: string
+  }>
 }
 
 // Generate metadata for SEO and social sharing
-export async function generateMetadata({ params }: ProfilePageProps): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: ProfilePageProps): Promise<Metadata> {
   const { slug } = await params
-  const supabase = createPublicServerClient()
+  const { preview } = await searchParams
+  const isPreview = preview === 'true'
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('slug', slug)
-    .eq('status', 'published')
-    .single()
+  // Use appropriate client based on preview mode
+  const supabase = isPreview ? await createServerClient() : createPublicServerClient()
+
+  let profile
+
+  if (isPreview) {
+    // For preview mode, fetch from drafts table
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return {
+        title: 'Unauthorized - Icons Herald',
+        description: 'Authentication required for preview mode.',
+      }
+    }
+
+    const { data } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('slug', slug)
+      .eq('user_id', user.id)
+      .eq('status', 'draft')
+      .single()
+
+    profile = data
+  } else {
+    // For public mode, fetch from published profiles
+    const { data } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('slug', slug)
+      .eq('status', 'published')
+      .single()
+
+    profile = data
+  }
 
   if (!profile) {
     return {
@@ -113,23 +147,56 @@ export async function generateStaticParams() {
   })) || []
 }
 
-export default async function ProfilePage({ params }: ProfilePageProps) {
+export default async function ProfilePage({ params, searchParams }: ProfilePageProps) {
   const { slug } = await params
-  const supabase = createPublicServerClient()
+  const { preview } = await searchParams
+  const isPreview = preview === 'true'
 
-  const { data: profile, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('slug', slug)
-    .eq('status', 'published')
-    .single()
+  // Use appropriate client based on preview mode
+  const supabase = isPreview ? await createServerClient() : createPublicServerClient()
 
-  if (error || !profile) {
-    notFound()
+  let profile
+  let user = null
+
+  if (isPreview) {
+    // For preview mode, require authentication and fetch draft
+    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser()
+    if (authError || !authUser) {
+      redirect('/auth/signin?redirect=' + encodeURIComponent(`/profile/${slug}?preview=true`))
+    }
+
+    user = authUser
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('slug', slug)
+      .eq('user_id', authUser.id)
+      .eq('status', 'draft')
+      .single()
+
+    profile = data
+
+    if (error || !profile) {
+      notFound()
+    }
+  } else {
+    // For public mode, fetch published profile
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('slug', slug)
+      .eq('status', 'published')
+      .single()
+
+    profile = data
+
+    if (error || !profile) {
+      notFound()
+    }
   }
 
   const profileData = profile.content as unknown as ProfileData
-  const themeSettings = {} as ThemeSettings // Default theme settings
 
   // Transform data for template compatibility
   const transformedProfile = {
@@ -137,18 +204,22 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     name: profileData.name,
     tagline: profileData.tagline,
     heroImage: profileData.profileImage,
-    biography: profileData.bio?.original || profileData.bio,
-    aiPolishedBio: profileData.bio?.ai_polished,
+    biography: (profileData as any).bio?.original || (profileData as any).biography || (profileData as any).bio,
+    bio: {
+      original: (profileData as any).bio?.original || (profileData as any).biography || (profileData as any).bio || '',
+      ai_polished: (profileData as any).bio?.ai_polished
+    },
+    aiPolishedBio: (profileData as any).bio?.ai_polished,
     tier: profile.tier,
-    achievements: profileData.achievements || [],
-    quote: profileData.quote || null,
-    gallery: profileData.gallery || [],
-    timeline: profileData.timeline || [],
-    tributes: profileData.tributes || [],
-    enduringContributions: profileData.enduringContributions,
-    sections: profileData.sections || {},
-    links: profileData.links || [],
-    publishedAt: profile.published_at,
+    achievements: (profileData as any).achievements || [],
+    quote: (profileData as any).quote || null,
+    gallery: (profileData as any).gallery || [],
+    timeline: (profileData as any).timeline || [],
+    tributes: (profileData as any).tributes || [],
+    enduringContributions: (profileData as any).enduringContributions,
+    sections: (profileData as any).sections || {},
+    links: (profileData as any).links || [],
+    publishedAt: profile.published_at || undefined,
     slug: profile.slug,
   }
 
@@ -161,7 +232,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
         return <LegacyTemplate profile={transformedProfile} />
       case 'rising':
       default:
-        return <RisingTemplate data={profileData as any} theme={themeSettings} />
+        return <RisingTemplate profile={transformedProfile} />
     }
   }
 
@@ -177,7 +248,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
             name: profileData.name,
             description: profileData.bio,
             image: profileData.profileImage,
-            url: `${process.env.NEXT_PUBLIC_APP_URL}/profile/${params.slug}`,
+            url: `${process.env.NEXT_PUBLIC_APP_URL}/profile/${(await params).slug}`,
             sameAs: Object.values(profileData.socialLinks || {}).filter(Boolean),
             jobTitle: 'currentRole' in profileData ? profileData.currentRole : undefined,
             worksFor: 'company' in profileData ? {
@@ -191,6 +262,12 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
           }),
         }}
       />
+      {isPreview && (
+        <PreviewWatermark
+          profileSlug={profile.slug}
+          tier={profile.tier as 'rising' | 'elite' | 'legacy'}
+        />
+      )}
       {renderTemplate()}
     </>
   )

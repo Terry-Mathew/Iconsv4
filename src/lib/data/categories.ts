@@ -18,7 +18,7 @@ export interface CategoryData {
   id: string
   name: string
   description: string
-  icon: React.ComponentType<{ size?: number }>
+  icon: React.ComponentType<any>
   color: string
   gradient: string
 }

@@ -215,7 +215,7 @@ export function EntryModal({ isOpen, onClose }: EntryModalProps) {
                     onValueChange={(value) => setNominationType(value as 'self' | 'icon')}
                     size="md"
                     aria-label="Choose nomination type"
-                    style={{ maxWidth: '400px' }}
+
                   />
 
                   {/* Nomination Form */}

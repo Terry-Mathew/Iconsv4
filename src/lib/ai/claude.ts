@@ -187,13 +187,13 @@ function extractSuggestionsFromResponse(content: any[]): string[] {
     if (!textContent) return []
     
     const text = textContent.text
-    const lines = text.split('\n').filter(line => line.trim())
+    const lines = text.split('\n').filter((line: string) => line.trim())
     
     // Extract numbered list items
     const suggestions = lines
-      .filter(line => /^\d+\./.test(line.trim()))
-      .map(line => line.replace(/^\d+\.\s*/, '').trim())
-      .filter(suggestion => suggestion.length > 0)
+      .filter((line: string) => /^\d+\./.test(line.trim()))
+      .map((line: string) => line.replace(/^\d+\.\s*/, '').trim())
+      .filter((suggestion: string) => suggestion.length > 0)
     
     return suggestions.slice(0, 5) // Limit to 5 suggestions
     

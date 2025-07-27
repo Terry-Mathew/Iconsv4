@@ -133,7 +133,7 @@ function CategoryCard({ category, index, isActive }: CategoryCardProps) {
       tabIndex={0}
       aria-label={`${category.title} category: ${category.description}`}
       aria-expanded={isExpanded}
-      onKeyDown={(e) => {
+      onKeyDown={(e: React.KeyboardEvent) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault()
           setIsExpanded(!isExpanded)

@@ -199,11 +199,12 @@ export function NominationsManagement({ globalSearch, adminUser, onRefresh }: No
           nominee_name: 'Dr. Michael Chen',
           nominee_email: 'michael.chen@example.com',
           pitch: 'Dr. Chen is a renowned cardiologist who has saved countless lives and pioneered new surgical techniques.',
-          tier: 'Elite',
+          desired_tier: 'elite',
+          links: ['https://linkedin.com/in/michael-chen', 'https://hospital.com/dr-chen'],
           status: 'pending',
           created_at: '2024-01-15T10:30:00Z',
-          reviewed_by: null,
-          reviewed_at: null
+          reviewed_by: undefined,
+          reviewed_at: undefined
         },
         {
           id: '2',
@@ -212,7 +213,8 @@ export function NominationsManagement({ globalSearch, adminUser, onRefresh }: No
           nominee_name: 'Prof. Lisa Rodriguez',
           nominee_email: 'lisa.rodriguez@example.com',
           pitch: 'Professor Rodriguez has revolutionized environmental science and led groundbreaking climate research.',
-          tier: 'Legacy',
+          desired_tier: 'legacy',
+          links: ['https://university.edu/prof-rodriguez', 'https://climate-research.org'],
           status: 'approved',
           created_at: '2024-01-14T14:20:00Z',
           reviewed_by: 'admin@iconsherald.com',
@@ -225,7 +227,8 @@ export function NominationsManagement({ globalSearch, adminUser, onRefresh }: No
           nominee_name: 'James Thompson',
           nominee_email: 'james.thompson@example.com',
           pitch: 'James is an inspiring teacher who has transformed education in underserved communities.',
-          tier: 'Rising',
+          desired_tier: 'rising',
+          links: ['https://school.edu/james-thompson'],
           status: 'rejected',
           created_at: '2024-01-13T16:45:00Z',
           reviewed_by: 'admin@iconsherald.com',
@@ -238,11 +241,12 @@ export function NominationsManagement({ globalSearch, adminUser, onRefresh }: No
           nominee_name: 'Dr. Amanda Foster',
           nominee_email: 'amanda.foster@example.com',
           pitch: 'Dr. Foster has made significant contributions to pediatric medicine and child welfare.',
-          tier: 'Elite',
+          desired_tier: 'elite',
+          links: ['https://hospital.com/dr-foster', 'https://pediatrics.org/amanda-foster'],
           status: 'flagged',
           created_at: '2024-01-12T12:00:00Z',
-          reviewed_by: null,
-          reviewed_at: null
+          reviewed_by: undefined,
+          reviewed_at: undefined
         }
       ]
 

@@ -13,8 +13,8 @@ import {
 } from '@chakra-ui/react'
 import { motion } from 'framer-motion'
 
-const MotionBox = motion(Box)
-const MotionText = motion(Text)
+const MotionBox = motion.create(Box)
+const MotionText = motion.create(Text)
 
 export function TypographyShowcase() {
   const fadeInUp = {

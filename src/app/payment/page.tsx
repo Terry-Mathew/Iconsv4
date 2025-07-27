@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import {
   Box,
@@ -34,7 +34,7 @@ declare global {
   }
 }
 
-export default function PaymentPage() {
+function PaymentPageContent() {
   const [profile, setProfile] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [processing, setProcessing] = useState(false)
@@ -340,5 +340,19 @@ export default function PaymentPage() {
         </Card>
       </VStack>
     </Container>
+  )
+}
+
+export default function PaymentPage() {
+  return (
+    <Suspense fallback={
+      <Container maxW="4xl" py={8}>
+        <VStack spacing={8}>
+          <Text>Loading payment page...</Text>
+        </VStack>
+      </Container>
+    }>
+      <PaymentPageContent />
+    </Suspense>
   )
 }

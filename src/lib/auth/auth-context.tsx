@@ -5,7 +5,7 @@ import { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
 import { Database } from '@/types/supabase'
 
-type UserRole = Database['public']['Enums']['user_role']
+type UserRole = 'admin' | 'super_admin' | 'member' | 'applicant' | 'visitor'
 
 interface AuthUser extends User {
   role?: UserRole

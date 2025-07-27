@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Box,
@@ -20,25 +20,83 @@ import {
   Spinner,
 } from '@chakra-ui/react'
 import { motion } from 'framer-motion'
-import { 
-  User, 
-  Edit3, 
-  Eye, 
-  Crown, 
-  Star, 
+import {
+  User,
+  Edit3,
+  Eye,
+  Crown,
+  Star,
   Trophy,
   Plus,
   Settings,
-  LogOut
+  LogOut,
+  FileText,
+  Globe,
+  BarChart3,
+  Clock,
+  CheckCircle,
+  AlertCircle
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth/auth-context'
 
 const MotionBox = motion(Box)
 const MotionCard = motion(Card)
 
+interface ProfileStatus {
+  hasDraft: boolean
+  isPublished: boolean
+  slug?: string
+  publishedAt?: string
+  lastSaved?: string
+}
+
 export default function DashboardPage() {
   const { user, loading, signOut } = useAuth()
   const router = useRouter()
+  const [profileStatus, setProfileStatus] = useState<ProfileStatus>({
+    hasDraft: false,
+    isPublished: false
+  })
+  const [loadingProfile, setLoadingProfile] = useState(true)
+
+  // Load profile status
+  useEffect(() => {
+    if (user && !loading) {
+      loadProfileStatus()
+    }
+  }, [user, loading])
+
+  const loadProfileStatus = async () => {
+    try {
+      setLoadingProfile(true)
+
+      // Check for draft
+      const draftResponse = await fetch('/api/profiles/draft')
+      const draftData = await draftResponse.json()
+
+      let publishStatus = { isPublished: false, publishedAt: null }
+
+      // Check publication status if draft exists
+      if (draftData.profile?.slug) {
+        const publishResponse = await fetch(`/api/profiles/publish?slug=${draftData.profile.slug}`)
+        if (publishResponse.ok) {
+          publishStatus = await publishResponse.json()
+        }
+      }
+
+      setProfileStatus({
+        hasDraft: draftData.hasDraft,
+        isPublished: publishStatus.isPublished,
+        slug: draftData.profile?.slug,
+        publishedAt: publishStatus.publishedAt || undefined,
+        lastSaved: draftData.profile?.updated_at
+      })
+    } catch (error) {
+      console.error('Failed to load profile status:', error)
+    } finally {
+      setLoadingProfile(false)
+    }
+  }
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -129,6 +187,98 @@ export default function DashboardPage() {
             </HStack>
 
             <Divider borderColor="rgba(212, 175, 55, 0.3)" />
+          </MotionBox>
+
+          {/* Profile Management Section */}
+          <MotionBox variants={itemVariants} mb={8}>
+            <MotionCard
+              bg="white"
+              borderRadius="16px"
+              boxShadow="xl"
+              border="2px solid rgba(212, 175, 55, 0.3)"
+              mb={8}
+            >
+              <CardHeader>
+                <HStack spacing={3}>
+                  <Icon as={FileText} color="#D4AF37" boxSize={6} />
+                  <Heading size="lg" fontFamily="'Playfair Display', serif">
+                    Profile Management
+                  </Heading>
+                </HStack>
+              </CardHeader>
+              <CardBody>
+                {loadingProfile ? (
+                  <HStack justify="center" py={8}>
+                    <Spinner color="#D4AF37" />
+                    <Text>Loading profile status...</Text>
+                  </HStack>
+                ) : (
+                  <VStack spacing={6} align="stretch">
+                    {/* Profile Status */}
+                    <HStack spacing={4} p={4} bg="gray.50" borderRadius="lg">
+                      <Icon
+                        as={profileStatus.hasDraft ? CheckCircle : AlertCircle}
+                        color={profileStatus.hasDraft ? "green.500" : "orange.500"}
+                        boxSize={5}
+                      />
+                      <VStack align="start" spacing={1} flex={1}>
+                        <Text fontWeight="medium">
+                          {profileStatus.hasDraft ? 'Draft Available' : 'No Draft Found'}
+                        </Text>
+                        <Text fontSize="sm" color="gray.600">
+                          {profileStatus.hasDraft
+                            ? `Last saved: ${profileStatus.lastSaved ? new Date(profileStatus.lastSaved).toLocaleDateString() : 'Unknown'}`
+                            : 'Start building your profile to create a draft'
+                          }
+                        </Text>
+                      </VStack>
+                      {profileStatus.isPublished && (
+                        <Badge colorScheme="green" size="lg">
+                          Published
+                        </Badge>
+                      )}
+                    </HStack>
+
+                    {/* Quick Actions */}
+                    <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4}>
+                      <Button
+                        leftIcon={<Edit3 size={18} />}
+                        colorScheme="yellow"
+                        variant="solid"
+                        onClick={() => router.push('/builder')}
+                        size="lg"
+                      >
+                        {profileStatus.hasDraft ? 'Continue Editing' : 'Start Building'}
+                      </Button>
+
+                      {profileStatus.hasDraft && (
+                        <Button
+                          leftIcon={<Eye size={18} />}
+                          variant="outline"
+                          colorScheme="blue"
+                          onClick={() => router.push(`/profile/${profileStatus.slug}?preview=true`)}
+                          size="lg"
+                        >
+                          Preview
+                        </Button>
+                      )}
+
+                      {profileStatus.isPublished && (
+                        <Button
+                          leftIcon={<Globe size={18} />}
+                          variant="outline"
+                          colorScheme="green"
+                          onClick={() => window.open(`/profile/${profileStatus.slug}`, '_blank')}
+                          size="lg"
+                        >
+                          View Live
+                        </Button>
+                      )}
+                    </SimpleGrid>
+                  </VStack>
+                )}
+              </CardBody>
+            </MotionCard>
           </MotionBox>
 
           {/* Quick Actions */}

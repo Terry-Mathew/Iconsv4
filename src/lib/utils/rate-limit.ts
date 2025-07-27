@@ -34,7 +34,7 @@ class RateLimiter {
 
     if (!current) {
       // First request in this window
-      this.cache.set(key, { count: 1, resetTime }, windowMs)
+      this.cache.set(key, { count: 1, resetTime }, { ttl: windowMs })
       return {
         success: true,
         remaining: options.requests - 1,
@@ -44,7 +44,7 @@ class RateLimiter {
 
     if (now > current.resetTime) {
       // Window has expired, reset
-      this.cache.set(key, { count: 1, resetTime }, windowMs)
+      this.cache.set(key, { count: 1, resetTime }, { ttl: windowMs })
       return {
         success: true,
         remaining: options.requests - 1,
@@ -63,7 +63,7 @@ class RateLimiter {
 
     // Increment count
     current.count++
-    this.cache.set(key, current, current.resetTime - now)
+    this.cache.set(key, current, { ttl: current.resetTime - now })
 
     return {
       success: true,

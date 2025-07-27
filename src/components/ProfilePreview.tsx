@@ -16,11 +16,11 @@ export function ProfilePreview({ data, theme, tier }: ProfilePreviewProps) {
   const renderTemplate = () => {
     switch (tier) {
       case 'rising':
-        return <RisingTemplate data={data as any} theme={theme} isPreview />
+        return <RisingTemplate profile={data as any} />
       case 'elite':
-        return <EliteTemplate data={data as any} theme={theme} isPreview />
+        return <EliteTemplate profile={data as any} />
       case 'legacy':
-        return <LegacyTemplate data={data as any} theme={theme} isPreview />
+        return <LegacyTemplate profile={data as any} />
       default:
         return (
           <Box p={8} textAlign="center">

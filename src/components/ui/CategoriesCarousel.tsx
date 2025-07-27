@@ -40,6 +40,8 @@ export function CategoriesCarousel({
   const [hoveredCard, setHoveredCard] = useState<string | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [isAutoScrollPaused, setIsAutoScrollPaused] = useState(false)
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
+  const [isHovering, setIsHovering] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const autoScrollRef = useRef<NodeJS.Timeout>()
 
@@ -66,17 +68,40 @@ export function CategoriesCarousel({
     setCurrentIndex(index)
   }, [])
 
-  // Auto-scroll effect
+  // Mouse tracking for floating vault effect
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect()
+      const x = (e.clientX - rect.left - rect.width / 2) / rect.width
+      const y = (e.clientY - rect.top - rect.height / 2) / rect.height
+      setMousePosition({ x: x * 20, y: y * 10 }) // Subtle movement
+    }
+  }, [])
+
+  const handleMouseEnter = useCallback(() => {
+    setIsHovering(true)
+    setIsAutoScrollPaused(true)
+  }, [])
+
+  const handleMouseLeave = useCallback(() => {
+    setIsHovering(false)
+    setIsAutoScrollPaused(false)
+    setMousePosition({ x: 0, y: 0 })
+  }, [])
+
+  // Auto-scroll effect - improved performance without Lenis dependency
   useEffect(() => {
-    if (autoScroll && !showArrows) {
+    if (autoScroll && !showArrows && !isAutoScrollPaused) {
       autoScrollRef.current = setInterval(nextSlide, autoScrollInterval)
       return () => {
         if (autoScrollRef.current) {
           clearInterval(autoScrollRef.current)
         }
       }
+    } else if (autoScrollRef.current) {
+      clearInterval(autoScrollRef.current)
     }
-  }, [autoScroll, autoScrollInterval, nextSlide, showArrows])
+  }, [autoScroll, autoScrollInterval, nextSlide, showArrows, isAutoScrollPaused])
 
   // Keyboard navigation
   useEffect(() => {
@@ -112,14 +137,7 @@ export function CategoriesCarousel({
     }
   }
 
-  // Mouse enter/leave handlers for auto-scroll pause
-  const handleMouseEnter = () => {
-    setIsAutoScrollPaused(true)
-  }
-
-  const handleMouseLeave = () => {
-    setIsAutoScrollPaused(false)
-  }
+  // Remove duplicate handlers - using the ones defined above
 
   const maxSlides = Math.max(1, categories.length - cardsToShow + 1)
 
@@ -136,7 +154,7 @@ export function CategoriesCarousel({
               color="#1A1A1A"
               fontWeight="400"
             >
-              Discover Icons Across
+              Icons Across Every Field
             </Heading>
             <Text
               fontSize={{ base: 'lg', md: 'xl' }}
@@ -144,15 +162,29 @@ export function CategoriesCarousel({
               fontFamily="'Lato', sans-serif"
               maxW="2xl"
             >
-              Explore the diverse categories of exceptional individuals who shape our world
+              Exceptional individuals who shape our world
             </Text>
           </VStack>
 
           {/* Carousel Container */}
-          <Box
+          <MotionBox
             position="relative"
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
+            onMouseMove={handleMouseMove}
+            ref={containerRef}
+            h="420px" // Fixed height to prevent layout shifts
+            overflow="hidden" // Contain scaled elements
+            animate={{
+              x: isHovering ? mousePosition.x : 0,
+              y: isHovering ? mousePosition.y : 0,
+            }}
+            transition={{
+              type: "spring",
+              stiffness: 150,
+              damping: 15,
+              mass: 0.1
+            }}
             cursor={isDragging ? 'grabbing' : 'grab'}
             role="region"
             aria-label="Categories carousel"
@@ -247,40 +279,68 @@ export function CategoriesCarousel({
                 />
               </>
             )}
-          </Box>
+          </MotionBox>
 
-          {/* Progress Dots */}
-          <HStack justify="center" spacing={3}>
+          {/* Gold Circle Dots */}
+          <HStack justify="center" spacing={4} mt={6}>
             {Array.from({ length: maxSlides }).map((_, index) => (
               <MotionBox
                 key={index}
-                w={currentIndex === index ? 12 : 3}
-                h={3}
+                w={currentIndex === index ? 5 : 4}
+                h={currentIndex === index ? 5 : 4}
                 bg={currentIndex === index ? '#D4AF37' : 'rgba(212, 175, 55, 0.3)'}
                 borderRadius="full"
                 cursor="pointer"
                 onClick={() => goToSlide(index)}
-                whileHover={{ scale: 1.2 }}
-                whileTap={{ scale: 0.9 }}
+                position="relative"
+                border={currentIndex === index ? '2px solid #D4AF37' : '1px solid rgba(212, 175, 55, 0.5)'}
+                _hover={{
+                  bg: '#D4AF37',
+                  boxShadow: '0 0 25px rgba(212, 175, 55, 0.8), 0 0 50px rgba(212, 175, 55, 0.4)',
+                  border: '2px solid #D4AF37'
+                }}
+                whileHover={{
+                  scale: 1.4,
+                  boxShadow: '0 0 25px rgba(212, 175, 55, 0.8), 0 0 50px rgba(212, 175, 55, 0.4)'
+                }}
+                whileTap={{ scale: 0.8 }}
                 animate={{
-                  width: currentIndex === index ? 48 : 12,
-                  backgroundColor: currentIndex === index ? '#D4AF37' : 'rgba(212, 175, 55, 0.3)'
+                  width: currentIndex === index ? 20 : 16,
+                  height: currentIndex === index ? 20 : 16,
+                  backgroundColor: currentIndex === index ? '#D4AF37' : 'rgba(212, 175, 55, 0.3)',
+                  boxShadow: currentIndex === index
+                    ? '0 0 20px rgba(212, 175, 55, 0.6), 0 0 40px rgba(212, 175, 55, 0.3)'
+                    : '0 0 0px rgba(212, 175, 55, 0)'
                 }}
                 transition={{
-                  type: 'spring',
-                  stiffness: 300,
-                  damping: 30
+                  duration: 0.8,
+                  ease: "easeInOut"
                 }}
                 aria-label={`Go to slide ${index + 1}`}
                 role="button"
                 tabIndex={0}
-                onKeyDown={(e) => {
+                onKeyDown={(e: React.KeyboardEvent) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault()
                     goToSlide(index)
                   }
                 }}
-              />
+              >
+                {currentIndex === index && (
+                  <MotionBox
+                    position="absolute"
+                    top="50%"
+                    left="50%"
+                    w={6}
+                    h={6}
+                    bg="rgba(212, 175, 55, 0.3)"
+                    borderRadius="full"
+                    initial={{ scale: 0, x: '-50%', y: '-50%' }}
+                    animate={{ scale: 1.5, x: '-50%', y: '-50%' }}
+                    transition={{ duration: 0.6, ease: "easeOut" }}
+                  />
+                )}
+              </MotionBox>
             ))}
           </HStack>
         </VStack>
@@ -315,11 +375,11 @@ function CategoryCard({
     <MotionBox
       flex={`0 0 ${cardWidth}`}
       px={4}
-      initial={{ opacity: 0, y: 50, scale: 0.9 }}
+      h="380px" // Fixed height for consistent layout
+      initial={{ opacity: 0, y: 50 }}
       animate={{
         opacity: isVisible ? 1 : 0.7,
-        y: 0,
-        scale: isHovered ? 1.05 : 1
+        y: 0
       }}
       transition={{
         type: 'spring',
@@ -327,32 +387,32 @@ function CategoryCard({
         damping: 30,
         delay: index * 0.1
       }}
-      whileHover={{
-        y: -8,
-        transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] }
-      }}
       onMouseEnter={() => onHover(category.id)}
       onMouseLeave={() => onHover(null)}
       role="article"
       aria-label={`${category.name} category`}
     >
       <MotionCard
-        h="auto"
-        minH="320px"
+        h="360px" // Fixed height to prevent layout shifts
         bg="white"
         borderRadius="20px"
         overflow="hidden"
-        boxShadow={isHovered ? "0 20px 60px rgba(212, 175, 55, 0.2)" : "0 8px 30px rgba(0, 0, 0, 0.1)"}
-        border={isHovered ? "2px solid #D4AF37" : "2px solid transparent"}
         position="relative"
         cursor="pointer"
+        border="2px solid transparent"
         animate={{
           boxShadow: isHovered
             ? "0 20px 60px rgba(212, 175, 55, 0.2)"
             : "0 8px 30px rgba(0, 0, 0, 0.1)",
-          borderColor: isHovered ? "#D4AF37" : "transparent"
+          borderColor: isHovered ? "#D4AF37" : "transparent",
+          scale: isHovered ? 1.02 : 1, // Subtle scale that doesn't affect layout
+          y: isHovered ? -4 : 0 // Subtle lift effect
         }}
-        transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+        transition={{
+          duration: 0.3,
+          ease: [0.4, 0, 0.2, 1],
+          type: "tween"
+        }}
       >
         {/* Gradient Background */}
         <Box

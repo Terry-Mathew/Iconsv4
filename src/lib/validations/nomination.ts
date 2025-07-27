@@ -50,8 +50,6 @@ export const nominationSchema = z.object({
 
 export type NominationFormData = z.infer<typeof nominationSchema>
 
-export type NominationFormData = z.infer<typeof nominationSchema>
-
 export const categories = [
   'Technology & Innovation',
   'Business & Entrepreneurship',

@@ -58,6 +58,7 @@ import { UsersManagement } from '../../components/admin/UsersManagement'
 import { NominationsManagement } from '../../components/admin/NominationsManagement'
 import { ProfilesManagement } from '../../components/admin/ProfilesManagement'
 import { PaymentsManagement } from '../../components/admin/PaymentsManagement'
+import { ImpersonationPanel } from '../../components/admin/ImpersonationPanel'
 import { AnalyticsDashboard } from '../../components/admin/AnalyticsDashboard'
 import { SystemSettings } from '../../components/admin/SystemSettings'
 import { AuditLogs } from '../../components/admin/AuditLogs'
@@ -103,13 +104,14 @@ const ADMIN_TABS: TabConfig[] = [
   { id: 'users', label: 'Users', icon: Users, description: 'Manage user accounts and roles' },
   { id: 'nominations', label: 'Nominations', icon: FileText, description: 'Review and approve nominations' },
   { id: 'profiles', label: 'Profiles', icon: Crown, description: 'Manage published profiles' },
+  { id: 'impersonation', label: 'Impersonation', icon: Users, description: 'Test user experiences by tier' },
   { id: 'payments', label: 'Payments', icon: CreditCard, description: 'Payment and billing management' },
   { id: 'analytics', label: 'Analytics', icon: BarChart3, description: 'Platform insights and metrics' },
   { id: 'settings', label: 'Settings', icon: Settings, description: 'System configuration', superAdminOnly: true },
   { id: 'logs', label: 'Audit Logs', icon: Shield, description: 'Security and audit trails', superAdminOnly: true },
 ]
 
-type TabId = 'users' | 'nominations' | 'profiles' | 'payments' | 'analytics' | 'settings' | 'logs'
+type TabId = 'users' | 'nominations' | 'profiles' | 'payments' | 'analytics' | 'settings' | 'logs' | 'impersonation'
 
 export default function AdminPage() {
   const { user, loading } = useAuth()
@@ -657,6 +659,14 @@ function AdminContent({ activeTab, globalSearch, adminUser, stats, onRefresh }: 
             globalSearch={globalSearch}
             adminUser={adminUser}
             onRefresh={onRefresh}
+          />
+        )
+      case 'impersonation':
+        return (
+          <ImpersonationPanel
+            currentUser={adminUser}
+            isImpersonating={false}
+            onImpersonationChange={() => {}}
           />
         )
       case 'nominations':

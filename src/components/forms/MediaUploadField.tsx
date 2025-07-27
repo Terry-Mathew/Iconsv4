@@ -25,8 +25,8 @@ import {
   TabPanel
 } from '@chakra-ui/react'
 import { Upload, X, ExternalLink, Play } from 'lucide-react'
-import { createClientClient } from '@/lib/supabase/client'
-import { useAuth } from '@/lib/auth/AuthProvider'
+import { createClient } from '@/lib/supabase/client'
+import { useAuth } from '@/lib/auth/auth-context'
 
 interface MediaUploadFieldProps {
   value?: string
@@ -54,7 +54,7 @@ export function MediaUploadField({
   const [urlInput, setUrlInput] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const toast = useToast()
-  const supabase = createClientClient()
+  const supabase = createClient()
   const { user } = useAuth()
 
   // Client-side file validation
