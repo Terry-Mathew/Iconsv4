@@ -259,7 +259,11 @@ function ProfileBuilderContent() {
         setLastSaved(new Date())
         console.log('✅ Auto-save successful')
       } else {
-        console.warn('Auto-save failed:', response.status)
+        const errorData = await response.json().catch(() => ({}))
+        console.warn('Auto-save failed:', response.status, errorData.error)
+
+        // Don't show error toast for auto-save failures to avoid annoying users
+        // Just log it for debugging
       }
     } catch (error) {
       console.error('Auto-save failed:', error)
@@ -385,7 +389,8 @@ function ProfileBuilderContent() {
           duration: 3000,
         })
       } else {
-        throw new Error('Failed to save draft')
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || 'Failed to save draft')
       }
     } catch (error) {
       console.error('Manual save failed:', error)

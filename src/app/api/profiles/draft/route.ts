@@ -68,24 +68,25 @@ export async function POST(request: NextRequest) {
     // Generate slug if not provided
     const profileSlug = slug || `${content.name?.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${Date.now()}`
 
-    // Check if user already has a draft
+    // Check if user already has ANY profile (due to unique constraint on user_id)
     const { data: existingProfile, error: fetchError } = await supabase
       .from('profiles')
-      .select('id')
+      .select('id, status, slug')
       .eq('user_id', user.id)
-      .eq('status', 'draft')
       .single()
 
     let result
 
     if (existingProfile) {
-      // Update existing draft
+      // Update existing profile (regardless of status)
       const { data, error } = await supabase
         .from('profiles')
         .update({
           content,
           tier,
           slug: profileSlug,
+          status: 'draft', // Always set to draft when saving
+          is_published: false, // Reset published status when editing
           updated_at: new Date().toISOString()
         })
         .eq('id', existingProfile.id)
@@ -94,7 +95,7 @@ export async function POST(request: NextRequest) {
 
       result = { data, error }
     } else {
-      // Create new draft
+      // Create new profile (first time for this user)
       const { data, error } = await supabase
         .from('profiles')
         .insert({
@@ -115,7 +116,22 @@ export async function POST(request: NextRequest) {
 
     if (result.error) {
       console.error('Error saving draft:', result.error)
-      return NextResponse.json({ error: 'Failed to save draft' }, { status: 500 })
+
+      // Handle specific database errors
+      if (result.error.code === '23505') {
+        return NextResponse.json(
+          { error: 'Profile already exists for this user. Please try refreshing the page.' },
+          { status: 409 }
+        )
+      }
+
+      return NextResponse.json(
+        {
+          error: 'Failed to save draft',
+          details: result.error.message
+        },
+        { status: 500 }
+      )
     }
 
     return NextResponse.json({
