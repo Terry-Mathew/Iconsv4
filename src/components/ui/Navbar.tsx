@@ -37,7 +37,7 @@ const navLinks = [
 
 export function Navbar() {
   const pathname = usePathname()
-  const { user } = useAuth()
+  const { user, signOut, isAdmin } = useAuth()
   // const { isImpersonating, targetUser, endImpersonation } = useImpersonation()
   const { isOpen, onOpen, onClose } = useDisclosure()
   const { isOpen: isSignInOpen, onOpen: onSignInOpen, onClose: onSignInClose } = useDisclosure()
@@ -45,7 +45,6 @@ export function Navbar() {
 
   // Temporary: disable impersonation features for now
   const isImpersonating = false
-  const isAdmin = false
 
   // Handle scroll for sticky header with shadow
   useEffect(() => {
@@ -241,6 +240,16 @@ export function Navbar() {
                       Dashboard
                     </Button>
                   </Link>
+                  <Text fontSize="sm" color="gray.600">
+                    {user.email}
+                  </Text>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={signOut}
+                  >
+                    Sign Out
+                  </Button>
                 </HStack>
               ) : (
                 <Button
@@ -321,6 +330,9 @@ export function Navbar() {
               <Box pt={4} borderTop="1px solid" borderColor="cream.300">
                 {user ? (
                   <VStack spacing={3} align="stretch">
+                    <Text fontSize="sm" color="gray.600" px={3}>
+                      {user.email}
+                    </Text>
                     {isAdmin && (
                       <Link href="/admin" onClick={onClose}>
                         <Button
@@ -343,6 +355,17 @@ export function Navbar() {
                         Dashboard
                       </Button>
                     </Link>
+                    <Button
+                      variant="outline"
+                      w="full"
+                      justifyContent="flex-start"
+                      onClick={() => {
+                        onClose()
+                        signOut()
+                      }}
+                    >
+                      Sign Out
+                    </Button>
                   </VStack>
                 ) : (
                   <Button

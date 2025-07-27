@@ -7,8 +7,10 @@ const anthropic = new Anthropic({
 
 interface PolishBioParams {
   originalBio: string
-  tone: 'professional' | 'casual' | 'formal'
+  fieldType?: 'bio' | 'achievement' | 'description' | 'tagline' | 'summary'
+  tone: 'professional' | 'casual' | 'formal' | 'confident' | 'compelling' | 'clear'
   tier: 'rising' | 'elite' | 'legacy'
+  length?: 'concise' | 'balanced' | 'detailed' | 'comprehensive'
   userTier?: string
 }
 
@@ -20,13 +22,15 @@ interface PolishBioResponse {
 
 export async function polishBioWithClaude({
   originalBio,
+  fieldType = 'bio',
   tone,
   tier,
+  length = 'balanced',
   userTier
 }: PolishBioParams): Promise<string> {
   try {
-    const systemPrompt = createSystemPrompt(tier, tone)
-    const userPrompt = createUserPrompt(originalBio, tier, tone)
+    const systemPrompt = createSystemPrompt(tier, tone, fieldType, length)
+    const userPrompt = createUserPrompt(originalBio, tier, tone, fieldType, length)
 
     const response = await anthropic.messages.create({
       model: 'claude-3-5-sonnet-20241022',
@@ -65,7 +69,12 @@ export async function polishBioWithClaude({
   }
 }
 
-function createSystemPrompt(tier: string, tone: string): string {
+function createSystemPrompt(
+  tier: string,
+  tone: string,
+  fieldType: string = 'bio',
+  length: string = 'balanced'
+): string {
   const basePrompt = `You are an expert biography writer for Icons Herald, a premium digital archive platform. Your task is to polish and enhance biographical content while maintaining authenticity and factual accuracy.
 
 Guidelines:
@@ -103,7 +112,10 @@ For Legacy tier profiles:
   const toneGuidelines = {
     professional: 'Use formal, business-appropriate language with industry terminology',
     casual: 'Use approachable, conversational language while maintaining respect',
-    formal: 'Use elevated, academic language with sophisticated vocabulary'
+    formal: 'Use elevated, academic language with sophisticated vocabulary',
+    confident: 'Use strong, assertive language that emphasizes achievements and capabilities',
+    compelling: 'Use engaging, persuasive language that captures attention and interest',
+    clear: 'Use simple, direct language that is easy to understand and follow'
   }
 
   return `${basePrompt}
@@ -115,13 +127,29 @@ Tone: ${toneGuidelines[tone as keyof typeof toneGuidelines]}
 Return only the polished biography text, without any additional commentary or formatting.`
 }
 
-function createUserPrompt(originalBio: string, tier: string, tone: string): string {
-  return `Please polish and enhance the following biography for a ${tier} tier profile with a ${tone} tone:
+function createUserPrompt(
+  originalBio: string,
+  tier: string,
+  tone: string,
+  fieldType: string = 'bio',
+  length: string = 'balanced'
+): string {
+  const fieldLabels = {
+    bio: 'biography',
+    achievement: 'achievement description',
+    description: 'description',
+    tagline: 'tagline',
+    summary: 'summary'
+  }
 
-Original Biography:
+  const fieldLabel = fieldLabels[fieldType as keyof typeof fieldLabels] || 'content'
+
+  return `Please polish and enhance the following ${fieldLabel} for a ${tier} tier profile with a ${tone} tone and ${length} length:
+
+Original ${fieldLabel.charAt(0).toUpperCase() + fieldLabel.slice(1)}:
 ${originalBio}
 
-Enhanced Biography:`
+Enhanced ${fieldLabel.charAt(0).toUpperCase() + fieldLabel.slice(1)}:`
 }
 
 function extractBioFromResponse(content: any[]): string | null {

@@ -28,31 +28,118 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null)
   const [loading, setLoading] = useState(false)
 
-  // Initialize Supabase client with error handling
+  // Initialize Supabase client and auth state
   useEffect(() => {
-    try {
-      const supabase = createClient()
-      console.log('✅ AuthProvider: Supabase client initialized')
+    let mounted = true
 
-      // TODO: Implement full authentication flow when ready
-      // For now, running in demo mode
-      setLoading(false)
-    } catch (error) {
-      console.warn('⚠️ AuthProvider: Running in demo mode due to Supabase config:', error)
-      setLoading(false)
+    const initializeAuth = async () => {
+      try {
+        const supabase = createClient()
+        console.log('✅ AuthProvider: Supabase client initialized')
+
+        // Get initial session
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+
+        if (sessionError) {
+          console.error('Session error:', sessionError)
+        } else if (session?.user && mounted) {
+          // Fetch user profile data
+          const { data: profile } = await supabase
+            .from('users')
+            .select('role')
+            .eq('id', session.user.id)
+            .single()
+
+          setUser({
+            ...session.user,
+            role: (profile?.role as UserRole) || 'visitor'
+          })
+        }
+
+        // Listen for auth changes
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(
+          async (event, session) => {
+            console.log('Auth state changed:', event, session?.user?.email)
+
+            if (session?.user && mounted) {
+              // Fetch user profile data
+              const { data: profile } = await supabase
+                .from('users')
+                .select('role')
+                .eq('id', session.user.id)
+                .single()
+
+              setUser({
+                ...session.user,
+                role: (profile?.role as UserRole) || 'visitor'
+              })
+            } else if (mounted) {
+              setUser(null)
+            }
+          }
+        )
+
+        if (mounted) {
+          setLoading(false)
+        }
+
+        return () => {
+          subscription.unsubscribe()
+        }
+      } catch (error) {
+        console.error('Auth initialization error:', error)
+        if (mounted) {
+          setLoading(false)
+        }
+      }
+    }
+
+    initializeAuth()
+
+    return () => {
+      mounted = false
     }
   }, [])
 
-  // Enhanced sign-in function (demo mode)
+  // Enhanced sign-in function
   const signIn = async (email: string) => {
-    console.log('🔐 Demo sign-in attempt for:', email)
-    return { error: null }
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.auth.signInWithOtp({
+        email: email.toLowerCase().trim(),
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`
+        }
+      })
+
+      if (error) {
+        console.error('Sign-in error:', error)
+        return { error }
+      }
+
+      console.log('✅ Sign-in OTP sent to:', email)
+      return { error: null }
+    } catch (error) {
+      console.error('Sign-in error:', error)
+      return { error }
+    }
   }
 
-  // Enhanced sign-out function (demo mode)
+  // Enhanced sign-out function
   const signOut = async () => {
-    console.log('🔐 Demo sign-out')
-    setUser(null)
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.auth.signOut()
+
+      if (error) {
+        console.error('Sign-out error:', error)
+      } else {
+        setUser(null)
+        console.log('✅ User signed out successfully')
+      }
+    } catch (error) {
+      console.error('Sign-out error:', error)
+    }
   }
 
   const hasRole = (roles: UserRole[]) => {

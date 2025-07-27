@@ -67,13 +67,17 @@ export async function POST(request: NextRequest) {
     let publishedProfile
 
     if (existingPublished) {
-      // Update existing published profile
+      // Transform and update existing published profile
+      const transformedContent = transformProfileBuilderData(draftProfile.content, draftProfile.tier)
+
       const { data, error: updateError } = await supabase
         .from('profiles')
         .update({
-          content: draftProfile.content,
+          content: transformedContent,
           tier: draftProfile.tier,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
+          meta_title: `${transformedContent.name} - ${draftProfile.tier.charAt(0).toUpperCase() + draftProfile.tier.slice(1)} Profile | ICONS HERALD`,
+          meta_description: transformedContent.bio?.original?.substring(0, 160) || `Discover ${transformedContent.name}'s profile in our exclusive archive.`
         })
         .eq('id', existingPublished.id)
         .select()
@@ -88,19 +92,23 @@ export async function POST(request: NextRequest) {
 
       publishedProfile = data
     } else {
-      // Create new published profile
+      // Transform and create new published profile
+      const transformedContent = transformProfileBuilderData(draftProfile.content, draftProfile.tier)
+
       const { data, error: createError } = await supabase
         .from('profiles')
         .insert({
           user_id: user.id,
-          content: draftProfile.content,
+          content: transformedContent,
           tier: draftProfile.tier,
           slug: draftProfile.slug,
           status: 'published',
           is_published: true,
           published_at: new Date().toISOString(),
           created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
+          meta_title: `${transformedContent.name} - ${draftProfile.tier.charAt(0).toUpperCase() + draftProfile.tier.slice(1)} Profile | ICONS HERALD`,
+          meta_description: transformedContent.bio?.original?.substring(0, 160) || `Discover ${transformedContent.name}'s profile in our exclusive archive.`
         })
         .select()
         .single()
@@ -166,6 +174,82 @@ function getTierPrice(tier: string) {
     elite: { amount: 10000, currency: 'INR', period: 'year' },
     legacy: { amount: 20000, currency: 'INR', period: 'lifetime' }
   }
-  
+
   return prices[tier as keyof typeof prices] || prices.rising
+}
+
+// Transform profile builder data to template-compatible format
+function transformProfileBuilderData(builderData: any, tier: string) {
+  const baseTransform = {
+    name: builderData.name || '',
+    tagline: builderData.tagline || '',
+    profileImage: builderData.heroImage || builderData.profileImage || '',
+    bio: {
+      original: builderData.bio?.original || builderData.bio || '',
+      ai_polished: builderData.bio?.ai_polished || null
+    },
+    achievements: (builderData.achievements || []).map((achievement: any) => ({
+      title: achievement.title || '',
+      description: achievement.description || '',
+      year: achievement.year || '',
+      category: achievement.category || 'other',
+      order: achievement.order || 0,
+      isVisible: achievement.isVisible !== false
+    })),
+    links: (builderData.links || []).map((link: any) => ({
+      title: link.title || '',
+      url: link.url || '',
+      type: link.type || 'other',
+      platform: link.platform || link.type || 'other'
+    })),
+    gallery: (builderData.gallery || []).map((item: any) => ({
+      url: item.url || '',
+      caption: item.caption || '',
+      type: item.type || 'image',
+      order: item.order || 0
+    })),
+    sections: builderData.sections || {},
+    tier: tier
+  }
+
+  // Add tier-specific transformations
+  switch (tier) {
+    case 'rising':
+      return {
+        ...baseTransform,
+        currentRole: builderData.currentRole || '',
+        company: builderData.company || '',
+        skills: builderData.skills || [],
+        aspirations: builderData.aspirations || '',
+        projects: builderData.projects || []
+      }
+
+    case 'elite':
+      return {
+        ...baseTransform,
+        currentRole: builderData.currentRole || '',
+        company: builderData.company || '',
+        industry: builderData.industry || '',
+        yearsOfExperience: builderData.yearsOfExperience || 0,
+        expertise: builderData.expertise || [],
+        leadership: builderData.leadership || [],
+        awards: builderData.awards || []
+      }
+
+    case 'legacy':
+      return {
+        ...baseTransform,
+        legacy: builderData.legacy || '',
+        era: builderData.era || '',
+        primaryContributions: builderData.primaryContributions || [],
+        historicalImpact: builderData.historicalImpact || '',
+        timeline: builderData.timeline || [],
+        quotes: builderData.quotes || [],
+        recognitions: builderData.recognitions || [],
+        influence: builderData.influence || []
+      }
+
+    default:
+      return baseTransform
+  }
 }

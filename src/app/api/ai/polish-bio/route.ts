@@ -4,10 +4,16 @@ import { polishBioWithClaude } from '@/lib/ai/claude'
 import { rateLimit } from '@/lib/utils/rate-limit'
 import { z } from 'zod'
 
-const polishBioSchema = z.object({
-  bio: z.string().min(50).max(5000),
-  tone: z.enum(['professional', 'casual', 'formal']).optional().default('professional'),
-  tier: z.enum(['rising', 'elite', 'legacy']).optional().default('elite')
+const polishTextSchema = z.object({
+  // Support both 'bio' and 'text' for backward compatibility
+  bio: z.string().optional(),
+  text: z.string().optional(),
+  fieldType: z.enum(['bio', 'achievement', 'description', 'tagline', 'summary']).optional().default('bio'),
+  tone: z.enum(['professional', 'casual', 'formal', 'confident', 'compelling', 'clear']).optional().default('professional'),
+  tier: z.enum(['rising', 'elite', 'legacy']).optional().default('elite'),
+  length: z.enum(['concise', 'balanced', 'detailed', 'comprehensive']).optional().default('balanced')
+}).refine(data => data.bio || data.text, {
+  message: "Either 'bio' or 'text' must be provided"
 })
 
 export async function POST(request: NextRequest) {
@@ -62,10 +68,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     
     // Validate input
-    const validationResult = polishBioSchema.safeParse(body)
+    const validationResult = polishTextSchema.safeParse(body)
     if (!validationResult.success) {
       return NextResponse.json(
-        { 
+        {
           error: 'Invalid input data',
           details: validationResult.error.errors
         },
@@ -73,14 +79,30 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { bio, tone, tier } = validationResult.data
+    const { bio, text, fieldType, tone, tier, length } = validationResult.data
+    const inputText = text || bio || ''
+
+    // Validate text length based on field type
+    const minLength = fieldType === 'tagline' ? 5 : fieldType === 'achievement' ? 10 : 50
+    const maxLength = fieldType === 'tagline' ? 200 : fieldType === 'achievement' ? 1000 : 5000
+
+    if (inputText.length < minLength || inputText.length > maxLength) {
+      return NextResponse.json(
+        {
+          error: `Text must be between ${minLength} and ${maxLength} characters for ${fieldType}`,
+        },
+        { status: 400 }
+      )
+    }
 
     try {
-      // Call Claude API to polish the bio
-      const polishedBio = await polishBioWithClaude({
-        originalBio: bio,
+      // Call Claude API to polish the text
+      const polishedText = await polishBioWithClaude({
+        originalBio: inputText,
+        fieldType,
         tone,
         tier,
+        length,
         userTier: userData.tier || 'rising'
       })
 
@@ -89,26 +111,33 @@ export async function POST(request: NextRequest) {
         .from('analytics_events')
         .insert({
           user_id: user.id,
-          event_type: 'ai_bio_polish',
+          event_type: `ai_${fieldType}_polish`,
           metadata: {
-            feature: 'bio_polish',
-            input_length: bio.length,
-            output_length: polishedBio.length,
+            feature: `${fieldType}_polish`,
+            field_type: fieldType,
+            input_length: inputText.length,
+            output_length: polishedText.length,
             tier,
-            tone
+            tone,
+            length
           }
         })
 
       return NextResponse.json({
         success: true,
-        originalBio: bio,
-        polishedBio,
+        originalText: inputText,
+        polishedText,
+        fieldType,
         metadata: {
           tone,
           tier,
-          originalLength: bio.length,
-          polishedLength: polishedBio.length
-        }
+          length,
+          originalLength: inputText.length,
+          polishedLength: polishedText.length
+        },
+        // Backward compatibility
+        originalBio: inputText,
+        polishedBio: polishedText
       })
 
     } catch (aiError: any) {
