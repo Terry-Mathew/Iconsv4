@@ -23,17 +23,18 @@ import {
   FormLabel,
 } from '@chakra-ui/react'
 import { motion } from 'framer-motion'
-import { 
-  Eye, 
-  Send, 
-  Edit3, 
-  Globe, 
-  Linkedin, 
-  Twitter, 
+import {
+  Eye,
+  Send,
+  Edit3,
+  Globe,
+  Linkedin,
+  Twitter,
   Link as LinkIcon,
   Trophy,
   Calendar,
   ExternalLink,
+  Save,
 } from 'lucide-react'
 import { useState } from 'react'
 import { UseFormWatch, UseFormSetValue } from 'react-hook-form'
@@ -46,7 +47,9 @@ interface PreviewStepProps {
   setValue: UseFormSetValue<any>
   onPrevious: () => void
   onPublish: () => void
+  onSaveDraft?: () => void
   isSubmitting?: boolean
+  isSaving?: boolean
   selectedTier: string
 }
 
@@ -55,7 +58,9 @@ export function PreviewStep({
   setValue,
   onPrevious,
   onPublish,
+  onSaveDraft,
   isSubmitting = false,
+  isSaving = false,
   selectedTier,
 }: PreviewStepProps) {
   const toast = useToast()
@@ -365,17 +370,37 @@ export function PreviewStep({
                   w="full"
                   isLoading={isSubmitting}
                   loadingText="Publishing..."
+                  isDisabled={isSaving}
                 >
                   Publish Profile
                 </Button>
 
+                {onSaveDraft && (
+                  <Button
+                    leftIcon={<Save size={16} />}
+                    onClick={onSaveDraft}
+                    size="md"
+                    variant="outline"
+                    w="full"
+                    borderColor="#8B8680"
+                    color="#8B8680"
+                    _hover={{ bg: '#8B8680', color: 'white' }}
+                    isLoading={isSaving}
+                    loadingText="Saving..."
+                    isDisabled={isSubmitting}
+                  >
+                    Save as Draft
+                  </Button>
+                )}
+
                 <Button
                   leftIcon={<Edit3 size={16} />}
                   onClick={onPrevious}
-                  variant="outline"
-                  colorScheme="gray"
+                  variant="ghost"
                   size="md"
                   w="full"
+                  color="#8B8680"
+                  _hover={{ bg: '#F7F5F3' }}
                 >
                   Back to Edit
                 </Button>

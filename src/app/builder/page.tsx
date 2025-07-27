@@ -234,26 +234,39 @@ function ProfileBuilderContent() {
   // Auto-save functionality
   const autoSave = useCallback(async () => {
     if (isImpersonating) return // Don't save during impersonation
-    
+
+    const formData = watch()
+
+    // Only auto-save if there's meaningful content
+    if (!formData.name || formData.name.trim().length < 2) {
+      return // Don't save empty or minimal content
+    }
+
     setIsSaving(true)
     try {
-      const formData = watch()
       const response = await fetch('/api/profiles/draft', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          content: formData,
+          tier: selectedTier,
+          slug: generateSlug(formData.name || 'profile'),
+          auto_save: true
+        }),
       })
 
       if (response.ok) {
         setLastSaved(new Date())
         console.log('✅ Auto-save successful')
+      } else {
+        console.warn('Auto-save failed:', response.status)
       }
     } catch (error) {
       console.error('Auto-save failed:', error)
     } finally {
       setIsSaving(false)
     }
-  }, [watch, isImpersonating])
+  }, [watch, isImpersonating, selectedTier])
 
   // Auto-save every 30 seconds
   useEffect(() => {
@@ -265,34 +278,138 @@ function ProfileBuilderContent() {
   const onSubmit = async (data: ProfileFormData) => {
     setIsSubmitting(true)
     try {
-      const response = await fetch('/api/profiles/publish', {
+      // Step 1: Save as draft first
+      const draftResponse = await fetch('/api/profiles/draft', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          content: data,
+          tier: selectedTier,
+          slug: generateSlug(data.name || 'profile')
+        }),
       })
 
-      if (response.ok) {
+      if (!draftResponse.ok) {
+        const draftError = await draftResponse.json()
+        throw new Error(draftError.error || 'Failed to save draft')
+      }
+
+      const draftResult = await draftResponse.json()
+      const profileSlug = draftResult.profile?.slug
+
+      if (!profileSlug) {
+        throw new Error('No profile slug returned from draft save')
+      }
+
+      // Step 2: Publish the draft
+      const publishResponse = await fetch('/api/profiles/publish', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug: profileSlug }),
+      })
+
+      if (!publishResponse.ok) {
+        const publishError = await publishResponse.json()
+        throw new Error(publishError.error || 'Failed to publish profile')
+      }
+
+      const publishResult = await publishResponse.json()
+
+      toast({
+        title: 'Profile Published!',
+        description: 'Your profile is now live and accessible.',
+        status: 'success',
+        duration: 5000,
+      })
+
+      // Redirect to the published profile or dashboard
+      if (publishResult.profileUrl) {
+        // Show success message with profile link
         toast({
-          title: 'Profile Published!',
-          description: 'Your profile is now live and accessible.',
+          title: 'Profile Published Successfully!',
+          description: `Your profile is now live at ${publishResult.profileUrl}`,
           status: 'success',
-          duration: 5000,
+          duration: 8000,
+          isClosable: true,
         })
-        router.push('/dashboard')
+        router.push(publishResult.profileUrl)
       } else {
-        throw new Error('Failed to publish profile')
+        router.push('/dashboard')
       }
     } catch (error) {
       console.error('Publish failed:', error)
       toast({
         title: 'Publish Failed',
-        description: 'Unable to publish your profile. Please try again.',
+        description: error instanceof Error ? error.message : 'Unable to publish your profile. Please try again.',
         status: 'error',
         duration: 5000,
       })
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  // Manual save function
+  const saveAsDraft = async () => {
+    const formData = watch()
+
+    if (!formData.name || formData.name.trim().length < 2) {
+      toast({
+        title: 'Cannot Save Draft',
+        description: 'Please enter a name before saving.',
+        status: 'warning',
+        duration: 3000,
+      })
+      return
+    }
+
+    setIsSaving(true)
+    try {
+      const response = await fetch('/api/profiles/draft', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: formData,
+          tier: selectedTier,
+          slug: generateSlug(formData.name || 'profile'),
+          manual_save: true
+        }),
+      })
+
+      if (response.ok) {
+        setLastSaved(new Date())
+        toast({
+          title: 'Draft Saved!',
+          description: 'Your profile has been saved as a draft.',
+          status: 'success',
+          duration: 3000,
+        })
+      } else {
+        throw new Error('Failed to save draft')
+      }
+    } catch (error) {
+      console.error('Manual save failed:', error)
+      toast({
+        title: 'Save Failed',
+        description: 'Unable to save your draft. Please try again.',
+        status: 'error',
+        duration: 5000,
+      })
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  // Helper function to generate slug from name
+  const generateSlug = (name: string): string => {
+    return name
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/-+/g, '-') // Replace multiple hyphens with single
+      .trim()
+      .substring(0, 50) // Limit length
+      + '-' + Date.now() // Add timestamp for uniqueness
   }
 
   // Render step content
@@ -363,7 +480,9 @@ function ProfileBuilderContent() {
             setValue={setValue}
             onPrevious={goToPreviousStep}
             onPublish={handleSubmit(onSubmit)}
+            onSaveDraft={saveAsDraft}
             isSubmitting={isSubmitting}
+            isSaving={isSaving}
             selectedTier={selectedTier}
           />
         )
