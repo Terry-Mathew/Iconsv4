@@ -165,7 +165,7 @@ function ProfileBuilderContent() {
   } = useForm<ProfileFormData>({
     mode: 'onChange',
     defaultValues: {
-      tier: 'rising',
+      tier: 'emerging',
       name: '',
       tagline: '',
       heroImage: '',

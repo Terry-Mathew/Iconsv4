@@ -48,7 +48,7 @@ interface RealTimePreviewProps {
   onToggle: () => void
   viewMode?: 'desktop' | 'tablet' | 'mobile'
   onViewModeChange?: (mode: 'desktop' | 'tablet' | 'mobile') => void
-  tier: 'rising' | 'elite' | 'legacy'
+  tier: 'emerging' | 'accomplished' | 'distinguished' | 'legacy'
   isLoading?: boolean
 }
 
@@ -100,14 +100,14 @@ const socialIcons = {
 }
 
 // Preview Header Component
-function PreviewHeader({ 
-  data, 
-  tier, 
-  isLoading 
-}: { 
+function PreviewHeader({
+  data,
+  tier,
+  isLoading
+}: {
   data: Partial<ProfileBuilderData>
-  tier: 'rising' | 'elite' | 'legacy'
-  isLoading?: boolean 
+  tier: 'emerging' | 'accomplished' | 'distinguished' | 'legacy'
+  isLoading?: boolean
 }) {
   const styles = tierStyles[tier]
 
@@ -213,7 +213,7 @@ function PreviewBiography({
   isLoading 
 }: { 
   data: Partial<ProfileBuilderData>
-  tier: 'rising' | 'elite' | 'legacy'
+  tier: 'emerging' | 'accomplished' | 'distinguished' | 'legacy'
   isLoading?: boolean 
 }) {
   const styles = tierStyles[tier]
@@ -277,7 +277,7 @@ function PreviewAchievements({
   isLoading 
 }: { 
   data: Partial<ProfileBuilderData>
-  tier: 'rising' | 'elite' | 'legacy'
+  tier: 'emerging' | 'accomplished' | 'distinguished' | 'legacy'
   isLoading?: boolean 
 }) {
   const styles = tierStyles[tier]
@@ -401,7 +401,7 @@ function PreviewLinks({
   isLoading 
 }: { 
   data: Partial<ProfileBuilderData>
-  tier: 'rising' | 'elite' | 'legacy'
+  tier: 'emerging' | 'accomplished' | 'distinguished' | 'legacy'
   isLoading?: boolean 
 }) {
   const styles = tierStyles[tier]

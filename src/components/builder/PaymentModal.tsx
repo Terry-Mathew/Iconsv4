@@ -26,7 +26,7 @@ import { Crown, Star, Trophy, Check, CreditCard } from 'lucide-react'
 interface PaymentModalProps {
   isOpen: boolean
   onClose: () => void
-  tier: 'rising' | 'elite' | 'legacy'
+  tier: 'emerging' | 'accomplished' | 'distinguished' | 'legacy'
   onPaymentSuccess: () => void
 }
 

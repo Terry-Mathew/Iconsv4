@@ -55,6 +55,14 @@ interface LinksMediaStepProps {
   selectedTier: string
 }
 
+// Tier-specific limits
+const TIER_LIMITS = {
+  emerging: { links: 3, gallery: 0 },
+  accomplished: { links: 5, gallery: 4 },
+  distinguished: { links: 8, gallery: 10 },
+  legacy: { links: 15, gallery: 25 },
+} as const
+
 export function LinksMediaStep({
   setValue,
   watch,
@@ -68,6 +76,11 @@ export function LinksMediaStep({
   const links = watch('links') || []
   const gallery = watch('gallery') || []
 
+  const tierLimits = TIER_LIMITS[selectedTier as keyof typeof TIER_LIMITS] || TIER_LIMITS.emerging
+  const canAddMoreLinks = links.length < tierLimits.links
+  const canAddMoreGallery = gallery.length < tierLimits.gallery
+  const isGalleryAvailable = tierLimits.gallery > 0
+
   const handleAddLink = (link: Link) => {
     if (editingIndex !== null) {
       const updatedLinks = [...links]
@@ -75,7 +88,9 @@ export function LinksMediaStep({
       setValue('links', updatedLinks)
       setEditingIndex(null)
     } else {
-      setValue('links', [...links, link])
+      if (canAddMoreLinks) {
+        setValue('links', [...links, link])
+      }
     }
     onClose()
   }
@@ -91,8 +106,10 @@ export function LinksMediaStep({
   }
 
   const openAddModal = () => {
-    setEditingIndex(null)
-    onOpen()
+    if (canAddMoreLinks) {
+      setEditingIndex(null)
+      onOpen()
+    }
   }
 
   const getLinkIcon = (type: string) => {
@@ -121,6 +138,7 @@ export function LinksMediaStep({
     }
   }
 
+  // Validation: At least 1 link is recommended for all tiers
   const isValid = links.length > 0
 
   const containerVariants = {
@@ -162,6 +180,9 @@ export function LinksMediaStep({
           <Text color="#8B8680" fontSize="lg" maxW="600px">
             Add your social profiles, websites, and media gallery
           </Text>
+          <Text color="#D4AF37" fontSize="sm" mt={2}>
+            Links: {links.length}/{tierLimits.links} • Gallery: {gallery.length}/{tierLimits.gallery}
+          </Text>
         </MotionBox>
 
         {/* Tabs for Links and Media */}
@@ -201,12 +222,13 @@ export function LinksMediaStep({
                     leftIcon={<Plus size={20} />}
                     onClick={openAddModal}
                     size="lg"
-                    bg="#D4AF37"
+                    bg={canAddMoreLinks ? "#D4AF37" : "gray.400"}
                     color="white"
-                    _hover={{ bg: '#B8941F' }}
+                    _hover={{ bg: canAddMoreLinks ? '#B8941F' : 'gray.400' }}
                     w="full"
+                    isDisabled={!canAddMoreLinks}
                   >
-                    Add Social Link
+                    {canAddMoreLinks ? 'Add Social Link' : `Maximum ${tierLimits.links} links reached`}
                   </Button>
 
                   {/* Links List */}

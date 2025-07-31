@@ -3,6 +3,7 @@ import { Playfair_Display, Lato, Lora } from 'next/font/google'
 import { ChakraProvider } from '@chakra-ui/react'
 import { AuthProvider } from '@/lib/auth/auth-context'
 import { Navbar } from '@/components/ui/Navbar'
+import { PerformanceMonitor } from '@/components/dev/PerformanceMonitor'
 // Removed SmoothScrollProvider - using native browser scrolling for better performance
 import { theme } from '@/lib/chakra-theme'
 import '@/styles/globals.css'
@@ -83,6 +84,7 @@ export default function RootLayout({
             <main>
               {children}
             </main>
+            <PerformanceMonitor />
           </AuthProvider>
         </ChakraProvider>
       </body>

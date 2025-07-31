@@ -266,7 +266,7 @@ export function ProgressTracker({
                       </Text>
                       {!isAvailable && (
                         <Badge size="xs" colorScheme="yellow">
-                          {section.tiers.includes('elite') ? 'Elite+' : 'Legacy'}
+                          {section.tiers.includes('accomplished') ? 'Accomplished+' : 'Legacy'}
                         </Badge>
                       )}
                     </HStack>

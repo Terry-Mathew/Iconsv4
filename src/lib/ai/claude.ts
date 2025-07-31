@@ -9,7 +9,7 @@ interface PolishBioParams {
   originalBio: string
   fieldType?: 'bio' | 'achievement' | 'description' | 'tagline' | 'summary'
   tone: 'professional' | 'casual' | 'formal' | 'confident' | 'compelling' | 'clear'
-  tier: 'rising' | 'elite' | 'legacy'
+  tier: 'emerging' | 'accomplished' | 'distinguished' | 'legacy'
   length?: 'concise' | 'balanced' | 'detailed' | 'comprehensive'
   userTier?: string
 }
@@ -87,20 +87,27 @@ Guidelines:
 - Focus on impact and significance of accomplishments`
 
   const tierSpecificGuidelines = {
-    rising: `
-For Rising tier profiles:
+    emerging: `
+For Emerging tier profiles:
 - Emphasize potential, growth trajectory, and emerging impact
 - Highlight innovative approaches and fresh perspectives
 - Focus on recent achievements and future promise
 - Use dynamic, forward-looking language`,
-    
-    elite: `
-For Elite tier profiles:
-- Emphasize established expertise and industry leadership
-- Highlight significant achievements and measurable impact
-- Focus on professional excellence and recognition
-- Use authoritative, accomplished language`,
-    
+
+    accomplished: `
+For Accomplished tier profiles:
+- Emphasize established expertise and professional achievements
+- Highlight significant accomplishments and measurable impact
+- Focus on career milestones and industry recognition
+- Use confident, accomplished language`,
+
+    distinguished: `
+For Distinguished tier profiles:
+- Emphasize industry leadership and exceptional expertise
+- Highlight transformative achievements and thought leadership
+- Focus on significant contributions and widespread recognition
+- Use authoritative, prestigious language`,
+
     legacy: `
 For Legacy tier profiles:
 - Emphasize historical significance and lasting impact

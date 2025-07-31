@@ -209,31 +209,40 @@ function PaymentPageContent() {
     )
   }
 
-  const tierFeatures = {
-    rising: [
+  const tierFeatures: Record<ProfileTier, string[]> = {
+    emerging: [
       'Professional profile page',
-      'Custom domain slug',
-      'Social media integration',
-      'Project showcase',
+      'AI bio polishing',
+      'Awards & honors showcase',
+      'Up to 4 gallery photos',
       'Skills & achievements display',
       '1 year hosting included',
     ],
-    elite: [
-      'Executive profile page',
-      'Custom domain slug',
-      'Leadership experience showcase',
-      'Publications & awards section',
-      'Professional achievements timeline',
+    accomplished: [
+      'Everything in Emerging',
+      'Up to 10 gallery photos',
+      'QR code generation',
+      'Interactive timeline',
+      'Leadership showcase',
       'Priority support',
-      '2 years hosting included',
+      '1 year hosting included',
+    ],
+    distinguished: [
+      'Everything in Accomplished',
+      'Up to 20 gallery photos',
+      'Publications showcase',
+      'Advanced impact metrics',
+      'Premium templates',
+      'White-glove service',
+      '1 year hosting included',
     ],
     legacy: [
-      'Premium legacy profile',
-      'Custom domain slug',
-      'Historical timeline',
-      'Quote collections',
-      'Archive integration',
-      'White-glove service',
+      'Memorial service templates',
+      'Unlimited gallery photos',
+      'Historical timeline preservation',
+      'Tribute collection system',
+      'Archival documentation',
+      'Family access management',
       'Lifetime hosting included',
     ],
   }

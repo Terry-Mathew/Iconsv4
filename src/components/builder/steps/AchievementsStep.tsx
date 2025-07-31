@@ -40,6 +40,14 @@ interface AchievementsStepProps {
   selectedTier: string
 }
 
+// Tier-specific achievement limits
+const ACHIEVEMENT_LIMITS = {
+  emerging: 0, // No achievements for emerging tier
+  accomplished: 5,
+  distinguished: 10,
+  legacy: 15,
+} as const
+
 export function AchievementsStep({
   setValue,
   watch,
@@ -51,6 +59,9 @@ export function AchievementsStep({
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
 
   const achievements = watch('achievements') || []
+  const maxAchievements = ACHIEVEMENT_LIMITS[selectedTier as keyof typeof ACHIEVEMENT_LIMITS] || 0
+  const canAddMore = achievements.length < maxAchievements
+  const isAchievementsAvailable = maxAchievements > 0
 
   const handleAddAchievement = (achievement: Achievement) => {
     if (editingIndex !== null) {
@@ -60,8 +71,10 @@ export function AchievementsStep({
       setValue('achievements', updatedAchievements)
       setEditingIndex(null)
     } else {
-      // Add new achievement
-      setValue('achievements', [...achievements, achievement])
+      // Add new achievement (check limits)
+      if (canAddMore) {
+        setValue('achievements', [...achievements, achievement])
+      }
     }
     onClose()
   }
@@ -77,11 +90,14 @@ export function AchievementsStep({
   }
 
   const openAddModal = () => {
-    setEditingIndex(null)
-    onOpen()
+    if (canAddMore) {
+      setEditingIndex(null)
+      onOpen()
+    }
   }
 
-  const isValid = achievements.length > 0
+  // Validation: For tiers that support achievements, at least 1 is recommended
+  const isValid = !isAchievementsAvailable || achievements.length > 0
 
   const containerVariants = {
     hidden: { opacity: 0, x: 20 },
@@ -126,24 +142,52 @@ export function AchievementsStep({
             Achievements & Milestones
           </Heading>
           <Text color="#8B8680" fontSize="lg" maxW="600px">
-            Showcase your key accomplishments, awards, and significant milestones
+            {isAchievementsAvailable
+              ? `Showcase your key accomplishments, awards, and significant milestones (up to ${maxAchievements})`
+              : 'Achievements are available in Accomplished tier and above'
+            }
           </Text>
+          {isAchievementsAvailable && (
+            <Text color="#D4AF37" fontSize="sm" mt={2}>
+              {achievements.length}/{maxAchievements} achievements added
+            </Text>
+          )}
         </MotionBox>
 
         {/* Add Achievement Button */}
-        <MotionBox variants={itemVariants} w="full">
-          <Button
-            leftIcon={<Plus size={20} />}
-            onClick={openAddModal}
-            size="lg"
-            bg="#D4AF37"
-            color="white"
-            _hover={{ bg: '#B8941F' }}
-            w="full"
-          >
-            Add Achievement
+        {isAchievementsAvailable && (
+          <MotionBox variants={itemVariants} w="full">
+            <Button
+              leftIcon={<Plus size={20} />}
+              onClick={openAddModal}
+              size="lg"
+              bg={canAddMore ? "#D4AF37" : "gray.400"}
+              color="white"
+              _hover={{ bg: canAddMore ? '#B8941F' : 'gray.400' }}
+              w="full"
+              isDisabled={!canAddMore}
+            >
+              {canAddMore ? 'Add Achievement' : `Maximum ${maxAchievements} achievements reached`}
           </Button>
         </MotionBox>
+        )}
+
+        {/* Tier Upgrade Message for Emerging */}
+        {!isAchievementsAvailable && (
+          <MotionBox variants={itemVariants} w="full">
+            <Alert status="info" borderRadius="lg" bg="#F7F3E9" border="1px solid #D4AF37">
+              <AlertIcon color="#D4AF37" />
+              <Box>
+                <Text fontWeight="600" color="#1A1A1A">
+                  Achievements Available in Higher Tiers
+                </Text>
+                <Text fontSize="sm" color="#8B8680" mt={1}>
+                  Upgrade to Accomplished tier or above to showcase your achievements and milestones.
+                </Text>
+              </Box>
+            </Alert>
+          </MotionBox>
+        )}
 
         {/* Achievements List */}
         {achievements.length > 0 ? (

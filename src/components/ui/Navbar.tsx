@@ -28,11 +28,8 @@ import { UnifiedSignInModal } from '@/components/modals/UnifiedSignInModal'
 
 const navLinks = [
   { href: '/', label: 'Home', isAnchor: false },
-  { href: '/#about', label: 'About', isAnchor: true },
-  { href: '/#process', label: 'Process', isAnchor: true },
-  { href: '/#tiers', label: 'Tiers', isAnchor: true },
   { href: '/profiles', label: 'Icons', isAnchor: false },
-  { href: '/#request-invitation', label: 'Contact', isAnchor: true }
+  { href: '/builder', label: 'Create', isAnchor: false },
 ]
 
 export function Navbar() {
@@ -113,22 +110,23 @@ export function Navbar() {
       >
         <Text
           fontFamily="body"
-          fontWeight={isActiveLink(href) ? '600' : '400'}
-          color={isActiveLink(href) ? 'gold.500' : 'charcoal.900'}
+          fontWeight={isActiveLink(href) ? 'semibold' : 'medium'}
+          color={isActiveLink(href) ? 'gold.500' : 'white.50'}
           fontSize={mobile ? 'lg' : 'md'}
           _hover={{
-            color: 'gold.500',
-            transform: 'translateY(-1px)'
+            color: 'gold.400',
+            transform: 'translateY(-1px)',
+            textShadow: '0 0 8px rgba(212, 175, 55, 0.3)'
           }}
           _focus={{
             outline: '2px solid',
-            outlineColor: 'gold.600',
+            outlineColor: 'gold.500',
             outlineOffset: '2px',
             color: 'gold.500'
           }}
           _focusVisible={{
             outline: '2px solid',
-            outlineColor: 'gold.600',
+            outlineColor: 'gold.500',
             outlineOffset: '2px'
           }}
           transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
@@ -169,14 +167,14 @@ export function Navbar() {
 
       {/* Main Navbar */}
       <Box
-        bg={isScrolled ? "rgba(255, 255, 255, 0.95)" : "ivory.50"}
+        bg="rgba(26, 26, 26, 0.95)"
         borderBottom="1px solid"
-        borderColor={isScrolled ? "rgba(212, 175, 55, 0.2)" : "cream.300"}
+        borderColor="rgba(255, 255, 255, 0.1)"
         position="sticky"
         top="0"
         zIndex="sticky"
-        shadow={isScrolled ? "0 4px 30px rgba(212, 175, 55, 0.15)" : "0 2px 20px rgba(212, 175, 55, 0.1)"}
-        backdropFilter="blur(10px)"
+        shadow={isScrolled ? "0 8px 40px rgba(0, 0, 0, 0.4)" : "0 4px 30px rgba(0, 0, 0, 0.3)"}
+        backdropFilter="blur(20px)"
         transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
       >
         <Container maxW="7xl">
@@ -196,8 +194,9 @@ export function Navbar() {
                   fontFamily="heading"
                   fontSize="xl"
                   fontWeight="bold"
-                  color="charcoal.900"
+                  color="white.50"
                   letterSpacing="tight"
+                  textShadow="0 1px 2px rgba(0, 0, 0, 0.3)"
                 >
                   ICONS HERALD
                 </Text>
@@ -273,7 +272,7 @@ export function Navbar() {
               fontSize="xl"
               _focus={{
                 outline: '2px solid',
-                outlineColor: 'gold.600',
+                outlineColor: 'brand.500',
                 outlineOffset: '2px'
               }}
             >
@@ -292,7 +291,7 @@ export function Navbar() {
       >
         <DrawerOverlay />
         <DrawerContent
-          bg="ivory.50"
+          bg="linear-gradient(135deg, #1A1A1A 0%, #2A2A2A 100%)"
           borderLeft="2px solid"
           borderColor="gold.500"
           id="mobile-navigation"
@@ -300,18 +299,18 @@ export function Navbar() {
           aria-label="Mobile navigation menu"
         >
           <DrawerCloseButton
-            color="charcoal.900"
+            color="white.50"
             aria-label="Close navigation menu"
             _focus={{
               outline: '2px solid',
-              outlineColor: 'gold.600',
+              outlineColor: 'gold.500',
               outlineOffset: '2px'
             }}
           />
-          <DrawerHeader borderBottomWidth="1px" borderColor="cream.300">
+          <DrawerHeader borderBottomWidth="1px" borderColor="rgba(255, 255, 255, 0.1)">
             <HStack spacing={3}>
               <Text fontSize="xl" color="gold.500" aria-hidden="true">👑</Text>
-              <Text fontFamily="heading" fontSize="lg" fontWeight="bold" color="charcoal.900">
+              <Text fontFamily="heading" fontSize="lg" fontWeight="bold" color="white.50">
                 ICONS HERALD
               </Text>
             </HStack>
@@ -327,7 +326,7 @@ export function Navbar() {
               </VStack>
 
               {/* Mobile Auth */}
-              <Box pt={4} borderTop="1px solid" borderColor="cream.300">
+              <Box pt={4} borderTop="1px solid" borderColor="rgba(255, 255, 255, 0.1)">
                 {user ? (
                   <VStack spacing={3} align="stretch">
                     <Text fontSize="sm" color="gray.600" px={3}>

@@ -10,7 +10,7 @@ const polishTextSchema = z.object({
   text: z.string().optional(),
   fieldType: z.enum(['bio', 'achievement', 'description', 'tagline', 'summary']).optional().default('bio'),
   tone: z.enum(['professional', 'casual', 'formal', 'confident', 'compelling', 'clear']).optional().default('professional'),
-  tier: z.enum(['rising', 'elite', 'legacy']).optional().default('elite'),
+  tier: z.enum(['emerging', 'accomplished', 'distinguished', 'legacy']).optional().default('accomplished'),
   length: z.enum(['concise', 'balanced', 'detailed', 'comprehensive']).optional().default('balanced')
 }).refine(data => data.bio || data.text, {
   message: "Either 'bio' or 'text' must be provided"
@@ -224,7 +224,7 @@ export async function GET(request: NextRequest) {
       features: {
         bioPolish: hasAccess,
         toneOptions: ['professional', 'casual', 'formal'],
-        supportedTiers: ['rising', 'elite', 'legacy']
+        supportedTiers: ['emerging', 'accomplished', 'distinguished', 'legacy']
       }
     })
 

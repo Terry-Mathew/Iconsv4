@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
 import { Database } from '@/types/supabase'
+import { withCache, CacheKeys, CacheInvalidation } from '@/lib/cache/query-cache'
 
 type UserRole = 'admin' | 'super_admin' | 'member' | 'applicant' | 'visitor'
 
@@ -24,9 +25,25 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
+// Cached user role fetch function
+const fetchUserRole = withCache(
+  async (userId: string) => {
+    const supabase = createClient()
+    const { data: profile } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', userId)
+      .single()
+
+    return (profile?.role as UserRole) || 'visitor'
+  },
+  (userId: string) => CacheKeys.USER_ROLE(userId),
+  2 * 60 * 1000 // 2 minutes cache
+)
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null)
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true) // Start with loading true
 
   // Initialize Supabase client and auth state
   useEffect(() => {
@@ -37,23 +54,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const supabase = createClient()
         console.log('✅ AuthProvider: Supabase client initialized')
 
-        // Get initial session
+        // Get initial session (non-blocking)
         const { data: { session }, error: sessionError } = await supabase.auth.getSession()
 
         if (sessionError) {
           console.error('Session error:', sessionError)
+          if (mounted) {
+            setLoading(false)
+          }
         } else if (session?.user && mounted) {
-          // Fetch user profile data
-          const { data: profile } = await supabase
-            .from('users')
-            .select('role')
-            .eq('id', session.user.id)
-            .single()
-
+          // Set user immediately with basic info to prevent blocking
           setUser({
             ...session.user,
-            role: (profile?.role as UserRole) || 'visitor'
+            role: 'visitor' // Default role, will be updated async
           })
+          setLoading(false)
+
+          // Fetch user profile data asynchronously (non-blocking)
+          fetchUserRole(session.user.id)
+            .then(role => {
+              if (mounted) {
+                setUser(prev => prev ? {
+                  ...prev,
+                  role
+                } : null)
+              }
+            })
+            .catch(error => {
+              console.warn('Failed to fetch user role:', error)
+            })
+        } else if (mounted) {
+          setLoading(false)
         }
 
         // Listen for auth changes
@@ -62,17 +93,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             console.log('Auth state changed:', event, session?.user?.email)
 
             if (session?.user && mounted) {
-              // Fetch user profile data
-              const { data: profile } = await supabase
-                .from('users')
-                .select('role')
-                .eq('id', session.user.id)
-                .single()
-
+              // Set user immediately to prevent blocking
               setUser({
                 ...session.user,
-                role: (profile?.role as UserRole) || 'visitor'
+                role: 'visitor' // Default role, will be updated async
               })
+
+              // Fetch user profile data asynchronously (non-blocking)
+              fetchUserRole(session.user.id)
+                .then(role => {
+                  if (mounted) {
+                    setUser(prev => prev ? {
+                      ...prev,
+                      role
+                    } : null)
+                  }
+                })
+                .catch(error => {
+                  console.warn('Failed to fetch user role on auth change:', error)
+                })
             } else if (mounted) {
               setUser(null)
             }

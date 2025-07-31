@@ -2,8 +2,9 @@
 
 import { Box } from '@chakra-ui/react'
 import { ProfileData, ThemeSettings, ProfileTier } from '@/types/profile'
-import { RisingTemplate } from './templates/RisingTemplate'
-import { EliteTemplate } from './templates/EliteTemplate'
+import { EmergingTemplate } from './templates/EmergingTemplate'
+import { AccomplishedTemplate } from './templates/AccomplishedTemplate'
+import { DistinguishedTemplate } from './templates/DistinguishedTemplate'
 import { LegacyTemplate } from './templates/LegacyTemplate'
 
 interface ProfilePreviewProps {
@@ -15,10 +16,12 @@ interface ProfilePreviewProps {
 export function ProfilePreview({ data, theme, tier }: ProfilePreviewProps) {
   const renderTemplate = () => {
     switch (tier) {
-      case 'rising':
-        return <RisingTemplate profile={data as any} />
-      case 'elite':
-        return <EliteTemplate profile={data as any} />
+      case 'emerging':
+        return <EmergingTemplate profile={data as any} />
+      case 'accomplished':
+        return <AccomplishedTemplate profile={data as any} />
+      case 'distinguished':
+        return <DistinguishedTemplate profile={data as any} />
       case 'legacy':
         return <LegacyTemplate profile={data as any} />
       default:

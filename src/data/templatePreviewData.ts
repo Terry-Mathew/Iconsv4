@@ -74,9 +74,13 @@ export interface TemplatePreviewData {
       title: string
       organization: string
       year: number
-      description: string
+      significance: string
     }>
-    influence?: string
+    influence?: Array<{
+      area: string
+      description: string
+      continuingImpact: string
+    }>
     additionalQuotes?: Array<{
       text: string
       attribution: string
@@ -531,22 +535,38 @@ export const TEMPLATE_PREVIEW_DATA: Record<ProfileTier, TemplatePreviewData> = {
           title: 'Nobel Prize in Physiology or Medicine',
           organization: 'Nobel Committee',
           year: 2018,
-          description: 'For discoveries concerning neural plasticity and brain-computer interfaces'
+          significance: 'For discoveries concerning neural plasticity and brain-computer interfaces'
         },
         {
           title: 'Lasker Award for Basic Medical Research',
           organization: 'Lasker Foundation',
           year: 2015,
-          description: 'For fundamental discoveries in neuroplasticity mechanisms'
+          significance: 'For fundamental discoveries in neuroplasticity mechanisms'
         },
         {
           title: 'National Medal of Science',
           organization: 'National Science Foundation',
           year: 2012,
-          description: 'For pioneering contributions to neuroscience and medical technology'
+          significance: 'For pioneering contributions to neuroscience and medical technology'
         }
       ],
-      influence: 'Beyond her scientific achievements, Dr. Chen was a passionate advocate for women in STEM, establishing scholarship programs that have supported over 1,000 female scientists. Her mentorship philosophy of "curiosity with compassion" continues to guide research institutions worldwide.',
+      influence: [
+        {
+          area: 'Women in STEM',
+          description: 'Established scholarship programs that have supported over 1,000 female scientists',
+          continuingImpact: 'Her mentorship philosophy of "curiosity with compassion" continues to guide research institutions worldwide'
+        },
+        {
+          area: 'Medical Research',
+          description: 'Pioneered breakthrough treatments for neurological conditions affecting millions',
+          continuingImpact: 'Her research methodologies are now standard practice in neuroscience laboratories globally'
+        },
+        {
+          area: 'Scientific Education',
+          description: 'Mentored 200+ PhD students who now lead research institutions worldwide',
+          continuingImpact: 'Her educational approach has been adopted by medical schools across six continents'
+        }
+      ],
       additionalQuotes: [
         {
           text: 'The brain is not just an organ; it is the universe\'s way of understanding itself.',

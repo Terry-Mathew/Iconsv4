@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import {
   Box,
   VStack,
@@ -16,6 +17,7 @@ import {
   ListItem,
   ListIcon,
   useBreakpointValue,
+  useDisclosure,
 } from '@chakra-ui/react'
 import { motion } from 'framer-motion'
 import {
@@ -29,7 +31,9 @@ import {
   Camera,
   BarChart3,
   Archive,
+  Eye,
 } from 'lucide-react'
+import { TemplatePreviewModal } from '@/components/modals/TemplatePreviewModal'
 
 const MotionCard = motion.create(Card)
 const MotionBox = motion.create(Box)
@@ -144,6 +148,8 @@ export function TierSelectionStep({
   impersonatedTier = null,
 }: TierSelectionStepProps) {
   const isMobile = useBreakpointValue({ base: true, md: false })
+  const { isOpen: isPreviewOpen, onOpen: onPreviewOpen, onClose: onPreviewClose } = useDisclosure()
+  const [previewTier, setPreviewTier] = useState<ProfileTier>('emerging')
 
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -339,6 +345,26 @@ export function TierSelectionStep({
                         ))}
                       </List>
 
+                      {/* Preview Button */}
+                      <Button
+                        w="full"
+                        variant="outline"
+                        borderColor="#E8E0D0"
+                        color="#8B8680"
+                        _hover={{
+                          borderColor: '#D4AF37',
+                          color: '#D4AF37',
+                        }}
+                        leftIcon={<Eye size={16} />}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setPreviewTier(tier)
+                          onPreviewOpen()
+                        }}
+                      >
+                        Preview Templates
+                      </Button>
+
                       {/* Select Button */}
                       <Button
                         w="full"
@@ -465,6 +491,26 @@ export function TierSelectionStep({
                       ))}
                     </List>
 
+                    {/* Preview Button */}
+                    <Button
+                      w="full"
+                      variant="outline"
+                      borderColor="#E8E0D0"
+                      color="#8B8680"
+                      _hover={{
+                        borderColor: '#8B4513',
+                        color: '#8B4513',
+                      }}
+                      leftIcon={<Eye size={16} />}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setPreviewTier('legacy')
+                        onPreviewOpen()
+                      }}
+                    >
+                      Preview Templates
+                    </Button>
+
                     {/* Select Button */}
                     <Button
                       w="full"
@@ -506,6 +552,13 @@ export function TierSelectionStep({
           Continue with {effectiveTier && TIER_CONFIGS[effectiveTier] ? TIER_CONFIGS[effectiveTier].name : 'Selected Tier'}
         </Button>
       </VStack>
+
+      {/* Template Preview Modal */}
+      <TemplatePreviewModal
+        isOpen={isPreviewOpen}
+        onClose={onPreviewClose}
+        tier={previewTier}
+      />
     </MotionBox>
   )
 }

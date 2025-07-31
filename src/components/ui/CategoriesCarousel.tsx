@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import {
   Box,
   Container,
@@ -15,7 +15,7 @@ import {
   Collapse,
   Flex
 } from '@chakra-ui/react'
-import { motion, AnimatePresence, PanInfo, useMotionValue, useTransform } from 'framer-motion'
+import { motion, AnimatePresence, PanInfo, useMotionValue, useTransform, MotionConfig } from 'framer-motion'
 import { ChevronLeft, ChevronRight, GripHorizontal } from 'lucide-react'
 import { categories, CategoryData } from '@/lib/data/categories'
 
@@ -45,9 +45,16 @@ export function CategoriesCarousel({
   const containerRef = useRef<HTMLDivElement>(null)
   const autoScrollRef = useRef<NodeJS.Timeout>()
 
-  // Responsive settings
+  // Responsive settings - memoized for performance
   const cardsToShow = useBreakpointValue({ base: 1, md: 2, lg: 3, xl: 4 }) || 1
   const cardWidth = useBreakpointValue({ base: '100%', md: '50%', lg: '33.333%', xl: '25%' }) || '100%'
+
+  // Memoize calculations to prevent unnecessary re-renders
+  const maxIndex = useMemo(() => Math.max(0, categories.length - cardsToShow), [cardsToShow])
+  const visibleCategories = useMemo(() =>
+    categories.slice(currentIndex, currentIndex + cardsToShow),
+    [currentIndex, cardsToShow]
+  )
   const dragConstraints = {
     left: -(categories.length - cardsToShow) * (100 / cardsToShow),
     right: 0

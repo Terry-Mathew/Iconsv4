@@ -78,19 +78,20 @@ import { motion } from 'framer-motion'
 
 interface Nomination {
   id: string
-  nominator_name: string
+  nominator_name?: string
   nominator_email: string
   nominee_name: string
-  nominee_email: string
+  nominee_email?: string
   pitch: string
-  desired_tier: 'rising' | 'elite' | 'legacy'
-  assigned_tier?: 'rising' | 'elite' | 'legacy'
+  desired_tier: 'emerging' | 'accomplished' | 'distinguished' | 'legacy'
+  assigned_tier?: 'emerging' | 'accomplished' | 'distinguished' | 'legacy'
   status: 'pending' | 'approved' | 'rejected' | 'flagged'
   admin_notes?: string
-  links: string[]
+  links?: string[]
   created_at: string
   reviewed_by?: string
   reviewed_at?: string
+  updated_at?: string
 }
 
 interface NominationsManagementProps {
@@ -143,7 +144,7 @@ export function NominationsManagement({ globalSearch, adminUser, onRefresh }: No
   const [sortBy, setSortBy] = useState<string>('created_at')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const [selectedNomination, setSelectedNomination] = useState<Nomination | null>(null)
-  const [assignedTier, setAssignedTier] = useState<'rising' | 'elite' | 'legacy'>('rising')
+  const [assignedTier, setAssignedTier] = useState<'emerging' | 'accomplished' | 'distinguished' | 'legacy'>('emerging')
   const [adminNotes, setAdminNotes] = useState('')
   const [tempPassword, setTempPassword] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
@@ -161,15 +162,15 @@ export function NominationsManagement({ globalSearch, adminUser, onRefresh }: No
   // Filter nominations based on search and filters
   useEffect(() => {
     let filtered = nominations.filter(nomination => {
-      const matchesSearch = globalSearch === '' || 
+      const matchesSearch = globalSearch === '' ||
         nomination.nominee_name.toLowerCase().includes(globalSearch.toLowerCase()) ||
-        nomination.nominator_name.toLowerCase().includes(globalSearch.toLowerCase()) ||
-        nomination.nominee_email.toLowerCase().includes(globalSearch.toLowerCase()) ||
+        (nomination.nominator_name || '').toLowerCase().includes(globalSearch.toLowerCase()) ||
+        (nomination.nominee_email || '').toLowerCase().includes(globalSearch.toLowerCase()) ||
         nomination.pitch.toLowerCase().includes(globalSearch.toLowerCase())
-      
+
       const matchesStatus = statusFilter === 'all' || nomination.status === statusFilter
       const matchesTier = tierFilter === 'all' || nomination.desired_tier === tierFilter
-      
+
       return matchesSearch && matchesStatus && matchesTier
     })
 
@@ -195,8 +196,8 @@ export function NominationsManagement({ globalSearch, adminUser, onRefresh }: No
     try {
       setIsLoading(true)
 
-      // For development: Use mock data when database is not available
-      // TODO: Replace with actual database query when ready
+      // For now, use mock data until database schema is updated
+      // TODO: Replace with actual database query after running migration
       const mockNominations: Nomination[] = [
         {
           id: '1',
@@ -204,13 +205,11 @@ export function NominationsManagement({ globalSearch, adminUser, onRefresh }: No
           nominator_email: 'sarah.johnson@example.com',
           nominee_name: 'Dr. Michael Chen',
           nominee_email: 'michael.chen@example.com',
-          pitch: 'Dr. Chen is a renowned cardiologist who has saved countless lives and pioneered new surgical techniques.',
-          desired_tier: 'elite',
+          pitch: 'Dr. Chen is a renowned cardiologist who has saved countless lives and pioneered new surgical techniques. His innovative approaches to cardiac surgery have reduced patient recovery times by 40% and his research on minimally invasive procedures has been published in leading medical journals.',
+          desired_tier: 'accomplished',
           links: ['https://linkedin.com/in/michael-chen', 'https://hospital.com/dr-chen'],
           status: 'pending',
-          created_at: '2024-01-15T10:30:00Z',
-          reviewed_by: undefined,
-          reviewed_at: undefined
+          created_at: '2024-01-15T10:30:00Z'
         },
         {
           id: '2',
@@ -218,13 +217,14 @@ export function NominationsManagement({ globalSearch, adminUser, onRefresh }: No
           nominator_email: 'david.wilson@example.com',
           nominee_name: 'Prof. Lisa Rodriguez',
           nominee_email: 'lisa.rodriguez@example.com',
-          pitch: 'Professor Rodriguez has revolutionized environmental science and led groundbreaking climate research.',
+          pitch: 'Professor Rodriguez has revolutionized environmental science and led groundbreaking climate research. Her work on carbon capture technology has been adopted by 15 countries and her climate models are used by the IPCC.',
           desired_tier: 'legacy',
           links: ['https://university.edu/prof-rodriguez', 'https://climate-research.org'],
           status: 'approved',
           created_at: '2024-01-14T14:20:00Z',
           reviewed_by: 'admin@iconsherald.com',
-          reviewed_at: '2024-01-16T09:15:00Z'
+          reviewed_at: '2024-01-16T09:15:00Z',
+          assigned_tier: 'legacy'
         },
         {
           id: '3',
@@ -232,13 +232,14 @@ export function NominationsManagement({ globalSearch, adminUser, onRefresh }: No
           nominator_email: 'emily.davis@example.com',
           nominee_name: 'James Thompson',
           nominee_email: 'james.thompson@example.com',
-          pitch: 'James is an inspiring teacher who has transformed education in underserved communities.',
-          desired_tier: 'rising',
+          pitch: 'James is an inspiring teacher who has transformed education in underserved communities. He has developed innovative teaching methods that have improved student outcomes by 60% and trained over 500 teachers.',
+          desired_tier: 'emerging',
           links: ['https://school.edu/james-thompson'],
           status: 'rejected',
           created_at: '2024-01-13T16:45:00Z',
           reviewed_by: 'admin@iconsherald.com',
-          reviewed_at: '2024-01-15T11:30:00Z'
+          reviewed_at: '2024-01-15T11:30:00Z',
+          admin_notes: 'Insufficient supporting evidence for nomination criteria. Need more documentation of impact.'
         },
         {
           id: '4',
@@ -246,23 +247,34 @@ export function NominationsManagement({ globalSearch, adminUser, onRefresh }: No
           nominator_email: 'robert.brown@example.com',
           nominee_name: 'Dr. Amanda Foster',
           nominee_email: 'amanda.foster@example.com',
-          pitch: 'Dr. Foster has made significant contributions to pediatric medicine and child welfare.',
-          desired_tier: 'elite',
+          pitch: 'Dr. Foster has made significant contributions to pediatric medicine and child welfare. She has pioneered new treatments for rare childhood diseases and established free clinics in 12 countries.',
+          desired_tier: 'accomplished',
           links: ['https://hospital.com/dr-foster', 'https://pediatrics.org/amanda-foster'],
           status: 'flagged',
           created_at: '2024-01-12T12:00:00Z',
-          reviewed_by: undefined,
-          reviewed_at: undefined
+          admin_notes: 'Flagged for review - need to verify credentials and supporting documentation.'
+        },
+        {
+          id: '5',
+          nominator_name: 'Maria Garcia',
+          nominator_email: 'maria.garcia@example.com',
+          nominee_name: 'Dr. Raj Patel',
+          nominee_email: 'raj.patel@example.com',
+          pitch: 'Dr. Patel is a pioneering researcher in artificial intelligence and machine learning. His algorithms are used by major tech companies and his work on ethical AI has influenced global policy.',
+          desired_tier: 'distinguished',
+          links: ['https://university.edu/raj-patel', 'https://ai-research.org/raj-patel'],
+          status: 'pending',
+          created_at: '2024-01-11T08:15:00Z'
         }
       ]
 
-      console.log('Loading mock nominations for development:', mockNominations.length)
       setNominations(mockNominations)
 
-      // Show info toast about using mock data
+      console.log(`Loaded ${mockNominations.length} mock nominations for development`)
+
       toast({
         title: 'Development Mode',
-        description: `Loaded ${mockNominations.length} mock nominations - database connection needed for live data`,
+        description: `Loaded ${mockNominations.length} mock nominations - database schema update needed for live data`,
         status: 'info',
         duration: 3000,
         isClosable: true,
@@ -270,13 +282,11 @@ export function NominationsManagement({ globalSearch, adminUser, onRefresh }: No
 
     } catch (error) {
       console.error('Error loading nominations:', error)
-
-      // Set empty array as fallback
       setNominations([])
 
       toast({
         title: 'Error',
-        description: 'Failed to load nominations - using empty dataset',
+        description: 'Failed to load nominations',
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -459,7 +469,7 @@ export function NominationsManagement({ globalSearch, adminUser, onRefresh }: No
       switch (action) {
         case 'approve':
           updateData.status = 'approved'
-          updateData.assigned_tier = 'rising' // Default tier for bulk approval
+          updateData.assigned_tier = 'emerging' // Default tier for bulk approval
           break
         case 'reject':
           updateData.status = 'rejected'
@@ -734,8 +744,9 @@ export function NominationsManagement({ globalSearch, adminUser, onRefresh }: No
                   w="120px"
                 >
                   <option value="all">All Tiers</option>
-                  <option value="rising">Rising</option>
-                  <option value="elite">Elite</option>
+                  <option value="emerging">Emerging</option>
+                  <option value="accomplished">Accomplished</option>
+                  <option value="distinguished">Distinguished</option>
                   <option value="legacy">Legacy</option>
                 </Select>
 
@@ -968,11 +979,12 @@ export function NominationsManagement({ globalSearch, adminUser, onRefresh }: No
                       <FormLabel>Assign Tier:</FormLabel>
                       <Select
                         value={assignedTier}
-                        onChange={(e) => setAssignedTier(e.target.value as 'rising' | 'elite' | 'legacy')}
+                        onChange={(e) => setAssignedTier(e.target.value as 'emerging' | 'accomplished' | 'distinguished' | 'legacy')}
                       >
-                        <option value="rising">Rising - ₹3,000/year</option>
-                        <option value="elite">Elite - ₹10,000/year</option>
-                        <option value="legacy">Legacy - ₹20,000 one-time</option>
+                        <option value="emerging">Emerging - ₹2,500/year</option>
+                        <option value="accomplished">Accomplished - ₹5,000/year</option>
+                        <option value="distinguished">Distinguished - ₹12,000/year</option>
+                        <option value="legacy">Legacy - ₹50,000 lifetime</option>
                       </Select>
                     </FormControl>
 
