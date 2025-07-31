@@ -8,15 +8,17 @@ export const razorpay = new Razorpay({
 
 // Tier pricing in INR (paise)
 export const TIER_PRICING = {
-  rising: 299900, // ₹2,999
-  elite: 499900,  // ₹4,999
-  legacy: 999900, // ₹9,999
+  emerging: 250000,      // ₹2,500
+  accomplished: 500000,  // ₹5,000
+  distinguished: 1200000, // ₹12,000
+  legacy: 5000000,       // ₹50,000
 } as const
 
 export const TIER_PRICING_DISPLAY = {
-  rising: '₹2,999',
-  elite: '₹4,999',
-  legacy: '₹9,999',
+  emerging: '₹2,500',
+  accomplished: '₹5,000',
+  distinguished: '₹12,000',
+  legacy: '₹50,000',
 } as const
 
 export interface CreateOrderParams {

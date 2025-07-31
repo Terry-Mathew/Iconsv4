@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import {
   Box,
   Container,
@@ -37,18 +38,25 @@ import {
   Mail,
   Phone,
   MapPin,
-  ChevronUp
+  ChevronUp,
+  Star,
+  Trophy,
+  Archive
 } from 'lucide-react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { CategoriesCarousel } from '@/components/ui/CategoriesCarousel'
 import { UnifiedSignInModal } from '@/components/modals/UnifiedSignInModal'
+import { TemplatePreviewModal } from '@/components/modals/TemplatePreviewModal'
+import { ProfileTier } from '@/types/profile'
 
 const MotionBox = motion.create(Box)
 const MotionContainer = motion.create(Container)
 
 export default function HomePage() {
   const { isOpen: isSignInOpen, onOpen: onSignInOpen, onClose: onSignInClose } = useDisclosure()
+  const { isOpen: isTemplatePreviewOpen, onOpen: onTemplatePreviewOpen, onClose: onTemplatePreviewClose } = useDisclosure()
+  const [selectedTier, setSelectedTier] = useState<ProfileTier>('emerging')
   const toast = useToast()
 
   const handleInvitationRequest = async (formData: any) => {
@@ -60,6 +68,11 @@ export default function HomePage() {
       duration: 5000,
       isClosable: true,
     })
+  }
+
+  const handleTemplatePreview = (tier: ProfileTier) => {
+    setSelectedTier(tier)
+    onTemplatePreviewOpen()
   }
 
   // Unified smooth scrolling function using native browser APIs
@@ -384,231 +397,393 @@ export default function HomePage() {
           viewport={{ once: true }}
         >
           <VStack spacing={12} textAlign="center">
-            <Heading
-              as="h2"
-              fontSize={{ base: "2xl", md: "4xl" }}
-              fontFamily="'Playfair Display', serif"
-              color="#1A1A1A"
-              fontWeight="400"
-            >
-              Choose Your Legacy Tier
-            </Heading>
-
-            <SimpleGrid columns={{ base: 1, md: 3 }} spacing={8} w="full">
-              {/* Rising Tier */}
-              <Card
-                bg="white"
-                shadow="lg"
-                borderRadius="xl"
-                overflow="hidden"
-                _hover={{ transform: "translateY(-4px)", shadow: "xl" }}
-                transition="all 0.3s ease"
+            <VStack spacing={4} textAlign="center" mb={8}>
+              <Heading
+                as="h2"
+                fontSize={{ base: "2xl", md: "4xl" }}
+                fontFamily="'Playfair Display', serif"
+                color="#1A1A1A"
+                fontWeight="400"
               >
-                <CardBody p={8}>
-                  <VStack spacing={6}>
-                    <VStack spacing={2}>
-                      <Heading as="h3" size="lg" fontFamily="'Playfair Display', serif" color="#D4AF37">
-                        Rising
-                      </Heading>
-                      <Text fontSize="3xl" fontWeight="bold" color="#1A1A1A">
-                        ₹3,000
-                      </Text>
-                      <Text color="#666" fontSize="sm">
-                        Per year • Emerging leaders
-                      </Text>
-                    </VStack>
-
-                    <List spacing={3} w="full">
-                      <ListItem>
-                        <ListIcon as={CheckCircle} color="#D4AF37" />
-                        Professional design
-                      </ListItem>
-                      <ListItem>
-                        <ListIcon as={CheckCircle} color="#D4AF37" />
-                        Achievement showcase
-                      </ListItem>
-                      <ListItem>
-                        <ListIcon as={CheckCircle} color="#D4AF37" />
-                        Social integration
-                      </ListItem>
-                      <ListItem>
-                        <ListIcon as={CheckCircle} color="#D4AF37" />
-                        Mobile optimized
-                      </ListItem>
-                    </List>
-
-                    <Button
-                      w="full"
-                      bg="#D4AF37"
-                      color="white"
-                      _hover={{ bg: "#B8941F" }}
-                      onClick={() => {
-                        // TODO: Open payment modal for Rising tier
-                        toast({
-                          title: "Coming Soon",
-                          description: "Payment integration will be available shortly.",
-                          status: "info",
-                          duration: 3000,
-                        })
-                      }}
-                    >
-                      Choose Rising
-                    </Button>
-                  </VStack>
-                </CardBody>
-              </Card>
-
-              {/* Elite Tier */}
-              <Card
-                bg="white"
-                shadow="xl"
-                borderRadius="xl"
-                overflow="hidden"
-                border="2px solid #D4AF37"
-                position="relative"
-                _hover={{ transform: "translateY(-4px)", shadow: "2xl" }}
-                transition="all 0.3s ease"
+                Choose Your Profile Tier
+              </Heading>
+              <Text
+                fontSize="lg"
+                color="#8B8680"
+                maxW="600px"
               >
-                <Box
-                  position="absolute"
-                  top={0}
-                  left="50%"
-                  transform="translateX(-50%)"
-                  bg="#D4AF37"
-                  color="white"
-                  px={4}
-                  py={1}
-                  borderRadius="0 0 md md"
-                  fontSize="sm"
-                  fontWeight="bold"
+                Select the perfect tier to showcase your achievements and build your digital legacy
+              </Text>
+            </VStack>
+
+            {/* Main Tiers */}
+            <VStack spacing={8} w="full">
+              <SimpleGrid columns={{ base: 1, md: 3 }} spacing={8} w="full" maxW="1200px">
+                {/* Emerging Tier */}
+                <Card
+                  bg="white"
+                  shadow="lg"
+                  borderRadius="xl"
+                  overflow="hidden"
+                  _hover={{ transform: "translateY(-4px)", shadow: "xl" }}
+                  transition="all 0.3s ease"
                 >
-                  POPULAR
-                </Box>
-                <CardBody p={8} pt={12}>
-                  <VStack spacing={6}>
-                    <VStack spacing={2}>
-                      <Heading as="h3" size="lg" fontFamily="'Playfair Display', serif" color="#D4AF37">
-                        Elite
-                      </Heading>
-                      <Text fontSize="3xl" fontWeight="bold" color="#1A1A1A">
-                        ₹10,000
-                      </Text>
-                      <Text color="#666" fontSize="sm">
-                        Per year • Established leaders
+                  {/* Gradient Header */}
+                  <Box
+                    h="80px"
+                    background="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                  >
+                    <VStack spacing={1}>
+                      <Star size={24} color="white" />
+                      <Text fontSize="lg" fontWeight="600" color="white">
+                        Emerging
                       </Text>
                     </VStack>
+                  </Box>
+
+                  <CardBody p={8}>
+                    <VStack spacing={6}>
+                      <VStack spacing={2}>
+                        <Text fontSize="3xl" fontWeight="bold" color="#1A1A1A">
+                          ₹2,500
+                        </Text>
+                        <Text color="#666" fontSize="sm">
+                          Per year • Rising talents
+                        </Text>
+                      </VStack>
+
+                      <List spacing={3} w="full">
+                        <ListItem>
+                          <ListIcon as={CheckCircle} color="#667eea" />
+                          AI bio polishing
+                        </ListItem>
+                        <ListItem>
+                          <ListIcon as={CheckCircle} color="#667eea" />
+                          4 gallery photos
+                        </ListItem>
+                        <ListItem>
+                          <ListIcon as={CheckCircle} color="#667eea" />
+                          2 template designs
+                        </ListItem>
+                        <ListItem>
+                          <ListIcon as={CheckCircle} color="#667eea" />
+                          Resume attachment
+                        </ListItem>
+                        <ListItem>
+                          <ListIcon as={CheckCircle} color="#667eea" />
+                          Unlimited video links
+                        </ListItem>
+                      </List>
+
+                      <Button
+                        w="full"
+                        background="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+                        color="white"
+                        _hover={{
+                          background: "linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)",
+                          transform: "translateY(-2px)"
+                        }}
+                        onClick={() => handleTemplatePreview('emerging')}
+                      >
+                        View Templates
+                      </Button>
+                    </VStack>
+                  </CardBody>
+                </Card>
+
+                {/* Accomplished Tier */}
+                <Card
+                  bg="white"
+                  shadow="xl"
+                  borderRadius="xl"
+                  overflow="hidden"
+                  border="2px solid #4facfe"
+                  position="relative"
+                  _hover={{ transform: "translateY(-4px)", shadow: "2xl" }}
+                  transition="all 0.3s ease"
+                >
+                  <Box
+                    position="absolute"
+                    top={0}
+                    left="50%"
+                    transform="translateX(-50%)"
+                    background="linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"
+                    color="white"
+                    px={4}
+                    py={1}
+                    borderRadius="0 0 md md"
+                    fontSize="sm"
+                    fontWeight="bold"
+                  >
+                    POPULAR
+                  </Box>
+
+                  {/* Gradient Header */}
+                  <Box
+                    h="80px"
+                    background="linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                    mt={6}
+                  >
+                    <VStack spacing={1}>
+                      <Crown size={24} color="white" />
+                      <Text fontSize="lg" fontWeight="600" color="white">
+                        Accomplished
+                      </Text>
+                    </VStack>
+                  </Box>
+
+                  <CardBody p={8}>
+                    <VStack spacing={6}>
+                      <VStack spacing={2}>
+                        <Text fontSize="3xl" fontWeight="bold" color="#1A1A1A">
+                          ₹5,000
+                        </Text>
+                        <Text color="#666" fontSize="sm">
+                          Per year • Established professionals
+                        </Text>
+                      </VStack>
 
                     <List spacing={3} w="full">
                       <ListItem>
-                        <ListIcon as={CheckCircle} color="#D4AF37" />
-                        Everything in Rising
+                        <ListIcon as={CheckCircle} color="#4facfe" />
+                        Everything in Emerging
                       </ListItem>
                       <ListItem>
-                        <ListIcon as={CheckCircle} color="#D4AF37" />
-                        Premium themes
+                        <ListIcon as={CheckCircle} color="#4facfe" />
+                        10 gallery photos
                       </ListItem>
                       <ListItem>
-                        <ListIcon as={CheckCircle} color="#D4AF37" />
-                        Media gallery
+                        <ListIcon as={CheckCircle} color="#4facfe" />
+                        5 template designs
                       </ListItem>
                       <ListItem>
-                        <ListIcon as={CheckCircle} color="#D4AF37" />
-                        Editorial assistance
+                        <ListIcon as={CheckCircle} color="#4facfe" />
+                        QR code generation
                       </ListItem>
                       <ListItem>
-                        <ListIcon as={CheckCircle} color="#D4AF37" />
+                        <ListIcon as={CheckCircle} color="#4facfe" />
+                        Interactive timeline
+                      </ListItem>
+                      <ListItem>
+                        <ListIcon as={CheckCircle} color="#4facfe" />
                         Priority support
                       </ListItem>
                     </List>
 
                     <Button
                       w="full"
-                      bg="#D4AF37"
+                      background="linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"
                       color="white"
-                      _hover={{ bg: "#B8941F" }}
-                      onClick={() => {
-                        // TODO: Open payment modal for Elite tier
-                        toast({
-                          title: "Coming Soon",
-                          description: "Payment integration will be available shortly.",
-                          status: "info",
-                          duration: 3000,
-                        })
+                      _hover={{
+                        background: "linear-gradient(135deg, #3d8bfe 0%, #00d9fe 100%)",
+                        transform: "translateY(-2px)"
                       }}
+                      onClick={() => handleTemplatePreview('accomplished')}
                     >
-                      Choose Elite
+                      View Templates
                     </Button>
                   </VStack>
                 </CardBody>
               </Card>
 
-              {/* Legacy Tier */}
-              <Card
-                bg="white"
-                shadow="lg"
-                borderRadius="xl"
-                overflow="hidden"
-                _hover={{ transform: "translateY(-4px)", shadow: "xl" }}
-                transition="all 0.3s ease"
-              >
-                <CardBody p={8}>
-                  <VStack spacing={6}>
-                    <VStack spacing={2}>
-                      <Heading as="h3" size="lg" fontFamily="'Playfair Display', serif" color="#D4AF37">
-                        Legacy
-                      </Heading>
-                      <Text fontSize="3xl" fontWeight="bold" color="#1A1A1A">
-                        ₹20,000
-                      </Text>
-                      <Text color="#666" fontSize="sm">
-                        One-time • Legendary figures
+                {/* Distinguished Tier */}
+                <Card
+                  bg="white"
+                  shadow="lg"
+                  borderRadius="xl"
+                  overflow="hidden"
+                  _hover={{ transform: "translateY(-4px)", shadow: "xl" }}
+                  transition="all 0.3s ease"
+                >
+                  {/* Gradient Header */}
+                  <Box
+                    h="80px"
+                    background="linear-gradient(135deg, #fa709a 0%, #fee140 100%)"
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                  >
+                    <VStack spacing={1}>
+                      <Trophy size={24} color="white" />
+                      <Text fontSize="lg" fontWeight="600" color="white">
+                        Distinguished
                       </Text>
                     </VStack>
+                  </Box>
 
-                    <List spacing={3} w="full">
-                      <ListItem>
-                        <ListIcon as={CheckCircle} color="#D4AF37" />
-                        Everything in Elite
-                      </ListItem>
-                      <ListItem>
-                        <ListIcon as={CheckCircle} color="#D4AF37" />
-                        Custom design
-                      </ListItem>
-                      <ListItem>
-                        <ListIcon as={CheckCircle} color="#D4AF37" />
-                        Timeline visualization
-                      </ListItem>
-                      <ListItem>
-                        <ListIcon as={CheckCircle} color="#D4AF37" />
-                        Tribute section
-                      </ListItem>
-                      <ListItem>
-                        <ListIcon as={CheckCircle} color="#D4AF37" />
-                        White-glove service
-                      </ListItem>
-                    </List>
+                  <CardBody p={8}>
+                    <VStack spacing={6}>
+                      <VStack spacing={2}>
+                        <Text fontSize="3xl" fontWeight="bold" color="#1A1A1A">
+                          ₹12,000
+                        </Text>
+                        <Text color="#666" fontSize="sm">
+                          Per year • Industry leaders
+                        </Text>
+                      </VStack>
 
-                    <Button
-                      w="full"
-                      bg="#D4AF37"
-                      color="white"
-                      _hover={{ bg: "#B8941F" }}
-                      onClick={() => {
-                        // TODO: Open payment modal for Legacy tier
-                        toast({
-                          title: "Coming Soon",
-                          description: "Payment integration will be available shortly.",
-                          status: "info",
-                          duration: 3000,
-                        })
-                      }}
-                    >
-                      Choose Legacy
-                    </Button>
+                      <List spacing={3} w="full">
+                        <ListItem>
+                          <ListIcon as={CheckCircle} color="#fa709a" />
+                          Everything in Accomplished
+                        </ListItem>
+                        <ListItem>
+                          <ListIcon as={CheckCircle} color="#fa709a" />
+                          20 gallery photos
+                        </ListItem>
+                        <ListItem>
+                          <ListIcon as={CheckCircle} color="#fa709a" />
+                          6 premium templates
+                        </ListItem>
+                        <ListItem>
+                          <ListIcon as={CheckCircle} color="#fa709a" />
+                          Publications showcase
+                        </ListItem>
+                        <ListItem>
+                          <ListIcon as={CheckCircle} color="#fa709a" />
+                          Impact metrics display
+                        </ListItem>
+                        <ListItem>
+                          <ListIcon as={CheckCircle} color="#fa709a" />
+                          White-glove service
+                        </ListItem>
+                      </List>
+
+                      <Button
+                        w="full"
+                        background="linear-gradient(135deg, #fa709a 0%, #fee140 100%)"
+                        color="white"
+                        _hover={{
+                          background: "linear-gradient(135deg, #f85a8a 0%, #fed130 100%)",
+                          transform: "translateY(-2px)"
+                        }}
+                        onClick={() => handleTemplatePreview('distinguished')}
+                      >
+                        View Templates
+                      </Button>
                   </VStack>
                 </CardBody>
               </Card>
-            </SimpleGrid>
+              </SimpleGrid>
+
+              {/* Memorial Service Section */}
+              <VStack spacing={6} w="full" maxW="800px" mt={16}>
+                <VStack spacing={2} textAlign="center">
+                  <Heading
+                    as="h3"
+                    fontSize="2xl"
+                    fontFamily="'Playfair Display', serif"
+                    color="#1A1A1A"
+                  >
+                    Memorial Service
+                  </Heading>
+                  <Text
+                    fontSize="md"
+                    color="#8B8680"
+                    maxW="600px"
+                  >
+                    Honor the memory of departed loved ones with our dedicated memorial service,
+                    separate from our main profile tiers.
+                  </Text>
+                </VStack>
+
+                {/* Legacy Memorial Card */}
+                <Card
+                  bg="white"
+                  shadow="lg"
+                  borderRadius="xl"
+                  overflow="hidden"
+                  border="2px solid #8B4513"
+                  _hover={{ transform: "translateY(-4px)", shadow: "xl" }}
+                  transition="all 0.3s ease"
+                  w="full"
+                  maxW="600px"
+                >
+                  {/* Memorial Gradient Header */}
+                  <Box
+                    h="100px"
+                    background="linear-gradient(135deg, #d299c2 0%, #fef9d7 100%)"
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                  >
+                    <VStack spacing={2}>
+                      <Archive size={32} color="white" />
+                      <Text fontSize="xl" fontWeight="600" color="white">
+                        Legacy Memorial
+                      </Text>
+                    </VStack>
+                  </Box>
+
+                  <CardBody p={8}>
+                    <VStack spacing={6}>
+                      <VStack spacing={2}>
+                        <Text fontSize="3xl" fontWeight="bold" color="#1A1A1A">
+                          ₹50,000
+                        </Text>
+                        <Text color="#666" fontSize="sm">
+                          Lifetime • Memorial service
+                        </Text>
+                      </VStack>
+
+                      <List spacing={3} w="full">
+                        <ListItem>
+                          <ListIcon as={CheckCircle} color="#8B4513" />
+                          Dedicated memorial templates
+                        </ListItem>
+                        <ListItem>
+                          <ListIcon as={CheckCircle} color="#8B4513" />
+                          Unlimited gallery photos
+                        </ListItem>
+                        <ListItem>
+                          <ListIcon as={CheckCircle} color="#8B4513" />
+                          Historical timeline preservation
+                        </ListItem>
+                        <ListItem>
+                          <ListIcon as={CheckCircle} color="#8B4513" />
+                          Tribute collection system
+                        </ListItem>
+                        <ListItem>
+                          <ListIcon as={CheckCircle} color="#8B4513" />
+                          Family access management
+                        </ListItem>
+                        <ListItem>
+                          <ListIcon as={CheckCircle} color="#8B4513" />
+                          Lifetime hosting guarantee
+                        </ListItem>
+                      </List>
+
+                      <Button
+                        w="full"
+                        background="linear-gradient(135deg, #d299c2 0%, #fef9d7 100%)"
+                        color="#8B4513"
+                        fontWeight="600"
+                        _hover={{
+                          background: "linear-gradient(135deg, #c088b1 0%, #fdf6c6 100%)",
+                          transform: "translateY(-2px)"
+                        }}
+                        onClick={() => {
+                          toast({
+                            title: "Memorial Service",
+                            description: "Contact our memorial service team for consultation.",
+                            status: "info",
+                            duration: 3000,
+                          })
+                        }}
+                      >
+                        Learn More About Memorial Service
+                      </Button>
+                    </VStack>
+                  </CardBody>
+                </Card>
+              </VStack>
+            </VStack>
           </VStack>
         </MotionContainer>
       </Box>
@@ -814,6 +989,13 @@ export default function HomePage() {
 
       {/* Unified Sign In Modal */}
       <UnifiedSignInModal isOpen={isSignInOpen} onClose={onSignInClose} />
+
+      {/* Template Preview Modal */}
+      <TemplatePreviewModal
+        isOpen={isTemplatePreviewOpen}
+        onClose={onTemplatePreviewClose}
+        tier={selectedTier}
+      />
     </Box>
   )
 }

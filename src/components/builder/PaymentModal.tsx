@@ -31,48 +31,63 @@ interface PaymentModalProps {
 }
 
 const TIER_CONFIG = {
-  rising: {
-    name: 'Rising',
-    price: '₹3,000',
+  emerging: {
+    name: 'Emerging',
+    price: '₹2,500',
     period: '/year',
     icon: Star,
     color: 'green.500',
     features: [
       'Professional profile page',
-      'Basic achievements showcase',
-      'Social media integration',
-      'Mobile-optimized design',
-      'Basic analytics'
+      'AI bio polishing',
+      'Awards & honors showcase',
+      'Up to 4 gallery photos',
+      'Mobile-optimized design'
     ]
   },
-  elite: {
-    name: 'Elite',
-    price: '₹10,000',
+  accomplished: {
+    name: 'Accomplished',
+    price: '₹5,000',
     period: '/year',
     icon: Crown,
     color: 'blue.500',
     features: [
-      'Everything in Rising',
-      'Advanced media gallery',
-      'Impact metrics display',
-      'Leadership highlights',
-      'Featured press coverage',
+      'Everything in Emerging',
+      'Up to 10 gallery photos',
+      'QR code generation',
+      'Interactive timeline',
+      'Leadership showcase',
       'Priority support'
+    ]
+  },
+  distinguished: {
+    name: 'Distinguished',
+    price: '₹12,000',
+    period: '/year',
+    icon: Trophy,
+    color: 'purple.500',
+    features: [
+      'Everything in Accomplished',
+      'Up to 20 gallery photos',
+      'Publications showcase',
+      'Advanced impact metrics',
+      'Premium templates',
+      'White-glove service'
     ]
   },
   legacy: {
     name: 'Legacy',
-    price: '₹20,000',
+    price: '₹50,000',
     period: ' lifetime',
     icon: Trophy,
     color: 'purple.500',
     features: [
-      'Everything in Elite',
-      'Timeline visualization',
-      'Tributes & testimonials',
+      'Memorial service templates',
+      'Unlimited gallery photos',
+      'Timeline preservation',
+      'Tribute collection',
       'Archival documentation',
-      'Premium design themes',
-      'White-glove service'
+      'Lifetime hosting'
     ]
   }
 }

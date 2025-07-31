@@ -1,4 +1,4 @@
-export type ProfileTier = 'rising' | 'elite' | 'legacy'
+export type ProfileTier = 'emerging' | 'accomplished' | 'distinguished' | 'legacy'
 
 export interface BaseProfileData {
   name: string
@@ -16,34 +16,106 @@ export interface BaseProfileData {
   }
 }
 
-export interface RisingProfileData extends BaseProfileData {
-  tier: 'rising'
+export interface EmergingProfileData extends BaseProfileData {
+  tier: 'emerging'
   currentRole: string
   company: string
   skills: string[]
   achievements: string[]
   aspirations: string
-  mentors?: string[]
   projects: {
     title: string
     description: string
     link?: string
     image?: string
   }[]
+  gallery: {
+    url: string
+    caption?: string
+  }[] // Max 4 photos
+  certifications?: {
+    title: string
+    organization: string
+    year: number
+    link?: string
+  }[]
+  resumeAttachment?: {
+    url: string
+    filename: string
+  }
+  videoLinks?: {
+    title: string
+    url: string
+    platform: 'youtube' | 'vimeo' | 'other'
+  }[]
 }
 
-export interface EliteProfileData extends BaseProfileData {
-  tier: 'elite'
+export interface AccomplishedProfileData extends BaseProfileData {
+  tier: 'accomplished'
   currentRole: string
   company: string
   industry: string
   yearsOfExperience: number
   expertise: string[]
-  majorAchievements: {
+  achievements: {
+    title: string
+    description: string
+    year: number
+    category?: string
+  }[]
+  leadership: {
+    title: string
+    organization: string
+    duration: string
+    description: string
+  }[]
+  awards: {
+    title: string
+    organization: string
+    year: number
+    description?: string
+  }[]
+  gallery: {
+    url: string
+    caption?: string
+  }[] // Max 10 photos
+  qrCodeEnabled: boolean
+  interactiveTimeline: {
+    year: number
+    event: string
+    description: string
+    category?: string
+  }[]
+  certifications?: {
+    title: string
+    organization: string
+    year: number
+    link?: string
+  }[]
+  resumeAttachment?: {
+    url: string
+    filename: string
+  }
+  videoLinks?: {
+    title: string
+    url: string
+    platform: 'youtube' | 'vimeo' | 'other'
+  }[]
+}
+
+export interface DistinguishedProfileData extends BaseProfileData {
+  tier: 'distinguished'
+  currentRole: string
+  company: string
+  industry: string
+  yearsOfExperience: number
+  expertise: string[]
+  achievements: {
     title: string
     description: string
     year: number
     impact?: string
+    category?: string
   }[]
   leadership: {
     title: string
@@ -62,6 +134,32 @@ export interface EliteProfileData extends BaseProfileData {
     organization: string
     year: number
     description?: string
+  }[]
+  gallery: {
+    url: string
+    caption?: string
+  }[] // Max 20 photos
+  qrCodeEnabled: boolean
+  interactiveTimeline: {
+    year: number
+    event: string
+    description: string
+    category?: string
+  }[]
+  certifications?: {
+    title: string
+    organization: string
+    year: number
+    link?: string
+  }[]
+  resumeAttachment?: {
+    url: string
+    filename: string
+  }
+  videoLinks?: {
+    title: string
+    url: string
+    platform: 'youtube' | 'vimeo' | 'other'
   }[]
 }
 
@@ -100,7 +198,7 @@ export interface LegacyProfileData extends BaseProfileData {
   }[]
 }
 
-export type ProfileData = RisingProfileData | EliteProfileData | LegacyProfileData
+export type ProfileData = EmergingProfileData | AccomplishedProfileData | DistinguishedProfileData | LegacyProfileData
 
 // Enhanced ProfileData interface for Elite Template
 export interface EnhancedProfileData {

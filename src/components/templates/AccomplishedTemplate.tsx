@@ -19,11 +19,33 @@ import {
   Avatar,
   Flex,
   Wrap,
-  WrapItem
+  WrapItem,
+  Button,
+  useToast,
+  Collapse,
+  IconButton
 } from '@chakra-ui/react'
-import { ExternalLink, Star, Target, Briefcase, Building, Code, Lightbulb } from 'lucide-react'
+import NextImage from 'next/image'
+import { useState } from 'react'
+import {
+  ExternalLink,
+  Star,
+  Target,
+  Briefcase,
+  Building,
+  Code,
+  Lightbulb,
+  QrCode,
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  Award,
+  Calendar,
+  Users,
+  TrendingUp
+} from 'lucide-react'
 
-interface RisingTemplateProps {
+interface AccomplishedTemplateProps {
   profile: {
     id?: string
     name: string
@@ -36,6 +58,8 @@ interface RisingTemplateProps {
     }
     currentRole?: string
     company?: string
+    industry?: string
+    yearsOfExperience?: number
     skills?: string[]
     aspirations?: string
     achievements?: Array<{
@@ -60,10 +84,37 @@ interface RisingTemplateProps {
       url: string
       type: string
     }>
+    leadership?: Array<{
+      title: string
+      organization: string
+      duration: string
+      description: string
+    }>
+    interactiveTimeline?: Array<{
+      year: number
+      event: string
+      description: string
+      category?: string
+    }>
+    qrCodeEnabled?: boolean
+    certifications?: Array<{
+      title: string
+      organization: string
+      year: number
+      link?: string
+    }>
+    videoLinks?: Array<{
+      title: string
+      url: string
+      platform: 'youtube' | 'vimeo' | 'other'
+    }>
   }
 }
 
-export function RisingTemplate({ profile }: RisingTemplateProps) {
+export function AccomplishedTemplate({ profile }: AccomplishedTemplateProps) {
+  const [expandedTimelineItem, setExpandedTimelineItem] = useState<number | null>(null)
+  const toast = useToast()
+
   const {
     name,
     tagline,
@@ -72,36 +123,56 @@ export function RisingTemplate({ profile }: RisingTemplateProps) {
     bio,
     currentRole,
     company,
+    industry,
+    yearsOfExperience,
     skills = [],
     aspirations,
     achievements = [],
     projects = [],
     gallery = [],
-    links = []
+    links = [],
+    leadership = [],
+    interactiveTimeline = [],
+    qrCodeEnabled = true,
+    certifications = [],
+    videoLinks = []
   } = profile
 
   const displayBio = bio?.ai_polished || bio?.original || biography || ''
   const hasContent = (arr: any[]) => arr && arr.length > 0
   const hasText = (text: any) => text && text.trim().length > 0
 
+  const generateQRCode = () => {
+    const currentUrl = window.location.href
+    // In a real implementation, you would use a QR code library
+    // For now, we'll show a toast with the URL
+    toast({
+      title: "QR Code Generated",
+      description: `Share this profile: ${currentUrl}`,
+      status: "success",
+      duration: 5000,
+      isClosable: true,
+    })
+  }
+
   return (
     <Box
       minH="100vh"
-      bg="linear-gradient(135deg, #FFFEF7 0%, #FFF8E1 50%, #F4E4BC 100%)"
+      bg="linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"
       position="relative"
       overflow="hidden"
     >
-      {/* Energetic background pattern */}
+      {/* Professional wave pattern */}
       <Box
         position="absolute"
         top={0}
         left={0}
         right={0}
         bottom={0}
-        opacity={0.05}
-        backgroundImage="radial-gradient(circle at 25% 25%, #D4AF37 2px, transparent 2px), radial-gradient(circle at 75% 75%, #D4AF37 2px, transparent 2px)"
-        backgroundSize="50px 50px"
-        backgroundPosition="0 0, 25px 25px"
+        opacity={0.1}
+        backgroundImage="linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%), linear-gradient(-45deg, rgba(255,255,255,0.1) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, rgba(255,255,255,0.1) 75%), linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.1) 75%)"
+        backgroundSize="60px 60px"
+        backgroundPosition="0 0, 0 30px, 30px -30px, -30px 0px"
       />
 
       <Container maxW="7xl" py={20} position="relative" zIndex={1}>
@@ -114,15 +185,16 @@ export function RisingTemplate({ profile }: RisingTemplateProps) {
               px={6}
               py={3}
               borderRadius="full"
-              bg="linear-gradient(135deg, #D4AF37 0%, #FFD700 100%)"
+              bg="rgba(255, 255, 255, 0.2)"
               color="white"
               fontFamily="'Lora', serif"
               fontWeight="600"
               textTransform="uppercase"
               letterSpacing="0.5px"
-              boxShadow="0 4px 15px rgba(212, 175, 55, 0.3)"
+              backdropFilter="blur(10px)"
+              border="1px solid rgba(255, 255, 255, 0.3)"
             >
-              🌟 Rising Tier - Ascending to Greatness
+              👑 Accomplished Tier - Proven Excellence
             </Badge>
 
             {heroImage && (
@@ -130,7 +202,7 @@ export function RisingTemplate({ profile }: RisingTemplateProps) {
                 size="2xl"
                 src={heroImage}
                 name={name}
-                border="4px solid #D4AF37"
+                border="4px solid white"
                 shadow="xl"
               />
             )}
@@ -141,7 +213,8 @@ export function RisingTemplate({ profile }: RisingTemplateProps) {
               fontFamily="'Playfair Display', serif"
               fontWeight="400"
               lineHeight="1.1"
-              color="#1A1A1A"
+              color="white"
+              textShadow="0 2px 4px rgba(0,0,0,0.3)"
             >
               {name}
             </Heading>
@@ -153,7 +226,7 @@ export function RisingTemplate({ profile }: RisingTemplateProps) {
                 fontWeight="300"
                 maxW="4xl"
                 lineHeight="1.5"
-                color="#2D3748"
+                color="rgba(255, 255, 255, 0.9)"
                 fontStyle="italic"
               >
                 {tagline}
@@ -161,18 +234,51 @@ export function RisingTemplate({ profile }: RisingTemplateProps) {
             )}
 
             {/* Professional Details */}
-            {(hasText(currentRole) || hasText(company)) && (
-              <VStack spacing={2}>
-                {hasText(currentRole) && (
-                  <HStack spacing={3}>
-                    <Icon as={Briefcase} color="#D4AF37" />
-                    <Text color="#2D3748" fontFamily="'Lora', serif" fontSize="lg">
-                      {currentRole}
-                      {hasText(company) && ` at ${company}`}
-                    </Text>
-                  </HStack>
-                )}
-              </VStack>
+            <VStack spacing={3}>
+              {hasText(currentRole) && (
+                <HStack spacing={3}>
+                  <Icon as={Briefcase} color="white" />
+                  <Text color="white" fontFamily="'Lora', serif" fontSize="lg">
+                    {currentRole}
+                    {hasText(company) && ` at ${company}`}
+                  </Text>
+                </HStack>
+              )}
+              {hasText(industry) && (
+                <HStack spacing={3}>
+                  <Icon as={Building} color="white" />
+                  <Text color="white" fontFamily="'Lora', serif" fontSize="lg">
+                    {industry}
+                  </Text>
+                </HStack>
+              )}
+              {yearsOfExperience && (
+                <HStack spacing={3}>
+                  <Icon as={Clock} color="white" />
+                  <Text color="white" fontFamily="'Lora', serif" fontSize="lg">
+                    {yearsOfExperience} years of experience
+                  </Text>
+                </HStack>
+              )}
+            </VStack>
+
+            {/* QR Code Section */}
+            {qrCodeEnabled && (
+              <Button
+                leftIcon={<QrCode />}
+                onClick={generateQRCode}
+                bg="rgba(255, 255, 255, 0.2)"
+                color="white"
+                _hover={{
+                  bg: "rgba(255, 255, 255, 0.3)",
+                  transform: "translateY(-2px)"
+                }}
+                backdropFilter="blur(10px)"
+                border="1px solid rgba(255, 255, 255, 0.3)"
+                size="lg"
+              >
+                Generate QR Code
+              </Button>
             )}
 
             {hasText(displayBio) && (

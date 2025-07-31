@@ -61,25 +61,32 @@ const deviceViewports = {
 
 // Tier-specific styling
 const tierStyles = {
-  rising: {
-    primaryColor: '#D4AF37',
+  emerging: {
+    primaryColor: '#667eea',
     secondaryColor: '#F7F3E9',
-    accentColor: '#B8941F',
-    gradient: 'linear(to-r, #D4AF37, #F7D794)',
+    accentColor: '#764ba2',
+    gradient: 'linear(to-r, #667eea, #764ba2)',
     theme: 'vibrant',
   },
-  elite: {
-    primaryColor: '#2D3748',
+  accomplished: {
+    primaryColor: '#4facfe',
     secondaryColor: '#EDF2F7',
-    accentColor: '#4A5568',
-    gradient: 'linear(to-r, #2D3748, #4A5568)',
+    accentColor: '#00f2fe',
+    gradient: 'linear(to-r, #4facfe, #00f2fe)',
     theme: 'professional',
   },
+  distinguished: {
+    primaryColor: '#fa709a',
+    secondaryColor: '#FFF5F5',
+    accentColor: '#fee140',
+    gradient: 'linear(to-r, #fa709a, #fee140)',
+    theme: 'premium',
+  },
   legacy: {
-    primaryColor: '#1A1A1A',
+    primaryColor: '#d299c2',
     secondaryColor: '#F7FAFC',
-    accentColor: '#4A5568',
-    gradient: 'linear(to-r, #1A1A1A, #2D3748)',
+    accentColor: '#fef9d7',
+    gradient: 'linear(to-r, #d299c2, #fef9d7)',
     theme: 'timeless',
   },
 }

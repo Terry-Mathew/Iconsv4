@@ -2,8 +2,9 @@ import { Metadata } from 'next'
 import { notFound, redirect } from 'next/navigation'
 import { createPublicServerClient, createServerClient } from '@/lib/supabase/server'
 import { ProfileData } from '@/types/profile'
-import { RisingTemplate } from '@/components/templates/RisingTemplate'
-import { EliteTemplate } from '@/components/templates/EliteTemplate'
+import { EmergingTemplate } from '@/components/templates/EmergingTemplate'
+import { AccomplishedTemplate } from '@/components/templates/AccomplishedTemplate'
+import { DistinguishedTemplate } from '@/components/templates/DistinguishedTemplate'
 import { LegacyTemplate } from '@/components/templates/LegacyTemplate'
 import { PreviewWatermark } from '@/components/ui/PreviewWatermark'
 
@@ -198,27 +199,54 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
 
   const profileData = profile.content as unknown as ProfileData
 
-  // Transform data for template compatibility
+  // Transform data for template compatibility - pass through all fields from published content
   const transformedProfile = {
     id: profile.id,
-    name: profileData.name,
-    tagline: profileData.tagline,
-    heroImage: profileData.profileImage,
-    biography: (profileData as any).bio?.original || (profileData as any).biography || (profileData as any).bio,
+    name: profileData.name || '',
+    tagline: profileData.tagline || '',
+    heroImage: profileData.profileImage || '',
+    biography: (profileData as any).bio?.original || (profileData as any).biography || (profileData as any).bio || '',
     bio: {
       original: (profileData as any).bio?.original || (profileData as any).biography || (profileData as any).bio || '',
-      ai_polished: (profileData as any).bio?.ai_polished
+      ai_polished: (profileData as any).bio?.ai_polished || null
     },
     aiPolishedBio: (profileData as any).bio?.ai_polished,
     tier: profile.tier,
+
+    // Common fields for all tiers
     achievements: (profileData as any).achievements || [],
-    quote: (profileData as any).quote || null,
     gallery: (profileData as any).gallery || [],
+    links: (profileData as any).links || [],
+    sections: (profileData as any).sections || {},
+    quote: (profileData as any).quote || null,
+
+    // Rising-specific fields
+    currentRole: (profileData as any).currentRole || '',
+    company: (profileData as any).company || '',
+    skills: (profileData as any).skills || [],
+    aspirations: (profileData as any).aspirations || '',
+    projects: (profileData as any).projects || [],
+
+    // Elite-specific fields
+    industry: (profileData as any).industry || '',
+    yearsOfExperience: (profileData as any).yearsOfExperience || 0,
+    expertise: (profileData as any).expertise || [],
+    leadership: (profileData as any).leadership || [],
+    awards: (profileData as any).awards || [],
+
+    // Legacy-specific fields
+    legacy: (profileData as any).legacy || '',
+    era: (profileData as any).era || '',
+    primaryContributions: (profileData as any).primaryContributions || [],
+    historicalImpact: (profileData as any).historicalImpact || '',
     timeline: (profileData as any).timeline || [],
+    quotes: (profileData as any).quotes || [],
+    recognitions: (profileData as any).recognitions || [],
+    influence: (profileData as any).influence || [],
     tributes: (profileData as any).tributes || [],
     enduringContributions: (profileData as any).enduringContributions,
-    sections: (profileData as any).sections || {},
-    links: (profileData as any).links || [],
+
+    // Metadata
     publishedAt: profile.published_at || undefined,
     slug: profile.slug,
   }
@@ -226,13 +254,21 @@ export default async function ProfilePage({ params, searchParams }: ProfilePageP
   // Render the appropriate template based on tier
   const renderTemplate = () => {
     switch (profile.tier) {
-      case 'elite':
-        return <EliteTemplate profile={transformedProfile} />
+      case 'emerging':
+        return <EmergingTemplate profile={transformedProfile} />
+      case 'accomplished':
+        return <AccomplishedTemplate profile={transformedProfile} />
+      case 'distinguished':
+        return <DistinguishedTemplate profile={transformedProfile} />
       case 'legacy':
         return <LegacyTemplate profile={transformedProfile} />
+      // Backward compatibility for old tier names
       case 'rising':
+        return <AccomplishedTemplate profile={transformedProfile} />
+      case 'elite':
+        return <DistinguishedTemplate profile={transformedProfile} />
       default:
-        return <RisingTemplate profile={transformedProfile} />
+        return <EmergingTemplate profile={transformedProfile} />
     }
   }
 

@@ -100,21 +100,27 @@ interface NominationsManagementProps {
 }
 
 const TIER_CONFIG = {
-  rising: {
-    name: 'Rising',
-    price: '₹3,000/year',
+  emerging: {
+    name: 'Emerging',
+    price: '₹2,500/year',
     icon: Star,
     color: 'green'
   },
-  elite: {
-    name: 'Elite',
-    price: '₹10,000/year',
+  accomplished: {
+    name: 'Accomplished',
+    price: '₹5,000/year',
     icon: Crown,
     color: 'blue'
   },
+  distinguished: {
+    name: 'Distinguished',
+    price: '₹12,000/year',
+    icon: Trophy,
+    color: 'purple'
+  },
   legacy: {
     name: 'Legacy',
-    price: '₹20,000 one-time',
+    price: '₹50,000 lifetime',
     icon: Trophy,
     color: 'purple'
   }

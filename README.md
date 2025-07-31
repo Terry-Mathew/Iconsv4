@@ -120,19 +120,24 @@ The application uses the following main tables:
 
 ## Profile Tiers
 
-### Rising Tier (₹2,999)
-- For emerging talents
+### Emerging Tier (₹2,500)
+- For emerging talents making their mark
 - Skills, achievements, projects showcase
 - 1 year hosting
 
-### Elite Tier (₹4,999)
-- For established professionals
-- Leadership experience, publications, awards
-- 2 years hosting
+### Accomplished Tier (₹5,000)
+- For accomplished professionals with proven track records
+- Leadership experience, QR codes, interactive timeline
+- 1 year hosting
 
-### Legacy Tier (₹9,999)
-- For legendary figures
-- Historical timeline, quotes, archives
+### Distinguished Tier (₹12,000)
+- For distinguished leaders at the peak of their career
+- Publications, advanced metrics, premium templates
+- 1 year hosting
+
+### Legacy Tier (₹50,000)
+- For legendary figures who have shaped history
+- Memorial service, unlimited gallery, lifetime hosting
 - Lifetime hosting
 
 ## API Routes

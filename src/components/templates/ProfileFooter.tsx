@@ -17,7 +17,7 @@ import { ArrowLeft } from 'lucide-react'
 const MotionBox = motion(Box)
 
 interface ProfileFooterProps {
-  tier: 'rising' | 'elite' | 'legacy'
+  tier: 'emerging' | 'accomplished' | 'distinguished' | 'legacy' | 'rising' | 'elite'
 }
 
 function ProfileFooterContent({ tier }: ProfileFooterProps) {
@@ -45,23 +45,42 @@ function ProfileFooterContent({ tier }: ProfileFooterProps) {
 
   // Tier-specific styling
   const tierStyles = {
-    rising: {
-      bg: 'linear-gradient(135deg, rgba(212, 175, 55, 0.05) 0%, rgba(244, 228, 188, 0.05) 100%)',
-      borderColor: 'rgba(212, 175, 55, 0.2)',
-      textColor: '#B8860B',
-      accentColor: '#D4AF37'
+    emerging: {
+      bg: 'linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%)',
+      borderColor: 'rgba(102, 126, 234, 0.2)',
+      textColor: '#667eea',
+      accentColor: '#764ba2'
     },
-    elite: {
-      bg: 'linear-gradient(135deg, rgba(71, 85, 105, 0.05) 0%, rgba(100, 116, 139, 0.05) 100%)',
-      borderColor: 'rgba(71, 85, 105, 0.2)',
-      textColor: '#475569',
-      accentColor: '#64748B'
+    accomplished: {
+      bg: 'linear-gradient(135deg, rgba(79, 172, 254, 0.05) 0%, rgba(0, 242, 254, 0.05) 100%)',
+      borderColor: 'rgba(79, 172, 254, 0.2)',
+      textColor: '#4facfe',
+      accentColor: '#00f2fe'
+    },
+    distinguished: {
+      bg: 'linear-gradient(135deg, rgba(250, 112, 154, 0.05) 0%, rgba(254, 225, 64, 0.05) 100%)',
+      borderColor: 'rgba(250, 112, 154, 0.2)',
+      textColor: '#fa709a',
+      accentColor: '#fee140'
     },
     legacy: {
-      bg: 'linear-gradient(135deg, rgba(139, 115, 85, 0.05) 0%, rgba(160, 140, 115, 0.05) 100%)',
-      borderColor: 'rgba(139, 115, 85, 0.2)',
-      textColor: '#8B7355',
-      accentColor: '#A08C73'
+      bg: 'linear-gradient(135deg, rgba(210, 153, 194, 0.05) 0%, rgba(254, 249, 215, 0.05) 100%)',
+      borderColor: 'rgba(210, 153, 194, 0.2)',
+      textColor: '#d299c2',
+      accentColor: '#fef9d7'
+    },
+    // Backward compatibility
+    rising: {
+      bg: 'linear-gradient(135deg, rgba(79, 172, 254, 0.05) 0%, rgba(0, 242, 254, 0.05) 100%)',
+      borderColor: 'rgba(79, 172, 254, 0.2)',
+      textColor: '#4facfe',
+      accentColor: '#00f2fe'
+    },
+    elite: {
+      bg: 'linear-gradient(135deg, rgba(250, 112, 154, 0.05) 0%, rgba(254, 225, 64, 0.05) 100%)',
+      borderColor: 'rgba(250, 112, 154, 0.2)',
+      textColor: '#fa709a',
+      accentColor: '#fee140'
     }
   }
 

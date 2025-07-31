@@ -33,7 +33,7 @@ export const nominationSchema = z.object({
     .default([]),
 
   suggestedTier: z
-    .enum(['rising', 'elite', 'legacy'])
+    .enum(['emerging', 'accomplished', 'distinguished', 'legacy'])
     .optional(),
 
   // Honeypot field - should remain empty
@@ -66,7 +66,8 @@ export const categories = [
 ] as const
 
 export const tierDescriptions = {
-  rising: 'For emerging talents making their mark in their field',
-  elite: 'For established professionals at the peak of their career',
+  emerging: 'For emerging talents making their mark in their field',
+  accomplished: 'For accomplished professionals with proven track records',
+  distinguished: 'For distinguished leaders at the peak of their career',
   legacy: 'For legendary figures who have shaped history',
 } as const

@@ -78,7 +78,7 @@ interface AdvancedAchievementManagerProps {
   achievements: Achievement[]
   onChange: (achievements: Achievement[]) => void
   maxAchievements?: number
-  tier: 'rising' | 'elite' | 'legacy'
+  tier: 'emerging' | 'accomplished' | 'distinguished' | 'legacy'
   enableAnalytics?: boolean
 }
 

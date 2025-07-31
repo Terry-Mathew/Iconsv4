@@ -7,23 +7,29 @@ import {
   Text,
   VStack,
   HStack,
-  Badge,
   Grid,
   GridItem,
   Card,
   CardBody,
-  SimpleGrid,
-  Image,
-  Link,
-  Icon,
+  Badge,
   Avatar,
-  Flex,
-  Wrap,
-  WrapItem
+  SimpleGrid,
+  Icon,
+  Link
 } from '@chakra-ui/react'
-import { ExternalLink, Star, Target, Briefcase, Building, Code, Lightbulb } from 'lucide-react'
+import Image from 'next/image'
+import {
+  Briefcase,
+  MapPin,
+  Star,
+  ExternalLink,
+  Award,
+  Target,
+  Lightbulb
+} from 'lucide-react'
+import { ProfileFooter } from './ProfileFooter'
 
-interface RisingTemplateProps {
+interface EmergingTemplateProps {
   profile: {
     id?: string
     name: string
@@ -60,10 +66,21 @@ interface RisingTemplateProps {
       url: string
       type: string
     }>
+    certifications?: Array<{
+      title: string
+      organization: string
+      year: number
+      link?: string
+    }>
+    videoLinks?: Array<{
+      title: string
+      url: string
+      platform: 'youtube' | 'vimeo' | 'other'
+    }>
   }
 }
 
-export function RisingTemplate({ profile }: RisingTemplateProps) {
+export function EmergingTemplate({ profile }: EmergingTemplateProps) {
   const {
     name,
     tagline,
@@ -77,7 +94,9 @@ export function RisingTemplate({ profile }: RisingTemplateProps) {
     achievements = [],
     projects = [],
     gallery = [],
-    links = []
+    links = [],
+    certifications = [],
+    videoLinks = []
   } = profile
 
   const displayBio = bio?.ai_polished || bio?.original || biography || ''
@@ -87,24 +106,24 @@ export function RisingTemplate({ profile }: RisingTemplateProps) {
   return (
     <Box
       minH="100vh"
-      bg="linear-gradient(135deg, #FFFEF7 0%, #FFF8E1 50%, #F4E4BC 100%)"
+      bg="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
       position="relative"
       overflow="hidden"
     >
-      {/* Energetic background pattern */}
+      {/* Modern geometric pattern */}
       <Box
         position="absolute"
         top={0}
         left={0}
         right={0}
         bottom={0}
-        opacity={0.05}
-        backgroundImage="radial-gradient(circle at 25% 25%, #D4AF37 2px, transparent 2px), radial-gradient(circle at 75% 75%, #D4AF37 2px, transparent 2px)"
-        backgroundSize="50px 50px"
-        backgroundPosition="0 0, 25px 25px"
+        opacity={0.1}
+        backgroundImage="radial-gradient(circle at 20% 20%, white 2px, transparent 2px), radial-gradient(circle at 80% 80%, white 2px, transparent 2px)"
+        backgroundSize="60px 60px"
+        backgroundPosition="0 0, 30px 30px"
       />
 
-      <Container maxW="7xl" py={20} position="relative" zIndex={1}>
+      <Container maxW="6xl" py={20} position="relative" zIndex={1}>
         <VStack spacing={16} align="stretch">
           {/* Header Section */}
           <VStack spacing={12} textAlign="center">
@@ -114,15 +133,16 @@ export function RisingTemplate({ profile }: RisingTemplateProps) {
               px={6}
               py={3}
               borderRadius="full"
-              bg="linear-gradient(135deg, #D4AF37 0%, #FFD700 100%)"
+              bg="rgba(255, 255, 255, 0.2)"
               color="white"
               fontFamily="'Lora', serif"
               fontWeight="600"
               textTransform="uppercase"
               letterSpacing="0.5px"
-              boxShadow="0 4px 15px rgba(212, 175, 55, 0.3)"
+              backdropFilter="blur(10px)"
+              border="1px solid rgba(255, 255, 255, 0.3)"
             >
-              🌟 Rising Tier - Ascending to Greatness
+              ⭐ Emerging Tier - Rising Potential
             </Badge>
 
             {heroImage && (
@@ -130,7 +150,7 @@ export function RisingTemplate({ profile }: RisingTemplateProps) {
                 size="2xl"
                 src={heroImage}
                 name={name}
-                border="4px solid #D4AF37"
+                border="4px solid white"
                 shadow="xl"
               />
             )}
@@ -141,7 +161,8 @@ export function RisingTemplate({ profile }: RisingTemplateProps) {
               fontFamily="'Playfair Display', serif"
               fontWeight="400"
               lineHeight="1.1"
-              color="#1A1A1A"
+              color="white"
+              textShadow="0 2px 4px rgba(0,0,0,0.3)"
             >
               {name}
             </Heading>
@@ -153,7 +174,7 @@ export function RisingTemplate({ profile }: RisingTemplateProps) {
                 fontWeight="300"
                 maxW="4xl"
                 lineHeight="1.5"
-                color="#2D3748"
+                color="rgba(255, 255, 255, 0.9)"
                 fontStyle="italic"
               >
                 {tagline}
@@ -165,8 +186,8 @@ export function RisingTemplate({ profile }: RisingTemplateProps) {
               <VStack spacing={2}>
                 {hasText(currentRole) && (
                   <HStack spacing={3}>
-                    <Icon as={Briefcase} color="#D4AF37" />
-                    <Text color="#2D3748" fontFamily="'Lora', serif" fontSize="lg">
+                    <Icon as={Briefcase} color="white" />
+                    <Text color="white" fontFamily="'Lora', serif" fontSize="lg">
                       {currentRole}
                       {hasText(company) && ` at ${company}`}
                     </Text>
@@ -174,18 +195,29 @@ export function RisingTemplate({ profile }: RisingTemplateProps) {
                 )}
               </VStack>
             )}
-
-            {hasText(displayBio) && (
-              <Text
-                fontSize="lg"
-                lineHeight="1.8"
-                color="#1A1A1A"
-                fontFamily="'Lora', serif"
-                maxW="4xl"
-                dangerouslySetInnerHTML={{ __html: displayBio }}
-              />
-            )}
           </VStack>
+
+          {/* Biography Section */}
+          {hasText(displayBio) && (
+            <Card
+              bg="rgba(255, 255, 255, 0.1)"
+              backdropFilter="blur(10px)"
+              border="1px solid rgba(255, 255, 255, 0.2)"
+              borderRadius="xl"
+            >
+              <CardBody p={8}>
+                <Text
+                  fontSize="lg"
+                  lineHeight="1.8"
+                  color="white"
+                  fontFamily="'Lora', serif"
+                  textAlign="center"
+                >
+                  {displayBio}
+                </Text>
+              </CardBody>
+            </Card>
+          )}
 
           {/* Skills Section */}
           {hasContent(skills) && (
@@ -194,36 +226,37 @@ export function RisingTemplate({ profile }: RisingTemplateProps) {
                 as="h2"
                 fontSize="3xl"
                 fontFamily="'Playfair Display', serif"
-                color="#1A1A1A"
+                color="white"
                 mb={8}
                 textAlign="center"
               >
-                Skills & Expertise
+                Core Skills
               </Heading>
-              <Wrap spacing={4} justify="center">
+              <SimpleGrid columns={{ base: 2, md: 3, lg: 4 }} spacing={4}>
                 {skills.map((skill, index) => (
-                  <WrapItem key={index}>
-                    <Badge
-                      variant="solid"
-                      bg="#D4AF37"
-                      color="white"
-                      px={4}
-                      py={2}
-                      borderRadius="full"
-                      fontFamily="'Lora', serif"
-                      fontWeight="500"
-                      fontSize="sm"
-                      _hover={{
-                        bg: "#B8941F",
-                        transform: "translateY(-2px)",
-                        transition: "all 0.3s ease"
-                      }}
-                    >
-                      {skill}
-                    </Badge>
-                  </WrapItem>
+                  <Card
+                    key={index}
+                    bg="rgba(255, 255, 255, 0.15)"
+                    backdropFilter="blur(10px)"
+                    border="1px solid rgba(255, 255, 255, 0.2)"
+                    _hover={{
+                      bg: "rgba(255, 255, 255, 0.25)",
+                      transform: "translateY(-2px)",
+                      transition: "all 0.3s ease"
+                    }}
+                  >
+                    <CardBody p={4} textAlign="center">
+                      <Text
+                        color="white"
+                        fontFamily="'Lora', serif"
+                        fontWeight="500"
+                      >
+                        {skill}
+                      </Text>
+                    </CardBody>
+                  </Card>
                 ))}
-              </Wrap>
+              </SimpleGrid>
             </Box>
           )}
 
@@ -234,27 +267,27 @@ export function RisingTemplate({ profile }: RisingTemplateProps) {
                 as="h2"
                 fontSize="3xl"
                 fontFamily="'Playfair Display', serif"
-                color="#1A1A1A"
+                color="white"
                 mb={8}
               >
                 Vision & Aspirations
               </Heading>
               <Card
-                bg="rgba(212, 175, 55, 0.1)"
-                border="2px solid #D4AF37"
+                bg="rgba(255, 255, 255, 0.1)"
+                backdropFilter="blur(10px)"
+                border="1px solid rgba(255, 255, 255, 0.2)"
                 borderRadius="xl"
                 maxW="4xl"
                 mx="auto"
               >
                 <CardBody p={8}>
-                  <HStack spacing={4} justify="center" mb={4}>
-                    <Icon as={Target} color="#D4AF37" size="24" />
-                    <Icon as={Lightbulb} color="#D4AF37" size="24" />
+                  <HStack justify="center" mb={4}>
+                    <Icon as={Target} color="white" size={24} />
                   </HStack>
                   <Text
                     fontSize="lg"
                     lineHeight="1.8"
-                    color="#1A1A1A"
+                    color="white"
                     fontFamily="'Lora', serif"
                     fontStyle="italic"
                   >
@@ -272,68 +305,54 @@ export function RisingTemplate({ profile }: RisingTemplateProps) {
                 as="h2"
                 fontSize="3xl"
                 fontFamily="'Playfair Display', serif"
-                color="#1A1A1A"
+                color="white"
                 mb={8}
                 textAlign="center"
               >
                 Key Achievements
               </Heading>
               <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
-                {achievements.map((achievement, index) => (
+                {achievements.slice(0, 4).map((achievement, index) => (
                   <Card
                     key={index}
-                    bg="white"
-                    border="2px solid #D4AF37"
+                    bg="rgba(255, 255, 255, 0.1)"
+                    backdropFilter="blur(10px)"
+                    border="1px solid rgba(255, 255, 255, 0.2)"
                     borderRadius="xl"
                     _hover={{
-                      transform: "translateY(-4px)",
-                      shadow: "xl",
+                      bg: "rgba(255, 255, 255, 0.15)",
+                      transform: "translateY(-2px)",
                       transition: "all 0.3s ease"
                     }}
                   >
                     <CardBody p={6}>
-                      <VStack spacing={4} align="start">
-                        <HStack spacing={3} w="full">
-                          <Icon as={Star} color="#D4AF37" size="20" />
-                          <Heading
-                            as="h3"
-                            fontSize="xl"
+                      <VStack align="start" spacing={3}>
+                        <HStack spacing={3}>
+                          <Icon as={Award} color="white" />
+                          <Text
+                            fontSize="lg"
+                            fontWeight="600"
+                            color="white"
                             fontFamily="'Playfair Display', serif"
-                            color="#1A1A1A"
-                            flex="1"
                           >
                             {achievement.title}
-                          </Heading>
-                          {achievement.year && (
-                            <Badge
-                              colorScheme="yellow"
-                              variant="solid"
-                              bg="#D4AF37"
-                              color="white"
-                            >
-                              {achievement.year}
-                            </Badge>
-                          )}
-                        </HStack>
-
-                        {hasText(achievement.description) && (
-                          <Text
-                            color="#2D3748"
-                            fontFamily="'Lora', serif"
-                            lineHeight="1.6"
-                          >
-                            {achievement.description}
                           </Text>
-                        )}
-
-                        {achievement.category && (
+                        </HStack>
+                        <Text
+                          fontSize="md"
+                          color="rgba(255, 255, 255, 0.9)"
+                          fontFamily="'Lora', serif"
+                          lineHeight="1.6"
+                        >
+                          {achievement.description}
+                        </Text>
+                        {achievement.year && (
                           <Badge
-                            variant="outline"
-                            colorScheme="orange"
-                            borderColor="#D4AF37"
-                            color="#B8941F"
+                            colorScheme="whiteAlpha"
+                            variant="subtle"
+                            fontSize="xs"
                           >
-                            {achievement.category}
+                            {achievement.year}
                           </Badge>
                         )}
                       </VStack>
@@ -351,73 +370,57 @@ export function RisingTemplate({ profile }: RisingTemplateProps) {
                 as="h2"
                 fontSize="3xl"
                 fontFamily="'Playfair Display', serif"
-                color="#1A1A1A"
+                color="white"
                 mb={8}
                 textAlign="center"
               >
                 Featured Projects
               </Heading>
-              <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
-                {projects.map((project, index) => (
+              <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
+                {projects.slice(0, 4).map((project, index) => (
                   <Card
                     key={index}
-                    bg="white"
-                    border="2px solid #D4AF37"
+                    bg="rgba(255, 255, 255, 0.1)"
+                    backdropFilter="blur(10px)"
+                    border="1px solid rgba(255, 255, 255, 0.2)"
                     borderRadius="xl"
-                    overflow="hidden"
                     _hover={{
-                      transform: "translateY(-4px)",
-                      shadow: "xl",
+                      bg: "rgba(255, 255, 255, 0.15)",
+                      transform: "translateY(-2px)",
                       transition: "all 0.3s ease"
                     }}
                   >
-                    {project.image && (
-                      <Image
-                        src={project.image}
-                        alt={project.title}
-                        objectFit="cover"
-                        h="200px"
-                        w="full"
-                      />
-                    )}
                     <CardBody p={6}>
-                      <VStack spacing={4} align="start">
-                        <HStack spacing={3} w="full">
-                          <Icon as={Code} color="#D4AF37" />
-                          <Heading
-                            as="h3"
+                      <VStack align="start" spacing={3}>
+                        <HStack spacing={3}>
+                          <Icon as={Lightbulb} color="white" />
+                          <Text
                             fontSize="lg"
+                            fontWeight="600"
+                            color="white"
                             fontFamily="'Playfair Display', serif"
-                            color="#1A1A1A"
-                            flex="1"
                           >
                             {project.title}
-                          </Heading>
-                        </HStack>
-
-                        {hasText(project.description) && (
-                          <Text
-                            color="#2D3748"
-                            fontFamily="'Lora', serif"
-                            lineHeight="1.6"
-                            fontSize="sm"
-                          >
-                            {project.description}
                           </Text>
-                        )}
-
+                        </HStack>
+                        <Text
+                          fontSize="md"
+                          color="rgba(255, 255, 255, 0.9)"
+                          fontFamily="'Lora', serif"
+                          lineHeight="1.6"
+                        >
+                          {project.description}
+                        </Text>
                         {project.link && (
                           <Link
                             href={project.link}
                             isExternal
-                            color="#D4AF37"
-                            fontFamily="'Lora', serif"
-                            fontWeight="600"
-                            _hover={{ color: "#B8941F" }}
+                            color="white"
+                            _hover={{ textDecoration: 'underline' }}
                           >
                             <HStack spacing={2}>
-                              <Text>View Project</Text>
-                              <Icon as={ExternalLink} size="16" />
+                              <Text fontSize="sm">View Project</Text>
+                              <Icon as={ExternalLink} size={14} />
                             </HStack>
                           </Link>
                         )}
@@ -429,45 +432,47 @@ export function RisingTemplate({ profile }: RisingTemplateProps) {
             </Box>
           )}
 
-          {/* Gallery Section */}
+          {/* Gallery Section - Limited to 4 photos for Emerging tier */}
           {hasContent(gallery) && (
             <Box>
               <Heading
                 as="h2"
                 fontSize="3xl"
                 fontFamily="'Playfair Display', serif"
-                color="#1A1A1A"
+                color="white"
                 mb={8}
                 textAlign="center"
               >
                 Gallery
               </Heading>
-              <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
-                {gallery.slice(0, 9).map((item, index) => (
+              <SimpleGrid columns={{ base: 2, md: 4 }} spacing={4}>
+                {gallery.slice(0, 4).map((item, index) => (
                   <Card
                     key={index}
-                    bg="white"
-                    border="2px solid #D4AF37"
+                    bg="rgba(255, 255, 255, 0.1)"
+                    backdropFilter="blur(10px)"
+                    border="1px solid rgba(255, 255, 255, 0.2)"
                     borderRadius="xl"
                     overflow="hidden"
                     _hover={{
-                      transform: "scale(1.02)",
+                      transform: "scale(1.05)",
                       transition: "all 0.3s ease"
                     }}
                   >
-                    <Image
-                      src={item.url}
-                      alt={item.caption || `Gallery image ${index + 1}`}
-                      objectFit="cover"
-                      h="200px"
-                      w="full"
-                    />
-                    {hasText(item.caption) && (
-                      <CardBody p={4}>
+                    <Box position="relative" h="200px">
+                      <Image
+                        src={item.url}
+                        alt={item.caption || `Gallery image ${index + 1}`}
+                        fill
+                        style={{ objectFit: 'cover' }}
+                      />
+                    </Box>
+                    {item.caption && (
+                      <CardBody p={3}>
                         <Text
-                          color="#2D3748"
-                          fontFamily="'Lora', serif"
                           fontSize="sm"
+                          color="white"
+                          fontFamily="'Lora', serif"
                           textAlign="center"
                         >
                           {item.caption}
@@ -487,7 +492,7 @@ export function RisingTemplate({ profile }: RisingTemplateProps) {
                 as="h2"
                 fontSize="3xl"
                 fontFamily="'Playfair Display', serif"
-                color="#1A1A1A"
+                color="white"
                 mb={8}
                 textAlign="center"
               >
@@ -502,28 +507,28 @@ export function RisingTemplate({ profile }: RisingTemplateProps) {
                     _hover={{ textDecoration: 'none' }}
                   >
                     <Card
-                      bg="white"
-                      border="2px solid #D4AF37"
+                      bg="rgba(255, 255, 255, 0.1)"
+                      backdropFilter="blur(10px)"
+                      border="1px solid rgba(255, 255, 255, 0.2)"
                       borderRadius="xl"
                       _hover={{
-                        bg: "rgba(212, 175, 55, 0.1)",
+                        bg: "rgba(255, 255, 255, 0.2)",
                         transform: "translateY(-2px)",
                         transition: "all 0.3s ease"
                       }}
-                      cursor="pointer"
                     >
-                      <CardBody p={4}>
-                        <HStack spacing={3} justify="center">
-                          <Icon as={ExternalLink} color="#D4AF37" />
+                      <CardBody p={4} textAlign="center">
+                        <VStack spacing={2}>
+                          <Icon as={ExternalLink} color="white" size={20} />
                           <Text
-                            color="#1A1A1A"
+                            color="white"
                             fontFamily="'Lora', serif"
                             fontWeight="500"
-                            textAlign="center"
+                            fontSize="sm"
                           >
                             {link.title}
                           </Text>
-                        </HStack>
+                        </VStack>
                       </CardBody>
                     </Card>
                   </Link>
@@ -533,6 +538,8 @@ export function RisingTemplate({ profile }: RisingTemplateProps) {
           )}
         </VStack>
       </Container>
+
+      <ProfileFooter tier="emerging" />
     </Box>
   )
 }

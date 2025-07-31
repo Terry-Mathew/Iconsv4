@@ -18,7 +18,7 @@ import {
 import { CheckCircle, Circle, Lock, Crown, Star, Award } from 'lucide-react'
 
 interface ProgressTrackerProps {
-  currentTier: 'rising' | 'elite' | 'legacy'
+  currentTier: 'emerging' | 'accomplished' | 'distinguished' | 'legacy'
   completedSections: string[]
   totalSections: number
   onUpgrade?: () => void
@@ -28,7 +28,7 @@ interface SectionConfig {
   id: string
   name: string
   required: boolean
-  tiers: ('rising' | 'elite' | 'legacy')[]
+  tiers: ('emerging' | 'accomplished' | 'distinguished' | 'legacy')[]
   icon: any
 }
 
@@ -37,49 +37,49 @@ const SECTION_CONFIG: SectionConfig[] = [
     id: 'basic',
     name: 'Basic Information',
     required: true,
-    tiers: ['rising', 'elite', 'legacy'],
+    tiers: ['emerging', 'accomplished', 'distinguished', 'legacy'],
     icon: Circle
   },
   {
     id: 'bio',
     name: 'Curated Bio',
     required: true,
-    tiers: ['rising', 'elite', 'legacy'],
+    tiers: ['emerging', 'accomplished', 'distinguished', 'legacy'],
     icon: Circle
   },
   {
     id: 'links',
     name: 'Links & Social',
     required: true,
-    tiers: ['rising', 'elite', 'legacy'],
+    tiers: ['emerging', 'accomplished', 'distinguished', 'legacy'],
     icon: Circle
   },
   {
     id: 'hero',
     name: 'Hero Banner',
     required: false,
-    tiers: ['rising', 'elite', 'legacy'],
+    tiers: ['emerging', 'accomplished', 'distinguished', 'legacy'],
     icon: Circle
   },
   {
     id: 'metrics',
     name: 'Impact Metrics',
     required: false,
-    tiers: ['elite', 'legacy'],
+    tiers: ['accomplished', 'distinguished', 'legacy'],
     icon: Star
   },
   {
     id: 'gallery',
     name: 'Media Gallery',
     required: false,
-    tiers: ['elite', 'legacy'],
+    tiers: ['accomplished', 'distinguished', 'legacy'],
     icon: Star
   },
   {
     id: 'achievements',
     name: 'Achievements Timeline',
     required: false,
-    tiers: ['legacy'],
+    tiers: ['distinguished', 'legacy'],
     icon: Award
   },
   {
@@ -100,7 +100,7 @@ const SECTION_CONFIG: SectionConfig[] = [
     id: 'analytics',
     name: 'Analytics Preview',
     required: false,
-    tiers: ['legacy'],
+    tiers: ['distinguished', 'legacy'],
     icon: Award
   }
 ]

@@ -26,7 +26,7 @@ import { PreviewStep } from '@/components/builder/steps/PreviewStep'
 const MotionBox = motion.create(Box)
 
 // Profile tier type
-type ProfileTier = 'rising' | 'elite' | 'legacy'
+type ProfileTier = 'emerging' | 'accomplished' | 'distinguished' | 'legacy'
 
 // Multi-step wizard steps
 const STEPS = {
@@ -81,23 +81,30 @@ interface ProfileFormData {
 
 // Simplified tier configurations for multi-step wizard
 const TIER_CONFIG = {
-  rising: {
-    name: 'Rising',
-    price: '₹3,000/year',
+  emerging: {
+    name: 'Emerging',
+    price: '₹2,500/year',
     description: 'For emerging brilliance—showcase your potential',
     fieldCount: 4,
     fields: ['name', 'tagline', 'heroImage', 'bio'] as const
   },
-  elite: {
-    name: 'Elite',
-    price: '₹10,000/year',
-    description: 'For established leaders—amplify your influence',
+  accomplished: {
+    name: 'Accomplished',
+    price: '₹5,000/year',
+    description: 'For accomplished professionals—amplify your influence',
     fieldCount: 6,
     fields: ['name', 'tagline', 'heroImage', 'bio', 'achievements', 'links'] as const
   },
+  distinguished: {
+    name: 'Distinguished',
+    price: '₹12,000/year',
+    description: 'For distinguished leaders—demonstrate your excellence',
+    fieldCount: 8,
+    fields: ['name', 'tagline', 'heroImage', 'bio', 'achievements', 'links', 'publications', 'metrics'] as const
+  },
   legacy: {
     name: 'Legacy',
-    price: '₹20,000 one-time',
+    price: '₹50,000 lifetime',
     description: 'For icons—preserve your eternal impact',
     fieldCount: 10,
     fields: [
@@ -136,7 +143,7 @@ function ProfileBuilderContent() {
   // Multi-step wizard state
   const [currentStep, setCurrentStep] = useState<StepNumber>(STEPS.TIER_SELECTION)
   const [completedSteps, setCompletedSteps] = useState<number[]>([])
-  const [selectedTier, setSelectedTier] = useState<ProfileTier>('rising')
+  const [selectedTier, setSelectedTier] = useState<ProfileTier>('emerging')
   
   // Form submission state
   const [isSubmitting, setIsSubmitting] = useState(false)

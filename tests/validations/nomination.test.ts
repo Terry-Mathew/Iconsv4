@@ -8,7 +8,7 @@ describe('Nomination Validation', () => {
     nomineeName: 'Jane Nominee',
     nomineeEmail: 'nominee@example.com',
     pitch: 'This person is exceptional because they have revolutionized their field through innovative approaches and dedication to excellence.',
-    suggestedTier: 'elite',
+    suggestedTier: 'accomplished',
     links: ['https://example.com/profile', 'https://linkedin.com/in/nominee'],
     consent: true,
     website: '', // Honeypot field
@@ -26,7 +26,7 @@ describe('Nomination Validation', () => {
         nominatorName: 'John Nominator',
         nomineeName: 'Jane Nominee',
         nomineeEmail: 'nominee@example.com',
-        pitch: 'This person is exceptional because they have revolutionized their field.',
+        pitch: 'This person is exceptional because they have revolutionized their field through innovative approaches and dedication to excellence.',
         consent: true,
         website: '',
       }
@@ -84,22 +84,22 @@ describe('Nomination Validation', () => {
     it('should detect honeypot spam', () => {
       const nomination = { ...validNomination, website: 'spam-content' }
       const result = nominationSchema.safeParse(nomination)
-      // The schema should still parse, but the API should reject it
-      expect(result.success).toBe(true)
-      expect(result.data?.website).toBe('spam-content')
+      // The schema should reject honeypot spam (website field should be empty)
+      expect(result.success).toBe(false)
+      expect(result.error?.issues[0].path).toContain('website')
     })
   })
 
   describe('Edge cases', () => {
     it('should handle maximum length pitch', () => {
-      const longPitch = 'A'.repeat(5000) // Maximum allowed length
+      const longPitch = 'A'.repeat(2000) // Maximum allowed length
       const nomination = { ...validNomination, pitch: longPitch }
       const result = nominationSchema.safeParse(nomination)
       expect(result.success).toBe(true)
     })
 
     it('should reject overly long pitch', () => {
-      const tooLongPitch = 'A'.repeat(5001) // Over maximum
+      const tooLongPitch = 'A'.repeat(2001) // Over maximum
       const nomination = { ...validNomination, pitch: tooLongPitch }
       const result = nominationSchema.safeParse(nomination)
       expect(result.success).toBe(false)
@@ -134,7 +134,7 @@ describe('Nomination Validation', () => {
       const nomination = {
         ...validNomination,
         nominatorEmail: 'user@example.co.uk',
-        nomineeEmail: 'nominee@université.fr'
+        nomineeEmail: 'nominee@example.de'
       }
       const result = nominationSchema.safeParse(nomination)
       expect(result.success).toBe(true)

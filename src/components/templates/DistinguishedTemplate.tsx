@@ -23,7 +23,7 @@ import {
 } from '@chakra-ui/react'
 import { ExternalLink, Award, Users, Briefcase, Calendar, MapPin } from 'lucide-react'
 
-interface EliteTemplateProps {
+interface DistinguishedTemplateProps {
   profile: {
     id?: string
     name: string
@@ -57,6 +57,18 @@ interface EliteTemplateProps {
       year: number
       description?: string
     }>
+    publications?: Array<{
+      title: string
+      publication: string
+      year: number
+      link?: string
+      description?: string
+    }>
+    impactMetrics?: Array<{
+      metric: string
+      value: string
+      description?: string
+    }>
     gallery?: Array<{
       url: string
       caption?: string
@@ -73,7 +85,7 @@ interface EliteTemplateProps {
   }
 }
 
-export function EliteTemplate({ profile }: EliteTemplateProps) {
+export function DistinguishedTemplate({ profile }: DistinguishedTemplateProps) {
   const {
     name,
     tagline,
@@ -88,6 +100,8 @@ export function EliteTemplate({ profile }: EliteTemplateProps) {
     achievements = [],
     leadership = [],
     awards = [],
+    publications = [],
+    impactMetrics = [],
     gallery = [],
     links = [],
     quote
@@ -100,10 +114,10 @@ export function EliteTemplate({ profile }: EliteTemplateProps) {
   return (
     <Box
       minH="100vh"
-      bg="linear-gradient(135deg, #0F172A 0%, #1E293B 25%, #334155 50%, #475569 75%, #64748B 100%)"
+      bg="linear-gradient(135deg, #fa709a 0%, #fee140 100%)"
       position="relative"
     >
-      {/* Professional grid overlay */}
+      {/* Premium diamond pattern overlay */}
       <Box
         position="absolute"
         top={0}
@@ -111,8 +125,8 @@ export function EliteTemplate({ profile }: EliteTemplateProps) {
         right={0}
         bottom={0}
         opacity={0.1}
-        backgroundImage="linear-gradient(rgba(212, 175, 55, 0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(212, 175, 55, 0.3) 1px, transparent 1px)"
-        backgroundSize="60px 60px"
+        backgroundImage="radial-gradient(circle at 50% 50%, rgba(255,255,255,0.3) 2px, transparent 2px)"
+        backgroundSize="80px 80px"
       />
 
       <Container maxW="7xl" py={20} position="relative" zIndex={1}>
@@ -128,15 +142,16 @@ export function EliteTemplate({ profile }: EliteTemplateProps) {
                   px={5}
                   py={2}
                   borderRadius="md"
-                  bg="linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)"
+                  bg="rgba(255, 255, 255, 0.2)"
                   color="white"
                   fontFamily="'Lora', serif"
                   fontWeight="600"
                   textTransform="uppercase"
                   letterSpacing="1px"
-                  boxShadow="0 4px 20px rgba(99, 102, 241, 0.4)"
+                  backdropFilter="blur(10px)"
+                  border="1px solid rgba(255, 255, 255, 0.3)"
                 >
-                  ⚡ Elite Tier - Commanding Excellence
+                  💎 Distinguished Tier - Industry Leadership
                 </Badge>
 
                 {heroImage && (
