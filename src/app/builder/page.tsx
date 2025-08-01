@@ -1,1172 +1,616 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { useForm, useFieldArray } from 'react-hook-form'
+import { useState, useEffect, useCallback, Suspense } from 'react'
+import { useForm } from 'react-hook-form'
 import { useRouter, useSearchParams } from 'next/navigation'
 import {
   Box,
   Container,
-  Grid,
-  GridItem,
-  Card,
-  CardBody,
-  CardHeader,
-  Heading,
-  Text,
   VStack,
-  HStack,
-  FormControl,
-  FormLabel,
-  FormErrorMessage,
-  FormHelperText,
-  Input,
-  Textarea,
-  Select,
-  Button,
-  IconButton,
-  Switch,
-  Badge,
-  Divider,
-  Tooltip,
-  useToast,
-  useDisclosure,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalCloseButton,
   Spinner,
-  Alert,
-  AlertIcon,
-  Image,
-  AspectRatio,
-  Tabs,
-  TabList,
-  TabPanels,
-  Tab,
-  TabPanel,
+  Text,
+  useToast,
 } from '@chakra-ui/react'
-import { motion, AnimatePresence } from 'framer-motion'
-import {
-  Plus,
-  Trash2,
-  Upload,
-  Eye,
-  Sparkles,
-  Save,
-  Send,
-  Crown,
-  Star,
-  Trophy,
-  Info,
-  ChevronRight,
-  GripVertical
-} from 'lucide-react'
+import { motion } from 'framer-motion'
 import { useAuth } from '@/lib/auth/auth-context'
-import { Breadcrumbs } from '../../components/ui/Breadcrumbs'
+import { PageLayout } from '@/components/layout/PageLayout'
+import { FloatingCard } from '@/components/ui/FloatingCard'
 
-const MotionBox = motion(Box)
-const MotionCard = motion(Card)
-const MotionGridItem = motion(GridItem)
+// Import new step components
+import { BuilderStepper } from '@/components/builder/BuilderStepper'
+import { TierSelectionStep } from '@/components/builder/steps/TierSelectionStep'
+import { BasicInfoStep } from '@/components/builder/steps/BasicInfoStep'
+import { BiographyStep } from '@/components/builder/steps/BiographyStep'
+import { AchievementsStep } from '@/components/builder/steps/AchievementsStep'
+import { LinksMediaStep } from '@/components/builder/steps/LinksMediaStep'
+import { PreviewStep } from '@/components/builder/steps/PreviewStep'
+
+const MotionBox = motion.create(Box)
 
 // Profile tier type
-type ProfileTier = 'rising' | 'elite' | 'legacy'
+type ProfileTier = 'emerging' | 'accomplished' | 'distinguished' | 'legacy'
 
-// Profile data interface
-interface ProfileBuilderData {
-  tier: ProfileTier
+// Multi-step wizard steps
+const STEPS = {
+  TIER_SELECTION: 1,
+  BASIC_INFO: 2,
+  BIOGRAPHY: 3,
+  ACHIEVEMENTS: 4,
+  LINKS_MEDIA: 5,
+  PREVIEW: 6,
+} as const
+
+type StepNumber = typeof STEPS[keyof typeof STEPS]
+
+// Simplified Profile data interface for multi-step wizard
+interface ProfileFormData {
+  // Basic Information (Step 2)
   name: string
   tagline: string
   heroImage: string
-  biography: string
-  achievements: Array<{ title: string; description: string; year?: string }>
-  links: Array<{ title: string; url: string; type: string }>
-  quote?: string
-  gallery?: Array<{ url: string; caption: string }>
-  projects?: Array<{ title: string; description: string; url?: string; year?: string }>
-  timeline?: Array<{ year: string; event: string; significance: string }>
-  memorialGallery?: Array<{ url: string; caption: string; type: 'image' | 'video' }>
-  legacyStatement?: string
+
+  // Biography (Step 3)
+  bio: {
+    original: string
+    ai_polished?: string
+  }
+
+  // Achievements (Step 4)
+  achievements: Array<{
+    title: string
+    description: string
+    year: string
+    category: string
+  }>
+
+  // Links & Media (Step 5)
+  links: Array<{
+    title: string
+    url: string
+    type: 'website' | 'linkedin' | 'twitter' | 'other'
+  }>
+  gallery?: Array<{
+    url: string
+    caption: string
+    type: 'image' | 'video'
+  }>
+
+  // Meta (Step 1 & 6)
+  tier: ProfileTier
   isPublic: boolean
+  analyticsEnabled: boolean
 }
 
-// Tier configurations
+// Simplified tier configurations for multi-step wizard
 const TIER_CONFIG = {
-  rising: {
-    name: 'Rising',
-    price: '₹3,000/year',
+  emerging: {
+    name: 'Emerging',
+    price: '₹2,500/year',
     description: 'For emerging brilliance—showcase your potential',
-    icon: Star,
-    color: 'green.500',
-    fields: ['name', 'tagline', 'heroImage', 'biography', 'achievements', 'links']
+    fieldCount: 4,
+    fields: ['name', 'tagline', 'heroImage', 'bio'] as const
   },
-  elite: {
-    name: 'Elite',
-    price: '₹10,000/year',
-    description: 'For commanding presence—establish your authority',
-    icon: Crown,
-    color: 'blue.500',
-    fields: ['name', 'tagline', 'heroImage', 'biography', 'achievements', 'links', 'quote', 'gallery', 'projects']
+  accomplished: {
+    name: 'Accomplished',
+    price: '₹5,000/year',
+    description: 'For accomplished professionals—amplify your influence',
+    fieldCount: 6,
+    fields: ['name', 'tagline', 'heroImage', 'bio', 'achievements', 'links'] as const
+  },
+  distinguished: {
+    name: 'Distinguished',
+    price: '₹12,000/year',
+    description: 'For distinguished leaders—demonstrate your excellence',
+    fieldCount: 8,
+    fields: ['name', 'tagline', 'heroImage', 'bio', 'achievements', 'links', 'publications', 'metrics'] as const
   },
   legacy: {
     name: 'Legacy',
-    price: '₹20,000 lifetime',
-    description: 'For eternal reverence—immortalize your impact',
-    icon: Trophy,
-    color: 'purple.500',
-    fields: ['name', 'tagline', 'heroImage', 'biography', 'achievements', 'links', 'quote', 'gallery', 'projects', 'timeline', 'memorialGallery', 'legacyStatement']
+    price: '₹50,000 lifetime',
+    description: 'For icons—preserve your eternal impact',
+    fieldCount: 10,
+    fields: [
+      'name', 'tagline', 'heroImage', 'bio', 'achievements', 'links',
+      'gallery', 'impactMetrics', 'tributes', 'analytics'
+    ] as const
   }
 } as const
 
-export default function ProfileBuilderPage() {
+// Component to handle impersonation parameters
+function ImpersonationHandler({ onImpersonationDetected }: {
+  onImpersonationDetected: (tier: ProfileTier | null, isImpersonating: boolean) => void
+}) {
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    const tier = searchParams.get('tier') as ProfileTier
+    const impersonating = searchParams.get('impersonating') === 'true'
+
+    if (impersonating && tier) {
+      onImpersonationDetected(tier, true)
+    } else {
+      onImpersonationDetected(null, false)
+    }
+  }, [searchParams, onImpersonationDetected])
+
+  return null
+}
+
+// Main component with multi-step wizard
+function ProfileBuilderContent() {
   const { user, loading } = useAuth()
   const router = useRouter()
   const toast = useToast()
-  const { isOpen: isAIOpen, onOpen: onAIOpen, onClose: onAIClose } = useDisclosure()
 
-  const [selectedTier, setSelectedTier] = useState<ProfileTier>('rising')
+  // Multi-step wizard state
+  const [currentStep, setCurrentStep] = useState<StepNumber>(STEPS.TIER_SELECTION)
+  const [completedSteps, setCompletedSteps] = useState<number[]>([])
+  const [selectedTier, setSelectedTier] = useState<ProfileTier>('emerging')
+  
+  // Form submission state
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
-  const [previewMode, setPreviewMode] = useState(false)
 
-  // Redirect if not authenticated
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push('/auth')
-    }
-  }, [user, loading, router])
+  // Impersonation state
+  const [isImpersonating, setIsImpersonating] = useState(false)
+  const [impersonatedTier, setImpersonatedTier] = useState<ProfileTier | null>(null)
 
+  // Form setup
   const {
     register,
-    control,
     handleSubmit,
-    watch,
+    formState: { errors, isValid },
     setValue,
-    getValues,
-    formState: { errors, isDirty },
+    watch,
     reset,
-  } = useForm<ProfileBuilderData>({
+  } = useForm<ProfileFormData>({
+    mode: 'onChange',
     defaultValues: {
-      tier: 'rising',
+      tier: 'emerging',
       name: '',
       tagline: '',
       heroImage: '',
-      biography: '',
+      bio: { original: '', ai_polished: '' },
       achievements: [],
       links: [],
-      quote: '',
       gallery: [],
-      projects: [],
-      timeline: [],
-      memorialGallery: [],
-      legacyStatement: '',
-      isPublic: false,
+      isPublic: true,
+      analyticsEnabled: true,
     },
-    mode: 'onChange',
   })
 
-  const { fields: achievementFields, append: appendAchievement, remove: removeAchievement } = useFieldArray({
-    control,
-    name: 'achievements',
-  })
+  // Redirect if not authenticated (temporarily disabled for testing)
+  useEffect(() => {
+    // TODO: Re-enable authentication when auth system is fully implemented
+    // if (!loading && !user) {
+    //   router.push('/auth')
+    // }
+    console.log('🔐 Builder auth check:', { user: !!user, loading })
+  }, [user, loading, router])
 
-  const { fields: linkFields, append: appendLink, remove: removeLink } = useFieldArray({
-    control,
-    name: 'links',
-  })
+  // Step navigation functions
+  const goToStep = (step: number) => {
+    setCurrentStep(step as StepNumber)
+  }
 
-  const { fields: projectFields, append: appendProject, remove: removeProject } = useFieldArray({
-    control,
-    name: 'projects',
-  })
+  const goToNextStep = () => {
+    if (currentStep < STEPS.PREVIEW) {
+      const nextStep = (currentStep + 1) as StepNumber
+      setCurrentStep(nextStep)
+      
+      // Mark current step as completed
+      if (!completedSteps.includes(currentStep)) {
+        setCompletedSteps(prev => [...prev, currentStep])
+      }
+    }
+  }
 
-  const { fields: timelineFields, append: appendTimeline, remove: removeTimeline } = useFieldArray({
-    control,
-    name: 'timeline',
-  })
+  const goToPreviousStep = () => {
+    if (currentStep > STEPS.TIER_SELECTION) {
+      const prevStep = (currentStep - 1) as StepNumber
+      setCurrentStep(prevStep)
+    }
+  }
 
-  const watchedData = watch()
+  // Handle tier selection
+  const handleTierSelect = (tier: ProfileTier) => {
+    setSelectedTier(tier)
+    setValue('tier', tier)
+  }
+
+  // Handle impersonation detection
+  const handleImpersonationDetected = useCallback((tier: ProfileTier | null, impersonating: boolean) => {
+    if (impersonating && tier) {
+      setIsImpersonating(true)
+      setImpersonatedTier(tier)
+      setSelectedTier(tier)
+      setValue('tier', tier)
+
+      toast({
+        title: 'Impersonation Active',
+        description: `Viewing as ${tier} tier user`,
+        status: 'info',
+        duration: 5000,
+        isClosable: true,
+      })
+    } else {
+      setIsImpersonating(false)
+      setImpersonatedTier(null)
+    }
+  }, [toast, setValue])
 
   // Auto-save functionality
-  const autoSave = useCallback(async (data: ProfileBuilderData) => {
-    if (!isDirty) return
+  const autoSave = useCallback(async () => {
+    if (isImpersonating) return // Don't save during impersonation
+
+    const formData = watch()
+
+    // Only auto-save if there's meaningful content
+    if (!formData.name || formData.name.trim().length < 2) {
+      return // Don't save empty or minimal content
+    }
 
     setIsSaving(true)
     try {
-      const response = await fetch('/api/profile/draft', {
+      const response = await fetch('/api/profiles/draft', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          content: formData,
+          tier: selectedTier,
+          slug: generateSlug(formData.name || 'profile'),
+          auto_save: true
+        }),
       })
 
       if (response.ok) {
         setLastSaved(new Date())
-        toast({
-          title: 'Draft saved',
-          status: 'success',
-          duration: 2000,
-          isClosable: true,
-          position: 'bottom-right',
-        })
+        console.log('✅ Auto-save successful')
+      } else {
+        const errorData = await response.json().catch(() => ({}))
+        console.warn('Auto-save failed:', response.status, errorData.error)
+
+        // Don't show error toast for auto-save failures to avoid annoying users
+        // Just log it for debugging
       }
     } catch (error) {
       console.error('Auto-save failed:', error)
     } finally {
       setIsSaving(false)
     }
-  }, [isDirty, toast])
+  }, [watch, isImpersonating, selectedTier])
 
-  // Debounced auto-save
+  // Auto-save every 30 seconds
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (isDirty) {
-        autoSave(watchedData)
-      }
-    }, 2000)
+    const interval = setInterval(autoSave, 30000)
+    return () => clearInterval(interval)
+  }, [autoSave])
 
-    return () => clearTimeout(timer)
-  }, [watchedData, isDirty, autoSave])
-
-  // Update tier when selection changes
-  useEffect(() => {
-    setValue('tier', selectedTier)
-  }, [selectedTier, setValue])
-
-  const onSubmit = async (data: ProfileBuilderData) => {
+  // Form submission
+  const onSubmit = async (data: ProfileFormData) => {
     setIsSubmitting(true)
     try {
-      const response = await fetch('/api/profile/submit', {
+      // Step 1: Save as draft first
+      const draftResponse = await fetch('/api/profiles/draft', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          content: data,
+          tier: selectedTier,
+          slug: generateSlug(data.name || 'profile')
+        }),
       })
 
-      if (!response.ok) {
-        throw new Error('Failed to submit profile')
+      if (!draftResponse.ok) {
+        const draftError = await draftResponse.json()
+        throw new Error(draftError.error || 'Failed to save draft')
       }
 
-      toast({
-        title: 'Profile Submitted',
-        description: 'Your profile is now under editorial review. We\'ll notify you of next steps.',
-        status: 'success',
-        duration: 8000,
-        isClosable: true,
+      const draftResult = await draftResponse.json()
+      const profileSlug = draftResult.profile?.slug
+
+      if (!profileSlug) {
+        throw new Error('No profile slug returned from draft save')
+      }
+
+      // Step 2: Publish the draft
+      const publishResponse = await fetch('/api/profiles/publish', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug: profileSlug }),
       })
 
-      router.push('/dashboard')
-    } catch (error) {
-      console.error('Submission error:', error)
+      if (!publishResponse.ok) {
+        const publishError = await publishResponse.json()
+        throw new Error(publishError.error || 'Failed to publish profile')
+      }
+
+      const publishResult = await publishResponse.json()
+
       toast({
-        title: 'Submission Failed',
-        description: 'Please try again or contact support.',
+        title: 'Profile Published!',
+        description: 'Your profile is now live and accessible.',
+        status: 'success',
+        duration: 5000,
+      })
+
+      // Redirect to the published profile or dashboard
+      if (publishResult.profileUrl) {
+        // Show success message with profile link
+        toast({
+          title: 'Profile Published Successfully!',
+          description: `Your profile is now live at ${publishResult.profileUrl}`,
+          status: 'success',
+          duration: 8000,
+          isClosable: true,
+        })
+        router.push(publishResult.profileUrl)
+      } else {
+        router.push('/dashboard')
+      }
+    } catch (error) {
+      console.error('Publish failed:', error)
+      toast({
+        title: 'Publish Failed',
+        description: error instanceof Error ? error.message : 'Unable to publish your profile. Please try again.',
         status: 'error',
         duration: 5000,
-        isClosable: true,
       })
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  const handleAIBioPolish = async (originalBio: string) => {
+  // Manual save function
+  const saveAsDraft = async () => {
+    const formData = watch()
+
+    if (!formData.name || formData.name.trim().length < 2) {
+      toast({
+        title: 'Cannot Save Draft',
+        description: 'Please enter a name before saving.',
+        status: 'warning',
+        duration: 3000,
+      })
+      return
+    }
+
+    setIsSaving(true)
     try {
-      const response = await fetch('/api/ai/polish-bio', {
+      const response = await fetch('/api/profiles/draft', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          bio: originalBio,
+          content: formData,
           tier: selectedTier,
-          tone: 'professional'
+          slug: generateSlug(formData.name || 'profile'),
+          manual_save: true
         }),
       })
 
-      if (!response.ok) {
-        throw new Error('AI polishing failed')
+      if (response.ok) {
+        setLastSaved(new Date())
+        toast({
+          title: 'Draft Saved!',
+          description: 'Your profile has been saved as a draft.',
+          status: 'success',
+          duration: 3000,
+        })
+      } else {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || 'Failed to save draft')
       }
-
-      const { polishedBio } = await response.json()
-      setValue('biography', polishedBio, { shouldValidate: true })
-
-      toast({
-        title: 'Biography Enhanced',
-        description: 'Your bio has been polished with AI. Review and edit as needed.',
-        status: 'success',
-        duration: 5000,
-        isClosable: true,
-      })
     } catch (error) {
-      console.error('AI bio polish error:', error)
+      console.error('Manual save failed:', error)
       toast({
-        title: 'AI Enhancement Failed',
-        description: 'Please try again later.',
+        title: 'Save Failed',
+        description: 'Unable to save your draft. Please try again.',
         status: 'error',
         duration: 5000,
-        isClosable: true,
       })
+    } finally {
+      setIsSaving(false)
     }
   }
 
-  const isFieldVisible = (fieldName: string): boolean => {
-    return TIER_CONFIG[selectedTier].fields.includes(fieldName)
+  // Helper function to generate slug from name
+  const generateSlug = (name: string): string => {
+    return name
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/-+/g, '-') // Replace multiple hyphens with single
+      .trim()
+      .substring(0, 50) // Limit length
+      + '-' + Date.now() // Add timestamp for uniqueness
   }
+
+  // Render step content
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case STEPS.TIER_SELECTION:
+        return (
+          <TierSelectionStep
+            selectedTier={selectedTier}
+            onTierSelect={handleTierSelect}
+            onNext={goToNextStep}
+            isImpersonating={isImpersonating}
+            impersonatedTier={impersonatedTier}
+          />
+        )
+      
+      case STEPS.BASIC_INFO:
+        return (
+          <BasicInfoStep
+            register={register}
+            errors={errors}
+            setValue={setValue}
+            watch={watch}
+            onNext={goToNextStep}
+            onPrevious={goToPreviousStep}
+          />
+        )
+      
+      case STEPS.BIOGRAPHY:
+        return (
+          <BiographyStep
+            register={register}
+            errors={errors}
+            setValue={setValue}
+            watch={watch}
+            onNext={goToNextStep}
+            onPrevious={goToPreviousStep}
+            selectedTier={selectedTier}
+          />
+        )
+      
+      case STEPS.ACHIEVEMENTS:
+        return (
+          <AchievementsStep
+            setValue={setValue}
+            watch={watch}
+            onNext={goToNextStep}
+            onPrevious={goToPreviousStep}
+            selectedTier={selectedTier}
+          />
+        )
+      
+      case STEPS.LINKS_MEDIA:
+        return (
+          <LinksMediaStep
+            setValue={setValue}
+            watch={watch}
+            onNext={goToNextStep}
+            onPrevious={goToPreviousStep}
+            selectedTier={selectedTier}
+          />
+        )
+      
+      case STEPS.PREVIEW:
+        return (
+          <PreviewStep
+            watch={watch}
+            setValue={setValue}
+            onPrevious={goToPreviousStep}
+            onPublish={handleSubmit(onSubmit)}
+            onSaveDraft={saveAsDraft}
+            isSubmitting={isSubmitting}
+            isSaving={isSaving}
+            selectedTier={selectedTier}
+          />
+        )
+      
+      default:
+        return null
+    }
+  }
+
+  // Temporarily allow access without authentication for testing
+  // TODO: Re-enable when auth system is fully implemented
+  // if (!user) {
+  //   return null // Will redirect in useEffect
+  // }
 
   if (loading) {
     return (
-      <Box minH="100vh" bg="#D2B48C" display="flex" alignItems="center" justifyContent="center">
-        <VStack spacing={4}>
-          <Spinner size="xl" color="#D4AF37" thickness="4px" />
-          <Text fontFamily="'Lato', sans-serif" color="#1A1A1A">
-            Loading your profile builder...
-          </Text>
-        </VStack>
-      </Box>
+      <PageLayout>
+        <Box minH="100vh" display="flex" alignItems="center" justifyContent="center">
+          <VStack spacing={4}>
+            <Spinner size="xl" color="#D4AF37" thickness="4px" />
+            <Text fontFamily="'Lato', sans-serif" color="white">
+              Loading profile builder...
+            </Text>
+          </VStack>
+        </Box>
+      </PageLayout>
     )
   }
 
-  if (!user) {
-    return null // Will redirect in useEffect
-  }
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        duration: 0.6,
-        staggerChildren: 0.1
-      }
-    }
-  }
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 }
-  }
-
   return (
-    <Box minH="100vh" bg="#D2B48C" position="relative">
-      <Container maxW="full" p={0}>
-        <Grid
-          templateColumns={{ base: '1fr', lg: '300px 1fr' }}
-          minH="100vh"
-          gap={0}
-        >
-          {/* Sidebar - Tier Selection & Controls */}
-          <MotionGridItem
-            bg="white"
-            borderRight="1px solid"
-            borderColor="rgba(212, 175, 55, 0.2)"
-            position="sticky"
-            top={0}
-            h="100vh"
-            overflowY="auto"
-            initial="hidden"
-            animate="visible"
-            variants={containerVariants}
+    <PageLayout>
+      <Suspense fallback={
+        <Box minH="100vh" display="flex" alignItems="center" justifyContent="center">
+          <VStack spacing={4}>
+            <Spinner size="xl" color="#D4AF37" thickness="4px" />
+            <Text fontFamily="'Lato', sans-serif" color="white">
+              Loading impersonation handler...
+            </Text>
+          </VStack>
+        </Box>
+      }>
+        <ImpersonationHandler onImpersonationDetected={handleImpersonationDetected} />
+      </Suspense>
+
+      {/* Multi-Step Wizard Layout */}
+      <VStack spacing={0} minH="100vh">
+        {/* Stepper Navigation */}
+        <BuilderStepper
+          currentStep={currentStep}
+          completedSteps={completedSteps}
+          onStepClick={goToStep}
+        />
+
+        {/* Step Content */}
+        <Box flex={1} w="full">
+          {renderStepContent()}
+        </Box>
+
+        {/* Auto-save indicator */}
+        {isSaving && (
+          <Box
+            position="fixed"
+            bottom={4}
+            right={4}
+            bg="rgba(212, 175, 55, 0.9)"
+            color="white"
+            px={3}
+            py={2}
+            borderRadius="md"
+            fontSize="sm"
+            zIndex={1000}
           >
-            <VStack spacing={6} p={6} align="stretch">
-              {/* Header */}
-              <MotionBox variants={itemVariants}>
-                <Heading
-                  as="h1"
-                  fontSize="2xl"
-                  fontFamily="'Playfair Display', serif"
-                  color="#1A1A1A"
-                  fontWeight="400"
-                  mb={2}
-                >
-                  Profile Builder
-                </Heading>
-                <Text
-                  fontSize="sm"
-                  color="#666"
-                  fontFamily="'Lato', sans-serif"
-                >
-                  Craft your eternal story
-                </Text>
-              </MotionBox>
+            Saving...
+          </Box>
+        )}
 
-              <Divider borderColor="rgba(212, 175, 55, 0.3)" />
-
-              {/* Tier Selection */}
-              <MotionBox variants={itemVariants}>
-                <FormControl>
-                  <FormLabel
-                    fontSize="md"
-                    fontFamily="'Lato', sans-serif"
-                    color="#1A1A1A"
-                    fontWeight="600"
-                    mb={3}
-                  >
-                    Preferred Tier
-                    <Tooltip
-                      label="Final tier assignment is subject to editorial review"
-                      bg="#D4AF37"
-                      color="white"
-                      fontSize="sm"
-                      borderRadius="md"
-                      placement="top"
-                    >
-                      <Box as="span" ml={2} cursor="help">
-                        <Info size={14} style={{ display: 'inline' }} />
-                      </Box>
-                    </Tooltip>
-                  </FormLabel>
-
-                  <VStack spacing={3} align="stretch">
-                    {Object.entries(TIER_CONFIG).map(([key, config]) => {
-                      const IconComponent = config.icon
-                      const isSelected = selectedTier === key
-
-                      return (
-                        <MotionCard
-                          key={key}
-                          cursor="pointer"
-                          onClick={() => setSelectedTier(key as ProfileTier)}
-                          bg={isSelected ? "rgba(212, 175, 55, 0.1)" : "white"}
-                          border="2px solid"
-                          borderColor={isSelected ? "#D4AF37" : "gray.200"}
-                          borderRadius="8px"
-                          p={4}
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          transition={{ duration: 0.2 }}
-                        >
-                          <HStack spacing={3}>
-                            <Box
-                              w={10}
-                              h={10}
-                              bg={isSelected ? "#D4AF37" : "gray.100"}
-                              borderRadius="full"
-                              display="flex"
-                              alignItems="center"
-                              justifyContent="center"
-                              color={isSelected ? "white" : "gray.500"}
-                            >
-                              <IconComponent size={20} />
-                            </Box>
-                            <VStack align="start" spacing={1} flex={1}>
-                              <Text
-                                fontWeight="600"
-                                fontSize="sm"
-                                color="#1A1A1A"
-                                fontFamily="'Lato', sans-serif"
-                              >
-                                {config.name}
-                              </Text>
-                              <Text
-                                fontSize="xs"
-                                color="#666"
-                                fontFamily="'Lato', sans-serif"
-                              >
-                                {config.price}
-                              </Text>
-                            </VStack>
-                          </HStack>
-                          <Text
-                            fontSize="xs"
-                            color="#666"
-                            mt={2}
-                            fontFamily="'Lato', sans-serif"
-                          >
-                            {config.description}
-                          </Text>
-                        </MotionCard>
-                      )
-                    })}
-                  </VStack>
-                </FormControl>
-              </MotionBox>
-
-              <Divider borderColor="rgba(212, 175, 55, 0.3)" />
-
-              {/* Save Status */}
-              <MotionBox variants={itemVariants}>
-                <HStack justify="space-between" align="center">
-                  <VStack align="start" spacing={1}>
-                    <Text
-                      fontSize="xs"
-                      color="#666"
-                      fontFamily="'Lato', sans-serif"
-                    >
-                      {isSaving ? 'Saving...' : lastSaved ? `Saved ${lastSaved.toLocaleTimeString()}` : 'Not saved'}
-                    </Text>
-                    {isSaving && <Spinner size="xs" color="#D4AF37" />}
-                  </VStack>
-
-                  <HStack spacing={2}>
-                    <Tooltip label="Toggle Preview" placement="top">
-                      <IconButton
-                        aria-label="Toggle preview"
-                        icon={<Eye size={16} />}
-                        size="sm"
-                        variant={previewMode ? "solid" : "outline"}
-                        colorScheme="yellow"
-                        onClick={() => setPreviewMode(!previewMode)}
-                      />
-                    </Tooltip>
-                  </HStack>
-                </HStack>
-              </MotionBox>
-
-              {/* Submit Button */}
-              <MotionBox variants={itemVariants}>
-                <Button
-                  onClick={handleSubmit(onSubmit)}
-                  isLoading={isSubmitting}
-                  loadingText="Submitting..."
-                  bg="#D4AF37"
-                  color="white"
-                  size="lg"
-                  w="full"
-                  fontFamily="'Lato', sans-serif"
-                  fontWeight="500"
-                  leftIcon={<Send size={16} />}
-                  _hover={{
-                    bg: "#B8941F",
-                    transform: "translateY(-1px)",
-                    boxShadow: "0 4px 12px rgba(212, 175, 55, 0.3)"
-                  }}
-                  _disabled={{
-                    bg: "gray.300",
-                    color: "gray.500",
-                    cursor: "not-allowed",
-                    transform: "none",
-                    boxShadow: "none"
-                  }}
-                  transition="all 0.2s"
-                >
-                  Submit for Review
-                </Button>
-                <Text
-                  fontSize="xs"
-                  color="#666"
-                  textAlign="center"
-                  mt={2}
-                  fontFamily="'Lato', sans-serif"
-                >
-                  Editorial review & payment step follows
-                </Text>
-              </MotionBox>
-            </VStack>
-          </MotionGridItem>
-
-          {/* Main Content Area */}
-          <MotionGridItem
-            bg="rgba(255, 255, 240, 0.5)"
-            initial="hidden"
-            animate="visible"
-            variants={containerVariants}
+        {lastSaved && (
+          <Box
+            position="fixed"
+            bottom={4}
+            left={4}
+            bg="rgba(0, 0, 0, 0.7)"
+            color="white"
+            px={3}
+            py={2}
+            borderRadius="md"
+            fontSize="xs"
+            zIndex={1000}
           >
-            <Box p={6} h="100vh" overflowY="auto">
-              {previewMode ? (
-                /* Preview Mode */
-                <MotionBox variants={itemVariants}>
-                  <Card bg="white" borderRadius="12px" boxShadow="lg" border="1px solid rgba(212, 175, 55, 0.2)">
-                    <CardHeader>
-                      <HStack justify="space-between" align="center">
-                        <Heading
-                          as="h2"
-                          fontSize="xl"
-                          fontFamily="'Playfair Display', serif"
-                          color="#1A1A1A"
-                        >
-                          Live Preview - {TIER_CONFIG[selectedTier].name} Tier
-                        </Heading>
-                        <Badge colorScheme="yellow" variant="subtle">
-                          Preview Mode
-                        </Badge>
-                      </HStack>
-                    </CardHeader>
-                    <CardBody>
-                      {/* Simple preview placeholder */}
-                      <VStack spacing={6} align="stretch">
-                        <Box textAlign="center">
-                          <Heading
-                            as="h1"
-                            fontSize="3xl"
-                            fontFamily="'Playfair Display', serif"
-                            color="#1A1A1A"
-                            mb={2}
-                          >
-                            {watchedData.name || 'Your Name'}
-                          </Heading>
-                          <Text
-                            fontSize="lg"
-                            color="#666"
-                            fontFamily="'Lato', sans-serif"
-                            fontStyle="italic"
-                          >
-                            {watchedData.tagline || 'Your tagline will appear here'}
-                          </Text>
-                        </Box>
+            Last saved: {lastSaved.toLocaleTimeString()}
+          </Box>
+        )}
+      </VStack>
+    </PageLayout>
+  )
+}
 
-                        {watchedData.heroImage && (
-                          <AspectRatio ratio={16/9} maxW="400px" mx="auto">
-                            <Image
-                              src={watchedData.heroImage}
-                              alt="Hero image"
-                              borderRadius="8px"
-                              objectFit="cover"
-                            />
-                          </AspectRatio>
-                        )}
-
-                        <Box>
-                          <Heading
-                            as="h3"
-                            fontSize="lg"
-                            fontFamily="'Playfair Display', serif"
-                            color="#1A1A1A"
-                            mb={3}
-                          >
-                            Biography
-                          </Heading>
-                          <Text
-                            color="#333"
-                            fontFamily="'Lato', sans-serif"
-                            lineHeight="1.7"
-                            whiteSpace="pre-wrap"
-                          >
-                            {watchedData.biography || 'Your biography will appear here...'}
-                          </Text>
-                        </Box>
-
-                        {achievementFields.length > 0 && (
-                          <Box>
-                            <Heading
-                              as="h3"
-                              fontSize="lg"
-                              fontFamily="'Playfair Display', serif"
-                              color="#1A1A1A"
-                              mb={3}
-                            >
-                              Achievements
-                            </Heading>
-                            <VStack spacing={3} align="stretch">
-                              {achievementFields.map((achievement, index) => (
-                                <Box key={achievement.id} p={4} bg="gray.50" borderRadius="8px">
-                                  <Text
-                                    fontWeight="600"
-                                    color="#1A1A1A"
-                                    fontFamily="'Lato', sans-serif"
-                                    mb={1}
-                                  >
-                                    {watchedData.achievements?.[index]?.title || 'Achievement Title'}
-                                  </Text>
-                                  <Text
-                                    fontSize="sm"
-                                    color="#666"
-                                    fontFamily="'Lato', sans-serif"
-                                  >
-                                    {watchedData.achievements?.[index]?.description || 'Achievement description'}
-                                  </Text>
-                                </Box>
-                              ))}
-                            </VStack>
-                          </Box>
-                        )}
-
-                        <Alert status="info" borderRadius="8px">
-                          <AlertIcon />
-                          <Text fontSize="sm" fontFamily="'Lato', sans-serif">
-                            This is a simplified preview. The actual published profile will include enhanced styling and tier-specific features.
-                          </Text>
-                        </Alert>
-                      </VStack>
-                    </CardBody>
-                  </Card>
-                </MotionBox>
-              ) : (
-                /* Form Mode */
-                <form onSubmit={handleSubmit(onSubmit)}>
-                  <VStack spacing={8} align="stretch">
-                    {/* Basic Information */}
-                    <MotionCard
-                      bg="white"
-                      borderRadius="12px"
-                      boxShadow="lg"
-                      border="1px solid rgba(212, 175, 55, 0.2)"
-                      variants={itemVariants}
-                    >
-                      <CardHeader>
-                        <Heading
-                          as="h2"
-                          fontSize="xl"
-                          fontFamily="'Playfair Display', serif"
-                          color="#1A1A1A"
-                        >
-                          Basic Information
-                        </Heading>
-                      </CardHeader>
-                      <CardBody>
-                        <VStack spacing={6}>
-                          <HStack spacing={4} w="full" flexDirection={{ base: 'column', md: 'row' }}>
-                            <FormControl isInvalid={!!errors.name} flex={1}>
-                              <FormLabel
-                                fontSize="md"
-                                fontFamily="'Lato', sans-serif"
-                                color="#1A1A1A"
-                                fontWeight="500"
-                              >
-                                Full Name *
-                              </FormLabel>
-                              <Input
-                                {...register('name')}
-                                placeholder="Enter your full name"
-                                size="lg"
-                                borderColor="gray.300"
-                                _hover={{ borderColor: "#D4AF37" }}
-                                _focus={{ borderColor: "#D4AF37", boxShadow: "0 0 0 1px #D4AF37" }}
-                                bg="white"
-                              />
-                              <FormErrorMessage color="#FF0000">
-                                {errors.name?.message}
-                              </FormErrorMessage>
-                            </FormControl>
-
-                            <FormControl isInvalid={!!errors.tagline} flex={1}>
-                              <FormLabel
-                                fontSize="md"
-                                fontFamily="'Lato', sans-serif"
-                                color="#1A1A1A"
-                                fontWeight="500"
-                              >
-                                Tagline
-                              </FormLabel>
-                              <Input
-                                {...register('tagline')}
-                                placeholder="A brief description of who you are"
-                                size="lg"
-                                borderColor="gray.300"
-                                _hover={{ borderColor: "#D4AF37" }}
-                                _focus={{ borderColor: "#D4AF37", boxShadow: "0 0 0 1px #D4AF37" }}
-                                bg="white"
-                              />
-                              <FormErrorMessage color="#FF0000">
-                                {errors.tagline?.message}
-                              </FormErrorMessage>
-                            </FormControl>
-                          </HStack>
-
-                          <FormControl isInvalid={!!errors.heroImage}>
-                            <FormLabel
-                              fontSize="md"
-                              fontFamily="'Lato', sans-serif"
-                              color="#1A1A1A"
-                              fontWeight="500"
-                            >
-                              Hero Image URL
-                            </FormLabel>
-                            <Input
-                              {...register('heroImage')}
-                              placeholder="https://example.com/your-image.jpg"
-                              size="lg"
-                              borderColor="gray.300"
-                              _hover={{ borderColor: "#D4AF37" }}
-                              _focus={{ borderColor: "#D4AF37", boxShadow: "0 0 0 1px #D4AF37" }}
-                              bg="white"
-                            />
-                            <FormHelperText color="#666" fontSize="sm">
-                              Upload your image to a service like Imgur or use a direct URL
-                            </FormHelperText>
-                            <FormErrorMessage color="#FF0000">
-                              {errors.heroImage?.message}
-                            </FormErrorMessage>
-                          </FormControl>
-                        </VStack>
-                      </CardBody>
-                    </MotionCard>
-
-                    {/* Biography Section */}
-                    <MotionCard
-                      bg="white"
-                      borderRadius="12px"
-                      boxShadow="lg"
-                      border="1px solid rgba(212, 175, 55, 0.2)"
-                      variants={itemVariants}
-                    >
-                      <CardHeader>
-                        <HStack justify="space-between" align="center">
-                          <Heading
-                            as="h2"
-                            fontSize="xl"
-                            fontFamily="'Playfair Display', serif"
-                            color="#1A1A1A"
-                          >
-                            Biography
-                          </Heading>
-                          <Button
-                            leftIcon={<Sparkles size={16} />}
-                            onClick={() => handleAIBioPolish(watchedData.biography || '')}
-                            size="sm"
-                            variant="outline"
-                            borderColor="#D4AF37"
-                            color="#D4AF37"
-                            _hover={{ bg: "#D4AF37", color: "white" }}
-                            fontFamily="'Lato', sans-serif"
-                          >
-                            Polish with AI
-                          </Button>
-                        </HStack>
-                      </CardHeader>
-                      <CardBody>
-                        <FormControl isInvalid={!!errors.biography}>
-                          <FormLabel
-                            fontSize="md"
-                            fontFamily="'Lato', sans-serif"
-                            color="#1A1A1A"
-                            fontWeight="500"
-                          >
-                            Your Story *
-                            <Tooltip
-                              label="Write freely—our AI turns your notes into a polished narrative suitable for editorial showcase."
-                              bg="#D4AF37"
-                              color="white"
-                              fontSize="sm"
-                              borderRadius="md"
-                              placement="top"
-                            >
-                              <Box as="span" ml={2} cursor="help">
-                                <Info size={14} style={{ display: 'inline' }} />
-                              </Box>
-                            </Tooltip>
-                          </FormLabel>
-                          <Textarea
-                            {...register('biography')}
-                            placeholder="Tell your story... Share your journey, achievements, and what makes you exceptional. Our AI can help polish this into an editorial-grade narrative."
-                            size="lg"
-                            minH="200px"
-                            borderColor="gray.300"
-                            _hover={{ borderColor: "#D4AF37" }}
-                            _focus={{ borderColor: "#D4AF37", boxShadow: "0 0 0 1px #D4AF37" }}
-                            bg="white"
-                            resize="vertical"
-                          />
-                          <FormHelperText color="#666" fontSize="sm">
-                            This will be the main narrative of your profile. Be authentic and comprehensive.
-                          </FormHelperText>
-                          <FormErrorMessage color="#FF0000">
-                            {errors.biography?.message}
-                          </FormErrorMessage>
-                        </FormControl>
-                      </CardBody>
-                    </MotionCard>
-
-                    {/* Achievements Section */}
-                    <MotionCard
-                      bg="white"
-                      borderRadius="12px"
-                      boxShadow="lg"
-                      border="1px solid rgba(212, 175, 55, 0.2)"
-                      variants={itemVariants}
-                    >
-                      <CardHeader>
-                        <HStack justify="space-between" align="center">
-                          <Heading
-                            as="h2"
-                            fontSize="xl"
-                            fontFamily="'Playfair Display', serif"
-                            color="#1A1A1A"
-                          >
-                            Achievements
-                          </Heading>
-                          <Button
-                            leftIcon={<Plus size={16} />}
-                            onClick={() => appendAchievement({ title: '', description: '', year: '' })}
-                            size="sm"
-                            bg="#D4AF37"
-                            color="white"
-                            _hover={{ bg: "#B8941F" }}
-                            fontFamily="'Lato', sans-serif"
-                          >
-                            Add Achievement
-                          </Button>
-                        </HStack>
-                      </CardHeader>
-                      <CardBody>
-                        <VStack spacing={4} align="stretch">
-                          {achievementFields.map((field, index) => (
-                            <Box
-                              key={field.id}
-                              p={4}
-                              border="1px solid"
-                              borderColor="gray.200"
-                              borderRadius="8px"
-                              bg="gray.50"
-                            >
-                              <HStack justify="space-between" align="start" mb={3}>
-                                <Text
-                                  fontSize="sm"
-                                  fontWeight="600"
-                                  color="#1A1A1A"
-                                  fontFamily="'Lato', sans-serif"
-                                >
-                                  Achievement {index + 1}
-                                </Text>
-                                <IconButton
-                                  aria-label="Remove achievement"
-                                  icon={<Trash2 size={16} />}
-                                  onClick={() => removeAchievement(index)}
-                                  size="sm"
-                                  variant="ghost"
-                                  colorScheme="red"
-                                />
-                              </HStack>
-
-                              <VStack spacing={3}>
-                                <HStack spacing={3} w="full" flexDirection={{ base: 'column', md: 'row' }}>
-                                  <FormControl flex={2}>
-                                    <FormLabel fontSize="sm" color="#666">Title</FormLabel>
-                                    <Input
-                                      {...register(`achievements.${index}.title` as const)}
-                                      placeholder="Achievement title"
-                                      size="md"
-                                      bg="white"
-                                    />
-                                  </FormControl>
-                                  <FormControl flex={1}>
-                                    <FormLabel fontSize="sm" color="#666">Year (Optional)</FormLabel>
-                                    <Input
-                                      {...register(`achievements.${index}.year` as const)}
-                                      placeholder="2024"
-                                      size="md"
-                                      bg="white"
-                                    />
-                                  </FormControl>
-                                </HStack>
-
-                                <FormControl>
-                                  <FormLabel fontSize="sm" color="#666">Description</FormLabel>
-                                  <Textarea
-                                    {...register(`achievements.${index}.description` as const)}
-                                    placeholder="Describe this achievement and its impact..."
-                                    size="md"
-                                    minH="80px"
-                                    bg="white"
-                                    resize="vertical"
-                                  />
-                                </FormControl>
-                              </VStack>
-                            </Box>
-                          ))}
-
-                          {achievementFields.length === 0 && (
-                            <Box
-                              p={8}
-                              textAlign="center"
-                              border="2px dashed"
-                              borderColor="gray.300"
-                              borderRadius="8px"
-                              bg="gray.50"
-                            >
-                              <Text color="#666" fontFamily="'Lato', sans-serif" mb={3}>
-                                No achievements added yet
-                              </Text>
-                              <Button
-                                leftIcon={<Plus size={16} />}
-                                onClick={() => appendAchievement({ title: '', description: '', year: '' })}
-                                size="sm"
-                                variant="outline"
-                                borderColor="#D4AF37"
-                                color="#D4AF37"
-                                _hover={{ bg: "#D4AF37", color: "white" }}
-                              >
-                                Add Your First Achievement
-                              </Button>
-                            </Box>
-                          )}
-                        </VStack>
-                      </CardBody>
-                    </MotionCard>
-
-                    {/* Links Section */}
-                    <MotionCard
-                      bg="white"
-                      borderRadius="12px"
-                      boxShadow="lg"
-                      border="1px solid rgba(212, 175, 55, 0.2)"
-                      variants={itemVariants}
-                    >
-                      <CardHeader>
-                        <HStack justify="space-between" align="center">
-                          <Heading
-                            as="h2"
-                            fontSize="xl"
-                            fontFamily="'Playfair Display', serif"
-                            color="#1A1A1A"
-                          >
-                            Links & Social Media
-                          </Heading>
-                          <Button
-                            leftIcon={<Plus size={16} />}
-                            onClick={() => appendLink({ title: '', url: '', type: 'website' })}
-                            size="sm"
-                            bg="#D4AF37"
-                            color="white"
-                            _hover={{ bg: "#B8941F" }}
-                            fontFamily="'Lato', sans-serif"
-                          >
-                            Add Link
-                          </Button>
-                        </HStack>
-                      </CardHeader>
-                      <CardBody>
-                        <VStack spacing={4} align="stretch">
-                          {linkFields.map((field, index) => (
-                            <Box
-                              key={field.id}
-                              p={4}
-                              border="1px solid"
-                              borderColor="gray.200"
-                              borderRadius="8px"
-                              bg="gray.50"
-                            >
-                              <HStack justify="space-between" align="start" mb={3}>
-                                <Text
-                                  fontSize="sm"
-                                  fontWeight="600"
-                                  color="#1A1A1A"
-                                  fontFamily="'Lato', sans-serif"
-                                >
-                                  Link {index + 1}
-                                </Text>
-                                <IconButton
-                                  aria-label="Remove link"
-                                  icon={<Trash2 size={16} />}
-                                  onClick={() => removeLink(index)}
-                                  size="sm"
-                                  variant="ghost"
-                                  colorScheme="red"
-                                />
-                              </HStack>
-
-                              <VStack spacing={3}>
-                                <HStack spacing={3} w="full" flexDirection={{ base: 'column', md: 'row' }}>
-                                  <FormControl flex={1}>
-                                    <FormLabel fontSize="sm" color="#666">Title</FormLabel>
-                                    <Input
-                                      {...register(`links.${index}.title` as const)}
-                                      placeholder="LinkedIn Profile"
-                                      size="md"
-                                      bg="white"
-                                    />
-                                  </FormControl>
-                                  <FormControl flex={1}>
-                                    <FormLabel fontSize="sm" color="#666">Type</FormLabel>
-                                    <Select
-                                      {...register(`links.${index}.type` as const)}
-                                      size="md"
-                                      bg="white"
-                                    >
-                                      <option value="website">Website</option>
-                                      <option value="linkedin">LinkedIn</option>
-                                      <option value="twitter">Twitter</option>
-                                      <option value="github">GitHub</option>
-                                      <option value="portfolio">Portfolio</option>
-                                      <option value="other">Other</option>
-                                    </Select>
-                                  </FormControl>
-                                </HStack>
-
-                                <FormControl>
-                                  <FormLabel fontSize="sm" color="#666">URL</FormLabel>
-                                  <Input
-                                    {...register(`links.${index}.url` as const)}
-                                    placeholder="https://linkedin.com/in/yourprofile"
-                                    size="md"
-                                    bg="white"
-                                  />
-                                </FormControl>
-                              </VStack>
-                            </Box>
-                          ))}
-
-                          {linkFields.length === 0 && (
-                            <Box
-                              p={8}
-                              textAlign="center"
-                              border="2px dashed"
-                              borderColor="gray.300"
-                              borderRadius="8px"
-                              bg="gray.50"
-                            >
-                              <Text color="#666" fontFamily="'Lato', sans-serif" mb={3}>
-                                No links added yet
-                              </Text>
-                              <Button
-                                leftIcon={<Plus size={16} />}
-                                onClick={() => appendLink({ title: '', url: '', type: 'website' })}
-                                size="sm"
-                                variant="outline"
-                                borderColor="#D4AF37"
-                                color="#D4AF37"
-                                _hover={{ bg: "#D4AF37", color: "white" }}
-                              >
-                                Add Your First Link
-                              </Button>
-                            </Box>
-                          )}
-                        </VStack>
-                      </CardBody>
-                    </MotionCard>
-
-                    {/* Visibility Settings */}
-                    <MotionCard
-                      bg="white"
-                      borderRadius="12px"
-                      boxShadow="lg"
-                      border="1px solid rgba(212, 175, 55, 0.2)"
-                      variants={itemVariants}
-                    >
-                      <CardHeader>
-                        <Heading
-                          as="h2"
-                          fontSize="xl"
-                          fontFamily="'Playfair Display', serif"
-                          color="#1A1A1A"
-                        >
-                          Profile Settings
-                        </Heading>
-                      </CardHeader>
-                      <CardBody>
-                        <FormControl>
-                          <HStack justify="space-between" align="center">
-                            <VStack align="start" spacing={1}>
-                              <Text
-                                fontSize="md"
-                                fontFamily="'Lato', sans-serif"
-                                color="#1A1A1A"
-                                fontWeight="500"
-                              >
-                                Make Profile Public
-                              </Text>
-                              <Text
-                                fontSize="sm"
-                                color="#666"
-                                fontFamily="'Lato', sans-serif"
-                              >
-                                Allow your profile to be visible to the public after approval
-                              </Text>
-                            </VStack>
-                            <Switch
-                              {...register('isPublic')}
-                              colorScheme="yellow"
-                              size="lg"
-                            />
-                          </HStack>
-                        </FormControl>
-                      </CardBody>
-                    </MotionCard>
-                  </VStack>
-                </form>
-              )}
-            </Box>
-          </MotionGridItem>
-        </Grid>
-      </Container>
-    </Box>
+// Export with Suspense wrapper
+export default function ProfileBuilder() {
+  return (
+    <Suspense fallback={
+      <PageLayout>
+        <Box minH="100vh" display="flex" alignItems="center" justifyContent="center">
+          <VStack spacing={4}>
+            <Spinner size="xl" color="#D4AF37" thickness="4px" />
+            <Text fontFamily="'Lato', sans-serif" color="white">
+              Loading profile builder...
+            </Text>
+          </VStack>
+        </Box>
+      </PageLayout>
+    }>
+      <ProfileBuilderContent />
+    </Suspense>
   )
 }

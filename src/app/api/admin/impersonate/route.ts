@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get current user from Supabase
-    const supabase = createClient()
+    const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
@@ -75,11 +75,11 @@ export async function POST(request: NextRequest) {
 
     // Log impersonation start
     await supabase
-      .from('audit_logs')
+      .from('analytics_events')
       .insert({
         user_id: user.id,
-        action: 'impersonation_start',
-        details: {
+        event_type: 'impersonation_start',
+        metadata: {
           target_user_id: targetUserId,
           target_email: targetUser.email,
           session_token: sessionToken.substring(0, 10) + '...' // Partial token for logging
@@ -125,13 +125,13 @@ export async function DELETE(request: NextRequest) {
     activeSessions.delete(sessionToken)
 
     // Log impersonation end
-    const supabase = createClient()
+    const supabase = await createClient()
     await supabase
-      .from('audit_logs')
+      .from('analytics_events')
       .insert({
         user_id: tokenPayload.originalUserId,
-        action: 'impersonation_end',
-        details: {
+        event_type: 'impersonation_end',
+        metadata: {
           target_user_id: tokenPayload.targetUserId,
           session_token: sessionToken.substring(0, 10) + '...'
         },

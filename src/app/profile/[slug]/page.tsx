@@ -1,27 +1,63 @@
 import { Metadata } from 'next'
-import { notFound } from 'next/navigation'
-import { createServerClient } from '@/lib/supabase/server'
-import { ProfileData, ThemeSettings, EnhancedProfileData } from '@/types/profile'
-import { RisingTemplate } from '@/components/templates/RisingTemplate'
-import { EliteTemplate } from '@/components/templates/EliteTemplate'
+import { notFound, redirect } from 'next/navigation'
+import { createPublicServerClient, createServerClient } from '@/lib/supabase/server'
+import { ProfileData } from '@/types/profile'
+import { EmergingTemplate } from '@/components/templates/EmergingTemplate'
+import { AccomplishedTemplate } from '@/components/templates/AccomplishedTemplate'
+import { DistinguishedTemplate } from '@/components/templates/DistinguishedTemplate'
 import { LegacyTemplate } from '@/components/templates/LegacyTemplate'
+import { PreviewWatermark } from '@/components/ui/PreviewWatermark'
 
 interface ProfilePageProps {
-  params: {
+  params: Promise<{
     slug: string
-  }
+  }>
+  searchParams: Promise<{
+    preview?: string
+  }>
 }
 
 // Generate metadata for SEO and social sharing
-export async function generateMetadata({ params }: ProfilePageProps): Promise<Metadata> {
-  const supabase = await createServerClient()
-  
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('slug', params.slug)
-    .eq('status', 'published')
-    .single()
+export async function generateMetadata({ params, searchParams }: ProfilePageProps): Promise<Metadata> {
+  const { slug } = await params
+  const { preview } = await searchParams
+  const isPreview = preview === 'true'
+
+  // Use appropriate client based on preview mode
+  const supabase = isPreview ? await createServerClient() : createPublicServerClient()
+
+  let profile
+
+  if (isPreview) {
+    // For preview mode, fetch from drafts table
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return {
+        title: 'Unauthorized - Icons Herald',
+        description: 'Authentication required for preview mode.',
+      }
+    }
+
+    const { data } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('slug', slug)
+      .eq('user_id', user.id)
+      .eq('status', 'draft')
+      .single()
+
+    profile = data
+  } else {
+    // For public mode, fetch from published profiles
+    const { data } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('slug', slug)
+      .eq('status', 'published')
+      .single()
+
+    profile = data
+  }
 
   if (!profile) {
     return {
@@ -30,15 +66,15 @@ export async function generateMetadata({ params }: ProfilePageProps): Promise<Me
     }
   }
 
-  const profileData = profile.data as ProfileData
+  const profileData = profile.content as unknown as ProfileData
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://iconsherald.com'
-  const profileUrl = `${baseUrl}/profile/${params.slug}`
+  const profileUrl = `${baseUrl}/profile/${slug}`
 
   const tierLabel = profile.tier === 'elite' ? 'Elite' :
                    profile.tier === 'legacy' ? 'Legacy' : 'Rising'
   const description = profile.tier === 'elite' ?
     `Discover ${profileData.name}'s commanding legacy in our exclusive archive—crafted with AI precision for timeless impact.` :
-    profileData.bio.substring(0, 160) + '...'
+    ((profileData as any).bio?.original || (profileData as any).bio || '').substring(0, 160) + '...'
 
   return {
     title: `${profileData.name} - ${tierLabel} Icon Profile | ICONS HERALD`,
@@ -92,14 +128,14 @@ export async function generateMetadata({ params }: ProfilePageProps): Promise<Me
     other: {
       'profile:first_name': profileData.name.split(' ')[0],
       'profile:last_name': profileData.name.split(' ').slice(1).join(' '),
-      'profile:username': params.slug,
+      'profile:username': slug,
     },
   }
 }
 
 // Generate static params for ISR
 export async function generateStaticParams() {
-  const supabase = await createServerClient()
+  const supabase = createPublicServerClient()
   
   const { data: profiles } = await supabase
     .from('profiles')
@@ -112,54 +148,127 @@ export async function generateStaticParams() {
   })) || []
 }
 
-export default async function ProfilePage({ params }: ProfilePageProps) {
-  const supabase = await createServerClient()
-  
-  const { data: profile, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('slug', params.slug)
-    .eq('status', 'published')
-    .single()
+export default async function ProfilePage({ params, searchParams }: ProfilePageProps) {
+  const { slug } = await params
+  const { preview } = await searchParams
+  const isPreview = preview === 'true'
 
-  if (error || !profile) {
-    notFound()
+  // Use appropriate client based on preview mode
+  const supabase = isPreview ? await createServerClient() : createPublicServerClient()
+
+  let profile
+  let user = null
+
+  if (isPreview) {
+    // For preview mode, require authentication and fetch draft
+    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser()
+    if (authError || !authUser) {
+      redirect('/auth/signin?redirect=' + encodeURIComponent(`/profile/${slug}?preview=true`))
+    }
+
+    user = authUser
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('slug', slug)
+      .eq('user_id', authUser.id)
+      .eq('status', 'draft')
+      .single()
+
+    profile = data
+
+    if (error || !profile) {
+      notFound()
+    }
+  } else {
+    // For public mode, fetch published profile
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('slug', slug)
+      .eq('status', 'published')
+      .single()
+
+    profile = data
+
+    if (error || !profile) {
+      notFound()
+    }
   }
 
-  const profileData = profile.data as ProfileData
-  const themeSettings = profile.theme_settings as ThemeSettings
+  const profileData = profile.content as unknown as ProfileData
 
-  // Transform data for Elite template
+  // Transform data for template compatibility - pass through all fields from published content
   const transformedProfile = {
     id: profile.id,
-    name: profileData.name,
-    tagline: profileData.tagline,
-    heroImage: profileData.profileImage,
-    biography: profileData.bio,
-    aiPolishedBio: profileData.aiPolishedBio,
+    name: profileData.name || '',
+    tagline: profileData.tagline || '',
+    heroImage: profileData.profileImage || '',
+    biography: (profileData as any).bio?.original || (profileData as any).biography || (profileData as any).bio || '',
+    bio: {
+      original: (profileData as any).bio?.original || (profileData as any).biography || (profileData as any).bio || '',
+      ai_polished: (profileData as any).bio?.ai_polished || null
+    },
+    aiPolishedBio: (profileData as any).bio?.ai_polished,
     tier: profile.tier,
-    achievements: profileData.achievements || [],
-    quote: profileData.quote || null,
-    gallery: profileData.gallery || [],
-    links: profileData.socialLinks ? Object.entries(profileData.socialLinks).map(([type, url]) => ({
-      title: type.charAt(0).toUpperCase() + type.slice(1),
-      url: url as string,
-      type: type as 'website' | 'linkedin' | 'twitter' | 'other'
-    })) : [],
-    publishedAt: profile.published_at,
+
+    // Common fields for all tiers
+    achievements: (profileData as any).achievements || [],
+    gallery: (profileData as any).gallery || [],
+    links: (profileData as any).links || [],
+    sections: (profileData as any).sections || {},
+    quote: (profileData as any).quote || null,
+
+    // Rising-specific fields
+    currentRole: (profileData as any).currentRole || '',
+    company: (profileData as any).company || '',
+    skills: (profileData as any).skills || [],
+    aspirations: (profileData as any).aspirations || '',
+    projects: (profileData as any).projects || [],
+
+    // Elite-specific fields
+    industry: (profileData as any).industry || '',
+    yearsOfExperience: (profileData as any).yearsOfExperience || 0,
+    expertise: (profileData as any).expertise || [],
+    leadership: (profileData as any).leadership || [],
+    awards: (profileData as any).awards || [],
+
+    // Legacy-specific fields
+    legacy: (profileData as any).legacy || '',
+    era: (profileData as any).era || '',
+    primaryContributions: (profileData as any).primaryContributions || [],
+    historicalImpact: (profileData as any).historicalImpact || '',
+    timeline: (profileData as any).timeline || [],
+    quotes: (profileData as any).quotes || [],
+    recognitions: (profileData as any).recognitions || [],
+    influence: (profileData as any).influence || [],
+    tributes: (profileData as any).tributes || [],
+    enduringContributions: (profileData as any).enduringContributions,
+
+    // Metadata
+    publishedAt: profile.published_at || undefined,
     slug: profile.slug,
   }
 
   // Render the appropriate template based on tier
   const renderTemplate = () => {
     switch (profile.tier) {
-      case 'elite':
-        return <EliteTemplate profile={transformedProfile} />
+      case 'emerging':
+        return <EmergingTemplate profile={transformedProfile} />
+      case 'accomplished':
+        return <AccomplishedTemplate profile={transformedProfile} />
+      case 'distinguished':
+        return <DistinguishedTemplate profile={transformedProfile} />
       case 'legacy':
-        return <LegacyTemplate data={profileData as any} theme={themeSettings} />
+        return <LegacyTemplate profile={transformedProfile} />
+      // Backward compatibility for old tier names
       case 'rising':
+        return <AccomplishedTemplate profile={transformedProfile} />
+      case 'elite':
+        return <DistinguishedTemplate profile={transformedProfile} />
       default:
-        return <RisingTemplate data={profileData as any} theme={themeSettings} />
+        return <EmergingTemplate profile={transformedProfile} />
     }
   }
 
@@ -175,7 +284,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
             name: profileData.name,
             description: profileData.bio,
             image: profileData.profileImage,
-            url: `${process.env.NEXT_PUBLIC_APP_URL}/profile/${params.slug}`,
+            url: `${process.env.NEXT_PUBLIC_APP_URL}/profile/${(await params).slug}`,
             sameAs: Object.values(profileData.socialLinks || {}).filter(Boolean),
             jobTitle: 'currentRole' in profileData ? profileData.currentRole : undefined,
             worksFor: 'company' in profileData ? {
@@ -189,6 +298,12 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
           }),
         }}
       />
+      {isPreview && (
+        <PreviewWatermark
+          profileSlug={profile.slug}
+          tier={profile.tier as 'rising' | 'elite' | 'legacy'}
+        />
+      )}
       {renderTemplate()}
     </>
   )

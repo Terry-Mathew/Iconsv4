@@ -6,7 +6,7 @@ import { rateLimit } from '@/lib/utils/rate-limit'
 export async function POST(request: NextRequest) {
   try {
     // Rate limiting
-    const identifier = request.ip ?? 'anonymous'
+    const identifier = request.headers.get('x-forwarded-for') ?? 'anonymous'
     const { success } = await rateLimit.limit(identifier)
     
     if (!success) {

@@ -1,5 +1,6 @@
 import { EliteTemplate } from '@/components/templates/EliteTemplate'
 import { EnhancedProfileData } from '@/types/profile'
+import { PageLayout } from '@/components/layout/PageLayout'
 
 // Sample Elite Profile Data for $50,000 Premium Showcase
 const sampleEliteProfile: EnhancedProfileData = {
@@ -155,5 +156,9 @@ export const metadata = {
 }
 
 export default function EliteDemoPage() {
-  return <EliteTemplate profile={sampleEliteProfile} />
+  return (
+    <PageLayout>
+      <EliteTemplate profile={sampleEliteProfile} />
+    </PageLayout>
+  )
 }

@@ -165,7 +165,7 @@ export function UsersManagement({ globalSearch, adminUser, onRefresh }: UsersMan
           id: '1',
           email: 'john.doe@example.com',
           name: 'John Doe',
-          avatar_url: null,
+          avatar_url: undefined,
           role: 'member',
           status: 'active',
           last_login: '2024-01-15T10:30:00Z',
@@ -176,7 +176,7 @@ export function UsersManagement({ globalSearch, adminUser, onRefresh }: UsersMan
           id: '2',
           email: 'jane.smith@example.com',
           name: 'Jane Smith',
-          avatar_url: null,
+          avatar_url: undefined,
           role: 'admin',
           status: 'active',
           last_login: '2024-01-16T14:20:00Z',
@@ -187,7 +187,7 @@ export function UsersManagement({ globalSearch, adminUser, onRefresh }: UsersMan
           id: '3',
           email: 'bob.wilson@example.com',
           name: 'Bob Wilson',
-          avatar_url: null,
+          avatar_url: undefined,
           role: 'applicant',
           status: 'suspended',
           last_login: '2024-01-10T09:15:00Z',
@@ -198,7 +198,7 @@ export function UsersManagement({ globalSearch, adminUser, onRefresh }: UsersMan
           id: '4',
           email: 'alice.brown@example.com',
           name: 'Alice Brown',
-          avatar_url: null,
+          avatar_url: undefined,
           role: 'member',
           status: 'active',
           last_login: '2024-01-17T16:45:00Z',
@@ -209,7 +209,7 @@ export function UsersManagement({ globalSearch, adminUser, onRefresh }: UsersMan
           id: '5',
           email: 'charlie.davis@example.com',
           name: 'Charlie Davis',
-          avatar_url: null,
+          avatar_url: undefined,
           role: 'visitor',
           status: 'banned',
           last_login: '2024-01-05T12:00:00Z',
@@ -251,7 +251,7 @@ export function UsersManagement({ globalSearch, adminUser, onRefresh }: UsersMan
   const handleRoleChange = async (userId: string, newRole: string) => {
     try {
       const { error } = await supabase
-        .from('profiles')
+        .from('users')
         .update({ role: newRole })
         .eq('id', userId)
 

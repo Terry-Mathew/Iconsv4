@@ -4,8 +4,9 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
 import { Database } from '@/types/supabase'
+import { withCache, CacheKeys, CacheInvalidation } from '@/lib/cache/query-cache'
 
-type UserRole = Database['public']['Enums']['user_role']
+type UserRole = 'admin' | 'super_admin' | 'member' | 'applicant' | 'visitor'
 
 interface AuthUser extends User {
   role?: UserRole
@@ -24,74 +25,160 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
+// Cached user role fetch function
+const fetchUserRole = withCache(
+  async (userId: string) => {
+    const supabase = createClient()
+    const { data: profile } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', userId)
+      .single()
+
+    return (profile?.role as UserRole) || 'visitor'
+  },
+  (userId: string) => CacheKeys.USER_ROLE(userId),
+  2 * 60 * 1000 // 2 minutes cache
+)
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null)
-  const [loading, setLoading] = useState(true)
-  const supabase = createClient()
+  const [loading, setLoading] = useState(true) // Start with loading true
 
+  // Initialize Supabase client and auth state
   useEffect(() => {
-    const getUser = async () => {
-      const { data: { user: authUser } } = await supabase.auth.getUser()
-      
-      if (authUser) {
-        // Fetch user role and profile info
-        const { data: userData } = await supabase
-          .from('users')
-          .select('role, profile_id')
-          .eq('id', authUser.id)
-          .single()
+    let mounted = true
 
-        setUser({
-          ...authUser,
-          role: userData?.role,
-          profile_id: userData?.profile_id,
-        })
-      } else {
-        setUser(null)
-      }
-      
-      setLoading(false)
-    }
+    const initializeAuth = async () => {
+      try {
+        const supabase = createClient()
+        console.log('✅ AuthProvider: Supabase client initialized')
 
-    getUser()
+        // Get initial session (non-blocking)
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (session?.user) {
-          const { data: userData } = await supabase
-            .from('users')
-            .select('role, profile_id')
-            .eq('id', session.user.id)
-            .single()
-
+        if (sessionError) {
+          console.error('Session error:', sessionError)
+          if (mounted) {
+            setLoading(false)
+          }
+        } else if (session?.user && mounted) {
+          // Set user immediately with basic info to prevent blocking
           setUser({
             ...session.user,
-            role: userData?.role,
-            profile_id: userData?.profile_id,
+            role: 'visitor' // Default role, will be updated async
           })
-        } else {
-          setUser(null)
+          setLoading(false)
+
+          // Fetch user profile data asynchronously (non-blocking)
+          fetchUserRole(session.user.id)
+            .then(role => {
+              if (mounted) {
+                setUser(prev => prev ? {
+                  ...prev,
+                  role
+                } : null)
+              }
+            })
+            .catch(error => {
+              console.warn('Failed to fetch user role:', error)
+            })
+        } else if (mounted) {
+          setLoading(false)
         }
-        setLoading(false)
+
+        // Listen for auth changes
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(
+          async (event, session) => {
+            console.log('Auth state changed:', event, session?.user?.email)
+
+            if (session?.user && mounted) {
+              // Set user immediately to prevent blocking
+              setUser({
+                ...session.user,
+                role: 'visitor' // Default role, will be updated async
+              })
+
+              // Fetch user profile data asynchronously (non-blocking)
+              fetchUserRole(session.user.id)
+                .then(role => {
+                  if (mounted) {
+                    setUser(prev => prev ? {
+                      ...prev,
+                      role
+                    } : null)
+                  }
+                })
+                .catch(error => {
+                  console.warn('Failed to fetch user role on auth change:', error)
+                })
+            } else if (mounted) {
+              setUser(null)
+            }
+          }
+        )
+
+        if (mounted) {
+          setLoading(false)
+        }
+
+        return () => {
+          subscription.unsubscribe()
+        }
+      } catch (error) {
+        console.error('Auth initialization error:', error)
+        if (mounted) {
+          setLoading(false)
+        }
       }
-    )
+    }
 
-    return () => subscription.unsubscribe()
-  }, [supabase])
+    initializeAuth()
 
+    return () => {
+      mounted = false
+    }
+  }, [])
+
+  // Enhanced sign-in function
   const signIn = async (email: string) => {
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-      },
-    })
-    return { error }
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.auth.signInWithOtp({
+        email: email.toLowerCase().trim(),
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`
+        }
+      })
+
+      if (error) {
+        console.error('Sign-in error:', error)
+        return { error }
+      }
+
+      console.log('✅ Sign-in OTP sent to:', email)
+      return { error: null }
+    } catch (error) {
+      console.error('Sign-in error:', error)
+      return { error }
+    }
   }
 
+  // Enhanced sign-out function
   const signOut = async () => {
-    await supabase.auth.signOut()
-    setUser(null)
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.auth.signOut()
+
+      if (error) {
+        console.error('Sign-out error:', error)
+      } else {
+        setUser(null)
+        console.log('✅ User signed out successfully')
+      }
+    } catch (error) {
+      console.error('Sign-out error:', error)
+    }
   }
 
   const hasRole = (roles: UserRole[]) => {

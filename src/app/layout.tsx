@@ -1,19 +1,39 @@
 import type { Metadata } from 'next'
-import { Inter, Playfair_Display, Lato } from 'next/font/google'
+import { Playfair_Display, Lato, Lora } from 'next/font/google'
 import { ChakraProvider } from '@chakra-ui/react'
 import { AuthProvider } from '@/lib/auth/auth-context'
 import { Navbar } from '@/components/ui/Navbar'
+import { PerformanceMonitor } from '@/components/dev/PerformanceMonitor'
+// Removed SmoothScrollProvider - using native browser scrolling for better performance
+import { theme } from '@/lib/chakra-theme'
 import '@/styles/globals.css'
 
-const inter = Inter({ subsets: ['latin'] })
+// ICONS HERALD Typography System
 const playfair = Playfair_Display({
   subsets: ['latin'],
-  variable: '--font-playfair'
+  weight: ['400', '600', '700'],
+  variable: '--font-playfair',
+  display: 'swap',
+  preload: true,
+  fallback: ['Georgia', 'serif'],
 })
+
 const lato = Lato({
   subsets: ['latin'],
   weight: ['300', '400', '700'],
-  variable: '--font-lato'
+  variable: '--font-lato',
+  display: 'swap',
+  preload: true,
+  fallback: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+})
+
+const lora = Lora({
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  variable: '--font-lora',
+  display: 'swap',
+  preload: true,
+  fallback: ['Georgia', 'serif'],
 })
 
 export const metadata: Metadata = {
@@ -23,6 +43,15 @@ export const metadata: Metadata = {
   authors: [{ name: 'Icons Herald' }],
   creator: 'Icons Herald',
   publisher: 'Icons Herald',
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: '32x32', type: 'image/x-icon' },
+      { url: '/favicon.svg', sizes: 'any', type: 'image/svg+xml' }
+    ],
+    apple: [
+      { url: '/favicon.svg', sizes: '180x180', type: 'image/svg+xml' }
+    ]
+  },
   openGraph: {
     title: 'Icons Herald: Where Legacies Endure',
     description: 'Claim your permanent place among the extraordinary. Our invitation-only platform transforms achievements into editorial masterpieces.',
@@ -47,12 +76,15 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body className={`${inter.className} ${playfair.variable} ${lato.variable}`}>
-        <ChakraProvider>
+    <html lang="en" className={`${playfair.variable} ${lato.variable} ${lora.variable}`}>
+      <body className={lato.className}>
+        <ChakraProvider theme={theme}>
           <AuthProvider>
             <Navbar />
-            {children}
+            <main>
+              {children}
+            </main>
+            <PerformanceMonitor />
           </AuthProvider>
         </ChakraProvider>
       </body>

@@ -1,5 +1,6 @@
 import { RisingTemplate } from '@/components/templates/RisingTemplate'
 import { ProfileContentData } from '@/lib/validations/profile'
+import { PageLayout } from '@/components/layout/PageLayout'
 
 // Sample Rising Profile Data for Aspirational Showcase
 const sampleRisingProfile: ProfileContentData & {
@@ -47,18 +48,22 @@ const sampleRisingProfile: ProfileContentData & {
   ],
   gallery: [
     {
+      type: 'image' as const,
       url: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&h=600&fit=crop',
       caption: 'Presenting at Sustainable Tech Conference 2024'
     },
     {
+      type: 'image' as const,
       url: 'https://images.unsplash.com/photo-1556761175-b413da4baf72?w=800&h=600&fit=crop',
       caption: 'Collaborating on open source projects'
     },
     {
+      type: 'image' as const,
       url: 'https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?w=800&h=600&fit=crop',
       caption: 'Working on sustainable design solutions'
     },
     {
+      type: 'image' as const,
       url: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=600&fit=crop',
       caption: 'Team brainstorming session'
     }
@@ -84,9 +89,7 @@ const sampleRisingProfile: ProfileContentData & {
       url: 'https://github.com/jordanchen',
       type: 'other'
     }
-  ],
-  publishedAt: '2024-01-20T00:00:00Z',
-  slug: 'jordan-chen'
+  ]
 }
 
 export const metadata = {
@@ -96,5 +99,9 @@ export const metadata = {
 }
 
 export default function RisingDemoPage() {
-  return <RisingTemplate profile={sampleRisingProfile} />
+  return (
+    <PageLayout>
+      <RisingTemplate profile={sampleRisingProfile} />
+    </PageLayout>
+  )
 }

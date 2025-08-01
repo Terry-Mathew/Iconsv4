@@ -20,7 +20,7 @@ This rulebook defines mandatory protocols for all AI-driven code generation, mod
 1. **Context Hygiene (Ignore Lists)**: Do not read or index files in `.gitignore` or a custom `.ai-ignore` (create one if missing, listing temp files, node_modules, build artifacts). Focus only on src/, app/, components/, lib/, etc.
 2. **Temporary File Management**: For temp files (e.g., during testing), create them in a /tmp/ directory (add to .ai-ignore). Delete them before task completion; never commit temps to the repo.
 3. **Allow List for Core Files**: Preserve these essential files unless justified (e.g., full refactor with approval). Propose deletions only if obsolete and non-impacting:
-   - Core: /app/page.tsx (landing), /app/nominate/page.tsx, /app/builder/page.tsx, /app/admin/page.tsx, /app/profile/[slug]/page.tsx, /app/about/page.tsx, /app/process/page.tsx, /app/contact/page.tsx.
+   - Core: /app/page.tsx (landing with anchors), /app/builder/page.tsx, /app/admin/page.tsx, /app/profile/[slug]/page.tsx, /app/dashboard/page.tsx, /app/profiles/page.tsx.
    - Components: /components/forms/* (e.g., NominationForm.tsx, ProfileBuilder.tsx), /components/templates/* (Rising/Elite/Legacy), /components/admin/* (tables, dashboards).
    - Lib: /lib/supabase/* (client/server), /lib/auth/*, /lib/validations/*, /lib/razorpay.ts.
    - API Routes: /app/api/* (e.g., payment/create-order, ai/polish-bio).

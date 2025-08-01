@@ -7,7 +7,6 @@ export async function GET() {
 Allow: /
 Allow: /profile/*
 Allow: /profiles
-Allow: /nominate
 
 Disallow: /admin
 Disallow: /api/

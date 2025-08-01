@@ -32,21 +32,19 @@ export default function ProfileNotFound() {
               <VStack spacing={3} pt={4}>
                 <Link href="/">
                   <Button
-                    leftIcon={<Home size={20} />}
                     colorScheme="primary"
                     size="lg"
                   >
-                    Go Home
+                    🏠 Go Home
                   </Button>
                 </Link>
-                
+
                 <Link href="/profiles">
                   <Button
-                    leftIcon={<Search size={20} />}
                     variant="outline"
                     size="lg"
                   >
-                    Browse Profiles
+                    🔍 Browse Profiles
                   </Button>
                 </Link>
               </VStack>

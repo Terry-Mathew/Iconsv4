@@ -4,16 +4,22 @@ import { polishBioWithClaude } from '@/lib/ai/claude'
 import { rateLimit } from '@/lib/utils/rate-limit'
 import { z } from 'zod'
 
-const polishBioSchema = z.object({
-  bio: z.string().min(50).max(5000),
-  tone: z.enum(['professional', 'casual', 'formal']).optional().default('professional'),
-  tier: z.enum(['rising', 'elite', 'legacy']).optional().default('elite')
+const polishTextSchema = z.object({
+  // Support both 'bio' and 'text' for backward compatibility
+  bio: z.string().optional(),
+  text: z.string().optional(),
+  fieldType: z.enum(['bio', 'achievement', 'description', 'tagline', 'summary']).optional().default('bio'),
+  tone: z.enum(['professional', 'casual', 'formal', 'confident', 'compelling', 'clear']).optional().default('professional'),
+  tier: z.enum(['emerging', 'accomplished', 'distinguished', 'legacy']).optional().default('accomplished'),
+  length: z.enum(['concise', 'balanced', 'detailed', 'comprehensive']).optional().default('balanced')
+}).refine(data => data.bio || data.text, {
+  message: "Either 'bio' or 'text' must be provided"
 })
 
 export async function POST(request: NextRequest) {
   try {
     // Rate limiting - more restrictive for AI endpoints
-    const identifier = request.ip ?? 'anonymous'
+    const identifier = request.headers.get('x-forwarded-for') ?? 'anonymous'
     const { success } = await rateLimit.limit(identifier, {
       requests: 5,
       window: '1h'
@@ -62,10 +68,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     
     // Validate input
-    const validationResult = polishBioSchema.safeParse(body)
+    const validationResult = polishTextSchema.safeParse(body)
     if (!validationResult.success) {
       return NextResponse.json(
-        { 
+        {
           error: 'Invalid input data',
           details: validationResult.error.errors
         },
@@ -73,39 +79,65 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { bio, tone, tier } = validationResult.data
+    const { bio, text, fieldType, tone, tier, length } = validationResult.data
+    const inputText = text || bio || ''
+
+    // Validate text length based on field type
+    const minLength = fieldType === 'tagline' ? 5 : fieldType === 'achievement' ? 10 : 50
+    const maxLength = fieldType === 'tagline' ? 200 : fieldType === 'achievement' ? 1000 : 5000
+
+    if (inputText.length < minLength || inputText.length > maxLength) {
+      return NextResponse.json(
+        {
+          error: `Text must be between ${minLength} and ${maxLength} characters for ${fieldType}`,
+        },
+        { status: 400 }
+      )
+    }
 
     try {
-      // Call Claude API to polish the bio
-      const polishedBio = await polishBioWithClaude({
-        originalBio: bio,
+      // Call Claude API to polish the text
+      const polishedText = await polishBioWithClaude({
+        originalBio: inputText,
+        fieldType,
         tone,
         tier,
-        userTier: userData.tier
+        length,
+        userTier: userData.tier || 'rising'
       })
 
       // Log AI usage for analytics
       await supabase
-        .from('ai_usage_logs')
+        .from('analytics_events')
         .insert({
           user_id: user.id,
-          feature: 'bio_polish',
-          input_length: bio.length,
-          output_length: polishedBio.length,
-          tier,
-          tone
+          event_type: `ai_${fieldType}_polish`,
+          metadata: {
+            feature: `${fieldType}_polish`,
+            field_type: fieldType,
+            input_length: inputText.length,
+            output_length: polishedText.length,
+            tier,
+            tone,
+            length
+          }
         })
 
       return NextResponse.json({
         success: true,
-        originalBio: bio,
-        polishedBio,
+        originalText: inputText,
+        polishedText,
+        fieldType,
         metadata: {
           tone,
           tier,
-          originalLength: bio.length,
-          polishedLength: polishedBio.length
-        }
+          length,
+          originalLength: inputText.length,
+          polishedLength: polishedText.length
+        },
+        // Backward compatibility
+        originalBio: inputText,
+        polishedBio: polishedText
       })
 
     } catch (aiError: any) {
@@ -171,10 +203,10 @@ export async function GET(request: NextRequest) {
     
     // Get usage stats for the current user
     const { data: usageStats, error: usageError } = await supabase
-      .from('ai_usage_logs')
+      .from('analytics_events')
       .select('created_at')
       .eq('user_id', user.id)
-      .eq('feature', 'bio_polish')
+      .eq('event_type', 'ai_bio_polish')
       .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()) // Last 24 hours
 
     const dailyUsage = usageStats?.length || 0
@@ -192,7 +224,7 @@ export async function GET(request: NextRequest) {
       features: {
         bioPolish: hasAccess,
         toneOptions: ['professional', 'casual', 'formal'],
-        supportedTiers: ['rising', 'elite', 'legacy']
+        supportedTiers: ['emerging', 'accomplished', 'distinguished', 'legacy']
       }
     })
 

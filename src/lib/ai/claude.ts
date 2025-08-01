@@ -7,8 +7,10 @@ const anthropic = new Anthropic({
 
 interface PolishBioParams {
   originalBio: string
-  tone: 'professional' | 'casual' | 'formal'
-  tier: 'rising' | 'elite' | 'legacy'
+  fieldType?: 'bio' | 'achievement' | 'description' | 'tagline' | 'summary'
+  tone: 'professional' | 'casual' | 'formal' | 'confident' | 'compelling' | 'clear'
+  tier: 'emerging' | 'accomplished' | 'distinguished' | 'legacy'
+  length?: 'concise' | 'balanced' | 'detailed' | 'comprehensive'
   userTier?: string
 }
 
@@ -20,13 +22,15 @@ interface PolishBioResponse {
 
 export async function polishBioWithClaude({
   originalBio,
+  fieldType = 'bio',
   tone,
   tier,
+  length = 'balanced',
   userTier
 }: PolishBioParams): Promise<string> {
   try {
-    const systemPrompt = createSystemPrompt(tier, tone)
-    const userPrompt = createUserPrompt(originalBio, tier, tone)
+    const systemPrompt = createSystemPrompt(tier, tone, fieldType, length)
+    const userPrompt = createUserPrompt(originalBio, tier, tone, fieldType, length)
 
     const response = await anthropic.messages.create({
       model: 'claude-3-5-sonnet-20241022',
@@ -65,7 +69,12 @@ export async function polishBioWithClaude({
   }
 }
 
-function createSystemPrompt(tier: string, tone: string): string {
+function createSystemPrompt(
+  tier: string,
+  tone: string,
+  fieldType: string = 'bio',
+  length: string = 'balanced'
+): string {
   const basePrompt = `You are an expert biography writer for Icons Herald, a premium digital archive platform. Your task is to polish and enhance biographical content while maintaining authenticity and factual accuracy.
 
 Guidelines:
@@ -78,20 +87,27 @@ Guidelines:
 - Focus on impact and significance of accomplishments`
 
   const tierSpecificGuidelines = {
-    rising: `
-For Rising tier profiles:
+    emerging: `
+For Emerging tier profiles:
 - Emphasize potential, growth trajectory, and emerging impact
 - Highlight innovative approaches and fresh perspectives
 - Focus on recent achievements and future promise
 - Use dynamic, forward-looking language`,
-    
-    elite: `
-For Elite tier profiles:
-- Emphasize established expertise and industry leadership
-- Highlight significant achievements and measurable impact
-- Focus on professional excellence and recognition
-- Use authoritative, accomplished language`,
-    
+
+    accomplished: `
+For Accomplished tier profiles:
+- Emphasize established expertise and professional achievements
+- Highlight significant accomplishments and measurable impact
+- Focus on career milestones and industry recognition
+- Use confident, accomplished language`,
+
+    distinguished: `
+For Distinguished tier profiles:
+- Emphasize industry leadership and exceptional expertise
+- Highlight transformative achievements and thought leadership
+- Focus on significant contributions and widespread recognition
+- Use authoritative, prestigious language`,
+
     legacy: `
 For Legacy tier profiles:
 - Emphasize historical significance and lasting impact
@@ -103,7 +119,10 @@ For Legacy tier profiles:
   const toneGuidelines = {
     professional: 'Use formal, business-appropriate language with industry terminology',
     casual: 'Use approachable, conversational language while maintaining respect',
-    formal: 'Use elevated, academic language with sophisticated vocabulary'
+    formal: 'Use elevated, academic language with sophisticated vocabulary',
+    confident: 'Use strong, assertive language that emphasizes achievements and capabilities',
+    compelling: 'Use engaging, persuasive language that captures attention and interest',
+    clear: 'Use simple, direct language that is easy to understand and follow'
   }
 
   return `${basePrompt}
@@ -115,13 +134,29 @@ Tone: ${toneGuidelines[tone as keyof typeof toneGuidelines]}
 Return only the polished biography text, without any additional commentary or formatting.`
 }
 
-function createUserPrompt(originalBio: string, tier: string, tone: string): string {
-  return `Please polish and enhance the following biography for a ${tier} tier profile with a ${tone} tone:
+function createUserPrompt(
+  originalBio: string,
+  tier: string,
+  tone: string,
+  fieldType: string = 'bio',
+  length: string = 'balanced'
+): string {
+  const fieldLabels = {
+    bio: 'biography',
+    achievement: 'achievement description',
+    description: 'description',
+    tagline: 'tagline',
+    summary: 'summary'
+  }
 
-Original Biography:
+  const fieldLabel = fieldLabels[fieldType as keyof typeof fieldLabels] || 'content'
+
+  return `Please polish and enhance the following ${fieldLabel} for a ${tier} tier profile with a ${tone} tone and ${length} length:
+
+Original ${fieldLabel.charAt(0).toUpperCase() + fieldLabel.slice(1)}:
 ${originalBio}
 
-Enhanced Biography:`
+Enhanced ${fieldLabel.charAt(0).toUpperCase() + fieldLabel.slice(1)}:`
 }
 
 function extractBioFromResponse(content: any[]): string | null {
@@ -187,13 +222,13 @@ function extractSuggestionsFromResponse(content: any[]): string[] {
     if (!textContent) return []
     
     const text = textContent.text
-    const lines = text.split('\n').filter(line => line.trim())
+    const lines = text.split('\n').filter((line: string) => line.trim())
     
     // Extract numbered list items
     const suggestions = lines
-      .filter(line => /^\d+\./.test(line.trim()))
-      .map(line => line.replace(/^\d+\.\s*/, '').trim())
-      .filter(suggestion => suggestion.length > 0)
+      .filter((line: string) => /^\d+\./.test(line.trim()))
+      .map((line: string) => line.replace(/^\d+\.\s*/, '').trim())
+      .filter((suggestion: string) => suggestion.length > 0)
     
     return suggestions.slice(0, 5) // Limit to 5 suggestions
     

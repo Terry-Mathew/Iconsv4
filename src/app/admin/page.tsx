@@ -52,12 +52,15 @@ import {
 import { useAuth } from '@/lib/auth/auth-context'
 import { createClient } from '@/lib/supabase/client'
 import { useImpersonation } from '../../../lib/auth/impersonation'
+import { PageLayout } from '@/components/layout/PageLayout'
+import { FloatingCard } from '@/components/ui/FloatingCard'
 
 // Import admin components with relative paths to fix module resolution
 import { UsersManagement } from '../../components/admin/UsersManagement'
 import { NominationsManagement } from '../../components/admin/NominationsManagement'
 import { ProfilesManagement } from '../../components/admin/ProfilesManagement'
 import { PaymentsManagement } from '../../components/admin/PaymentsManagement'
+import { ImpersonationPanel } from '../../components/admin/ImpersonationPanel'
 import { AnalyticsDashboard } from '../../components/admin/AnalyticsDashboard'
 import { SystemSettings } from '../../components/admin/SystemSettings'
 import { AuditLogs } from '../../components/admin/AuditLogs'
@@ -103,13 +106,14 @@ const ADMIN_TABS: TabConfig[] = [
   { id: 'users', label: 'Users', icon: Users, description: 'Manage user accounts and roles' },
   { id: 'nominations', label: 'Nominations', icon: FileText, description: 'Review and approve nominations' },
   { id: 'profiles', label: 'Profiles', icon: Crown, description: 'Manage published profiles' },
+  { id: 'impersonation', label: 'Impersonation', icon: Users, description: 'Test user experiences by tier' },
   { id: 'payments', label: 'Payments', icon: CreditCard, description: 'Payment and billing management' },
   { id: 'analytics', label: 'Analytics', icon: BarChart3, description: 'Platform insights and metrics' },
   { id: 'settings', label: 'Settings', icon: Settings, description: 'System configuration', superAdminOnly: true },
   { id: 'logs', label: 'Audit Logs', icon: Shield, description: 'Security and audit trails', superAdminOnly: true },
 ]
 
-type TabId = 'users' | 'nominations' | 'profiles' | 'payments' | 'analytics' | 'settings' | 'logs'
+type TabId = 'users' | 'nominations' | 'profiles' | 'payments' | 'analytics' | 'settings' | 'logs' | 'impersonation'
 
 export default function AdminPage() {
   const { user, loading } = useAuth()
@@ -286,19 +290,22 @@ export default function AdminPage() {
   // Loading state
   if (loading || isLoading || !adminUser) {
     return (
-      <Flex minH="100vh" align="center" justify="center" bg="#D2B48C">
-        <VStack spacing={4}>
-          <Spinner size="xl" color="#D4AF37" thickness="4px" />
-          <Text fontFamily="'Lato', sans-serif" color="#1A1A1A" fontSize="lg">
-            Loading admin dashboard...
-          </Text>
-        </VStack>
-      </Flex>
+      <PageLayout>
+        <Flex minH="100vh" align="center" justify="center">
+          <VStack spacing={4}>
+            <Spinner size="xl" color="#D4AF37" thickness="4px" />
+            <Text fontFamily="'Lato', sans-serif" color="white" fontSize="lg">
+              Loading admin dashboard...
+            </Text>
+          </VStack>
+        </Flex>
+      </PageLayout>
     )
   }
 
   return (
-    <Flex minH="100vh" bg="#F7F7F7">
+    <PageLayout showNavbar={false} showFooter={false}>
+      <Flex minH="100vh">
       {/* Desktop Sidebar */}
       <Box
         display={{ base: 'none', lg: 'block' }}
@@ -386,7 +393,8 @@ export default function AdminPage() {
           />
         </Box>
       </Flex>
-    </Flex>
+      </Flex>
+    </PageLayout>
   )
 }
 
@@ -657,6 +665,14 @@ function AdminContent({ activeTab, globalSearch, adminUser, stats, onRefresh }: 
             globalSearch={globalSearch}
             adminUser={adminUser}
             onRefresh={onRefresh}
+          />
+        )
+      case 'impersonation':
+        return (
+          <ImpersonationPanel
+            currentUser={adminUser}
+            isImpersonating={false}
+            onImpersonationChange={() => {}}
           />
         )
       case 'nominations':

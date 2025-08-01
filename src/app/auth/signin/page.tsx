@@ -27,6 +27,8 @@ import { Eye, EyeOff, Crown, ArrowLeft } from 'lucide-react'
 import { useAuth } from '@/lib/auth/auth-context'
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs'
 import { createClient } from '@/lib/supabase/client'
+import { PageLayout } from '@/components/layout/PageLayout'
+import { FloatingCard } from '@/components/ui/FloatingCard'
 
 export default function SignInPage() {
   const router = useRouter()
@@ -123,31 +125,34 @@ export default function SignInPage() {
   }
 
   return (
-    <Container maxW="md" py={8}>
-      <Breadcrumbs />
+    <PageLayout containerPadding={8}>
+      <Container maxW="md">
+        <Breadcrumbs />
 
-      <VStack spacing={8} mt={8}>
-        {/* Header */}
-        <VStack spacing={4} textAlign="center">
-          <HStack spacing={2}>
-            <Crown size={32} color="#D4AF37" />
-            <Heading
-              as="h1"
-              fontSize="3xl"
-              fontFamily="'Playfair Display', serif"
-              color="#1A1A1A"
-            >
-              Admin Sign In
-            </Heading>
-          </HStack>
-          <Text color="#666" fontFamily="'Lato', sans-serif" maxW="sm">
-            Access the ICONS HERALD admin dashboard with your credentials
-          </Text>
-        </VStack>
+        <VStack spacing={8} mt={8}>
+          {/* Header */}
+          <FloatingCard variant="glass" hoverEffect={false}>
+            <VStack spacing={4} textAlign="center">
+              <HStack spacing={2}>
+                <Crown size={32} color="#D4AF37" />
+                <Heading
+                  as="h1"
+                  fontSize="3xl"
+                  fontFamily="'Playfair Display', serif"
+                  color="#1A1A1A"
+                >
+                  Admin Sign In
+                </Heading>
+              </HStack>
+              <Text color="#666" fontFamily="'Lato', sans-serif" maxW="sm">
+                Access the ICONS HERALD admin dashboard with your credentials
+              </Text>
+            </VStack>
+          </FloatingCard>
 
-        {/* Sign In Form */}
-        {!showForgotPassword ? (
-          <Box w="full" bg="white" p={8} borderRadius="lg" shadow="md" border="1px solid" borderColor="gray.200">
+          {/* Sign In Form */}
+          {!showForgotPassword ? (
+            <FloatingCard variant="default" hoverEffect={false} w="full">
             <form onSubmit={handleSignIn}>
               <VStack spacing={6}>
                 {errors.general && (
@@ -277,7 +282,7 @@ export default function SignInPage() {
             ← Back to Home
           </Link>
         </VStack>
-      </VStack>
-    </Container>
+      </Container>
+    </PageLayout>
   )
 }

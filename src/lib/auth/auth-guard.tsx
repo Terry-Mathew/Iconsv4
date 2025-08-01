@@ -6,7 +6,7 @@ import { Box, Spinner, Center, Text } from '@chakra-ui/react'
 import { useAuth } from './auth-context'
 import { Database } from '@/types/supabase'
 
-type UserRole = Database['public']['Enums']['user_role']
+type UserRole = 'admin' | 'super_admin' | 'member' | 'applicant' | 'visitor'
 
 interface AuthGuardProps {
   children: React.ReactNode

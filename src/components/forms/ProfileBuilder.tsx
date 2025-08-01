@@ -27,8 +27,9 @@ import { useAuth } from '@/lib/auth/auth-context'
 import { createClient } from '@/lib/supabase/client'
 import { ProfileFormData, ThemeSettingsFormData } from '@/lib/validations/profile'
 import { ProfileTier } from '@/types/profile'
-import { RisingProfileForm } from './RisingProfileForm'
-import { EliteProfileForm } from './EliteProfileForm'
+import { EmergingProfileForm } from './EmergingProfileForm'
+import { AccomplishedProfileForm } from './AccomplishedProfileForm'
+import { DistinguishedProfileForm } from './DistinguishedProfileForm'
 import { LegacyProfileForm } from './LegacyProfileForm'
 import { ThemeCustomizer } from './ThemeCustomizer'
 import { ProfilePreview } from '../ProfilePreview'
@@ -155,16 +156,23 @@ export function ProfileBuilder({ tier, existingProfile, onSave, onPayment }: Pro
 
   const renderProfileForm = () => {
     switch (tier) {
-      case 'rising':
+      case 'emerging':
         return (
-          <RisingProfileForm
+          <EmergingProfileForm
             initialData={profileData as any}
             onChange={handleProfileDataChange}
           />
         )
-      case 'elite':
+      case 'accomplished':
         return (
-          <EliteProfileForm
+          <AccomplishedProfileForm
+            initialData={profileData as any}
+            onChange={handleProfileDataChange}
+          />
+        )
+      case 'distinguished':
+        return (
+          <DistinguishedProfileForm
             initialData={profileData as any}
             onChange={handleProfileDataChange}
           />
@@ -278,10 +286,12 @@ function getRequiredFieldsForTier(tier: ProfileTier): string[] {
   const baseFields = ['name', 'tagline', 'bio']
   
   switch (tier) {
-    case 'rising':
+    case 'emerging':
       return [...baseFields, 'currentRole', 'company', 'skills', 'achievements', 'aspirations', 'projects']
-    case 'elite':
+    case 'accomplished':
       return [...baseFields, 'currentRole', 'company', 'industry', 'yearsOfExperience', 'expertise', 'majorAchievements', 'leadership', 'awards']
+    case 'distinguished':
+      return [...baseFields, 'currentRole', 'company', 'industry', 'yearsOfExperience', 'expertise', 'publications', 'metrics', 'leadership', 'awards']
     case 'legacy':
       return [...baseFields, 'legacy', 'era', 'primaryContributions', 'historicalImpact', 'timeline', 'quotes', 'recognitions', 'influence']
     default:

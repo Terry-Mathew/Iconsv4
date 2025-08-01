@@ -1,165 +1,152 @@
-import {
-  Box,
-  Container,
-  Heading,
-  Text,
-  VStack,
-  HStack,
-  Button
-} from '@chakra-ui/react'
-import { Crown } from 'lucide-react'
-import Link from 'next/link'
-import { CategoriesCarousel } from '@/components/ui/CategoriesCarousel'
+'use client'
+
+import { useState, useEffect } from 'react'
+import dynamic from 'next/dynamic'
+import { Box, Spinner, Center } from '@chakra-ui/react'
+
+// Unified loading state for seamless experience
+const UnifiedPageLoader = () => (
+  <Center
+    h="100vh"
+    bg="linear-gradient(135deg, #1A1A1A 0%, #2A2A2A 100%)"
+    position="fixed"
+    top="0"
+    left="0"
+    right="0"
+    zIndex="9999"
+  >
+    <Spinner size="xl" color="#D4AF37" thickness="4px" />
+  </Center>
+)
+
+// Dynamic imports with unified loading experience
+const PremiumHero = dynamic(
+  () => import('@/components/sections/PremiumHero').then(mod => ({ default: mod.PremiumHero })),
+  {
+    loading: () => null, // No individual loading states
+    ssr: false
+  }
+)
+
+const PremiumCategories = dynamic(
+  () => import('@/components/sections/PremiumCategories').then(mod => ({ default: mod.PremiumCategories })),
+  {
+    loading: () => null, // No individual loading states
+    ssr: false
+  }
+)
+
+const PremiumPricing = dynamic(
+  () => import('@/components/sections/PremiumPricing').then(mod => ({ default: mod.PremiumPricing })),
+  {
+    loading: () => null, // No individual loading states
+    ssr: false
+  }
+)
+
+const PremiumAbout = dynamic(
+  () => import('@/components/sections/PremiumAbout').then(mod => ({ default: mod.PremiumAbout })),
+  {
+    loading: () => null, // No individual loading states
+    ssr: false
+  }
+)
+
+const PremiumProcess = dynamic(
+  () => import('@/components/sections/PremiumProcess').then(mod => ({ default: mod.PremiumProcess })),
+  {
+    loading: () => null, // No individual loading states
+    ssr: false
+  }
+)
+
+const PremiumFooter = dynamic(
+  () => import('@/components/sections/PremiumFooter').then(mod => ({ default: mod.PremiumFooter })),
+  {
+    loading: () => null, // No individual loading states
+    ssr: false
+  }
+)
+
+const UnifiedSignInModal = dynamic(
+  () => import('@/components/modals/UnifiedSignInModal').then(mod => ({ default: mod.UnifiedSignInModal })),
+  {
+    loading: () => null,
+    ssr: false
+  }
+)
+
+const TemplatePreviewModal = dynamic(
+  () => import('@/components/modals/TemplatePreviewModal').then(mod => ({ default: mod.TemplatePreviewModal })),
+  {
+    loading: () => null,
+    ssr: false
+  }
+)
 
 export default function HomePage() {
+  const [isSignInOpen, setIsSignInOpen] = useState(false)
+  const [isTemplatePreviewOpen, setIsTemplatePreviewOpen] = useState(false)
+  const [selectedTier, setSelectedTier] = useState<'emerging' | 'accomplished' | 'distinguished' | 'legacy'>('emerging')
+  const [isLoading, setIsLoading] = useState(true)
+
+  // Unified loading state management for seamless experience
+  useEffect(() => {
+    // Ensure all critical resources are loaded before showing content
+    const timer = setTimeout(() => {
+      setIsLoading(false)
+    }, 600) // Optimized timing for smooth navbar + content appearance
+
+    // Preload critical fonts and assets
+    const preloadCriticalAssets = () => {
+      const link = document.createElement('link')
+      link.rel = 'preload'
+      link.as = 'font'
+      link.type = 'font/woff2'
+      link.crossOrigin = 'anonymous'
+      document.head.appendChild(link)
+    }
+
+    preloadCriticalAssets()
+    return () => clearTimeout(timer)
+  }, [])
+
+  // Show unified loader while components initialize
+  if (isLoading) {
+    return <UnifiedPageLoader />
+  }
+
   return (
-    <Box minH="100vh">
-      {/* Hero Section */}
-      <Container maxW="6xl" py={20}>
-        <VStack spacing={12} textAlign="center">
-          {/* Header */}
-          <VStack spacing={6}>
-            <HStack spacing={3}>
-              <Crown size={40} color="#D4AF37" />
-              <Heading
-                as="h1"
-                fontSize="5xl"
-                fontFamily="'Playfair Display', serif"
-                color="#1A1A1A"
-                fontWeight="400"
-              >
-                ICONS HERALD
-              </Heading>
-            </HStack>
+    <>
+      {/* Premium Hero Section */}
+      <PremiumHero />
 
-            <Heading
-              as="h2"
-              fontSize="3xl"
-              fontFamily="'Playfair Display', serif"
-              color="#D4AF37"
-              fontWeight="300"
-            >
-              Where Legacies Endure
-            </Heading>
+      {/* Premium About Section */}
+      <PremiumAbout />
 
-            <Text
-              fontSize="xl"
-              color="#666"
-              fontFamily="'Lato', sans-serif"
-              maxW="4xl"
-              lineHeight="1.6"
-            >
-              An exclusive, invitation-only digital archive for world-class legacies.
-              Transform your achievements into an editorial masterpiece with our tiered profile system.
-            </Text>
-          </VStack>
+      {/* Premium Categories Section */}
+      <PremiumCategories />
 
-          {/* Call to Action */}
-          <VStack spacing={4}>
-            <HStack spacing={6} flexWrap="wrap" justify="center">
-              <Link href="/nominate">
-                <Button
-                  size="lg"
-                  bg="#D4AF37"
-                  color="white"
-                  px={8}
-                  py={6}
-                  fontSize="lg"
-                  fontWeight="600"
-                  _hover={{
-                    bg: "#B8941F",
-                    transform: "translateY(-2px)"
-                  }}
-                >
-                  Nominate Yourself
-                </Button>
-              </Link>
+      {/* Premium Process Section */}
+      <PremiumProcess />
 
-              <Link href="/nominate">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  borderColor="#D4AF37"
-                  color="#D4AF37"
-                  px={8}
-                  py={6}
-                  fontSize="lg"
-                  fontWeight="600"
-                  _hover={{
-                    bg: "#D4AF37",
-                    color: "white"
-                  }}
-                >
-                  Nominate an Icon
-                </Button>
-              </Link>
-            </HStack>
+      {/* Premium Pricing Section */}
+      <PremiumPricing />
 
-            <Text
-              fontSize="sm"
-              color="#999"
-              fontStyle="italic"
-              fontFamily="'Lato', sans-serif"
-            >
-              By invitation only • Premium profiles • Editorial excellence
-            </Text>
-          </VStack>
-        </VStack>
-      </Container>
+      {/* Premium Footer */}
+      <PremiumFooter />
 
-      {/* Categories Carousel */}
-      <CategoriesCarousel autoScroll={true} autoScrollInterval={4000} showArrows={false} />
+      {/* Modals */}
+      <UnifiedSignInModal
+        isOpen={isSignInOpen}
+        onClose={() => setIsSignInOpen(false)}
+      />
 
-      {/* Additional Content */}
-      <Container maxW="6xl" py={12}>
-        <VStack spacing={8} textAlign="center">
-          {/* Status */}
-          <Box
-            bg="green.50"
-            border="1px solid"
-            borderColor="green.200"
-            borderRadius="md"
-            p={4}
-            maxW="md"
-          >
-            <Text color="green.700" fontWeight="600">
-              ✅ Development server is running successfully!
-            </Text>
-            <Text color="green.600" fontSize="sm" mt={1}>
-              All authentication and admin features have been implemented.
-            </Text>
-          </Box>
-
-          {/* Navigation Links */}
-          <VStack spacing={4}>
-            <Text fontSize="lg" fontWeight="600" color="#1A1A1A">
-              Quick Navigation:
-            </Text>
-            <HStack spacing={6} flexWrap="wrap" justify="center">
-              <Link href="/about">
-                <Text color="#D4AF37" _hover={{ textDecoration: 'underline' }}>
-                  About
-                </Text>
-              </Link>
-              <Link href="/process">
-                <Text color="#D4AF37" _hover={{ textDecoration: 'underline' }}>
-                  Process
-                </Text>
-              </Link>
-              <Link href="/contact">
-                <Text color="#D4AF37" _hover={{ textDecoration: 'underline' }}>
-                  Contact
-                </Text>
-              </Link>
-              <Link href="/auth/signin">
-                <Text color="#D4AF37" _hover={{ textDecoration: 'underline' }}>
-                  Admin Sign In
-                </Text>
-              </Link>
-            </HStack>
-          </VStack>
-        </VStack>
-      </Container>
-    </Box>
+      <TemplatePreviewModal
+        isOpen={isTemplatePreviewOpen}
+        onClose={() => setIsTemplatePreviewOpen(false)}
+        tier={selectedTier}
+      />
+    </>
   )
 }

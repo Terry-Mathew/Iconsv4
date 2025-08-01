@@ -20,26 +20,7 @@ jest.mock('next/navigation', () => ({
   },
 }))
 
-// Mock Supabase
-jest.mock('@/lib/supabase/client', () => ({
-  createClient: jest.fn(() => ({
-    auth: {
-      getUser: jest.fn(),
-      signInWithOtp: jest.fn(),
-      signOut: jest.fn(),
-    },
-    from: jest.fn(() => ({
-      select: jest.fn(() => ({
-        eq: jest.fn(() => ({
-          single: jest.fn(),
-        })),
-      })),
-      insert: jest.fn(),
-      update: jest.fn(),
-      delete: jest.fn(),
-    })),
-  })),
-}))
+// Supabase mocks will be defined in individual test files
 
 // Mock environment variables
 process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co'
@@ -49,6 +30,81 @@ process.env.RAZORPAY_KEY_SECRET = 'test-razorpay-secret'
 
 // Mock fetch globally
 global.fetch = jest.fn()
+
+// Mock Web APIs for Next.js API routes
+global.Request = class Request {
+  constructor(input, init) {
+    this.url = input
+    this.method = init?.method || 'GET'
+    this.headers = new Headers(init?.headers)
+    this.body = init?.body
+    this._json = null
+  }
+
+  async json() {
+    if (this._json) return this._json
+    if (typeof this.body === 'string') {
+      return JSON.parse(this.body)
+    }
+    return this.body
+  }
+
+  async text() {
+    return typeof this.body === 'string' ? this.body : JSON.stringify(this.body)
+  }
+}
+
+global.Response = class Response {
+  constructor(body, init) {
+    this.body = body
+    this.status = init?.status || 200
+    this.statusText = init?.statusText || 'OK'
+    this.headers = new Headers(init?.headers)
+  }
+
+  async json() {
+    return typeof this.body === 'string' ? JSON.parse(this.body) : this.body
+  }
+
+  async text() {
+    return typeof this.body === 'string' ? this.body : JSON.stringify(this.body)
+  }
+}
+
+global.Headers = class Headers {
+  constructor(init) {
+    this._headers = new Map()
+    if (init) {
+      if (init instanceof Headers) {
+        init._headers.forEach((value, key) => this._headers.set(key, value))
+      } else if (Array.isArray(init)) {
+        init.forEach(([key, value]) => this._headers.set(key, value))
+      } else {
+        Object.entries(init).forEach(([key, value]) => this._headers.set(key, value))
+      }
+    }
+  }
+
+  get(name) {
+    return this._headers.get(name.toLowerCase())
+  }
+
+  set(name, value) {
+    this._headers.set(name.toLowerCase(), value)
+  }
+
+  has(name) {
+    return this._headers.has(name.toLowerCase())
+  }
+
+  delete(name) {
+    this._headers.delete(name.toLowerCase())
+  }
+
+  forEach(callback) {
+    this._headers.forEach(callback)
+  }
+}
 
 // Mock IntersectionObserver
 global.IntersectionObserver = class IntersectionObserver {
