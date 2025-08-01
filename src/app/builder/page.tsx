@@ -13,6 +13,8 @@ import {
 } from '@chakra-ui/react'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/lib/auth/auth-context'
+import { PageLayout } from '@/components/layout/PageLayout'
+import { FloatingCard } from '@/components/ui/FloatingCard'
 
 // Import new step components
 import { BuilderStepper } from '@/components/builder/BuilderStepper'
@@ -512,24 +514,26 @@ function ProfileBuilderContent() {
 
   if (loading) {
     return (
-      <Box minH="100vh" bg="#D2B48C" display="flex" alignItems="center" justifyContent="center">
-        <VStack spacing={4}>
-          <Spinner size="xl" color="#D4AF37" thickness="4px" />
-          <Text fontFamily="'Lato', sans-serif" color="#1A1A1A">
-            Loading profile builder...
-          </Text>
-        </VStack>
-      </Box>
+      <PageLayout>
+        <Box minH="100vh" display="flex" alignItems="center" justifyContent="center">
+          <VStack spacing={4}>
+            <Spinner size="xl" color="#D4AF37" thickness="4px" />
+            <Text fontFamily="'Lato', sans-serif" color="white">
+              Loading profile builder...
+            </Text>
+          </VStack>
+        </Box>
+      </PageLayout>
     )
   }
 
   return (
-    <Box minH="100vh" bg="#D2B48C">
+    <PageLayout>
       <Suspense fallback={
-        <Box minH="100vh" bg="#D2B48C" display="flex" alignItems="center" justifyContent="center">
+        <Box minH="100vh" display="flex" alignItems="center" justifyContent="center">
           <VStack spacing={4}>
             <Spinner size="xl" color="#D4AF37" thickness="4px" />
-            <Text fontFamily="'Lato', sans-serif" color="#1A1A1A">
+            <Text fontFamily="'Lato', sans-serif" color="white">
               Loading impersonation handler...
             </Text>
           </VStack>
@@ -548,7 +552,7 @@ function ProfileBuilderContent() {
         />
 
         {/* Step Content */}
-        <Box flex={1} w="full" bg="white">
+        <Box flex={1} w="full">
           {renderStepContent()}
         </Box>
 
@@ -587,7 +591,7 @@ function ProfileBuilderContent() {
           </Box>
         )}
       </VStack>
-    </Box>
+    </PageLayout>
   )
 }
 
@@ -595,14 +599,16 @@ function ProfileBuilderContent() {
 export default function ProfileBuilder() {
   return (
     <Suspense fallback={
-      <Box minH="100vh" bg="#D2B48C" display="flex" alignItems="center" justifyContent="center">
-        <VStack spacing={4}>
-          <Spinner size="xl" color="#D4AF37" thickness="4px" />
-          <Text fontFamily="'Lato', sans-serif" color="#1A1A1A">
-            Loading profile builder...
-          </Text>
-        </VStack>
-      </Box>
+      <PageLayout>
+        <Box minH="100vh" display="flex" alignItems="center" justifyContent="center">
+          <VStack spacing={4}>
+            <Spinner size="xl" color="#D4AF37" thickness="4px" />
+            <Text fontFamily="'Lato', sans-serif" color="white">
+              Loading profile builder...
+            </Text>
+          </VStack>
+        </Box>
+      </PageLayout>
     }>
       <ProfileBuilderContent />
     </Suspense>

@@ -1,5 +1,6 @@
 import { RisingTemplate } from '@/components/templates/RisingTemplate'
 import { ProfileContentData } from '@/lib/validations/profile'
+import { PageLayout } from '@/components/layout/PageLayout'
 
 // Sample Rising Profile Data for Aspirational Showcase
 const sampleRisingProfile: ProfileContentData & {
@@ -98,5 +99,9 @@ export const metadata = {
 }
 
 export default function RisingDemoPage() {
-  return <RisingTemplate profile={sampleRisingProfile} />
+  return (
+    <PageLayout>
+      <RisingTemplate profile={sampleRisingProfile} />
+    </PageLayout>
+  )
 }

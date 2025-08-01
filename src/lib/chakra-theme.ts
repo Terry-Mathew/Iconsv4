@@ -3,7 +3,7 @@
 import { extendTheme, type ThemeConfig } from '@chakra-ui/react'
 
 const config: ThemeConfig = {
-  initialColorMode: 'light',
+  initialColorMode: 'dark',
   useSystemColorMode: false,
 }
 
@@ -47,14 +47,51 @@ const theme = extendTheme({
     'loose': 2.0,           // Extra comfortable
   },
 
-  // === PREMIUM SPACING SYSTEM ===
+  // === PREMIUM SPACING SYSTEM - 8px Grid ===
   space: {
-    'section': '10rem',     // 160px between sections - Premium breathing room
-    'card': '3rem',         // 48px card internal padding - Luxury spacing
-    'element': '2rem',      // 32px element spacing - Enhanced
-    'tight': '1.5rem',      // 24px tight spacing - Increased
-    'base': '2rem',         // 32px base spacing - Premium
-    'generous': '4rem',     // 64px generous spacing - Ultra premium
+    // 8px Grid System - Pixel Perfect Alignment
+    'px': '1px',
+    '0.5': '2px',           // 0.5 * 4px
+    '1': '4px',             // 1 * 4px
+    '1.5': '6px',           // 1.5 * 4px
+    '2': '8px',             // 2 * 4px - Base unit
+    '2.5': '10px',          // 2.5 * 4px
+    '3': '12px',            // 3 * 4px
+    '3.5': '14px',          // 3.5 * 4px
+    '4': '16px',            // 4 * 4px
+    '5': '20px',            // 5 * 4px
+    '6': '24px',            // 6 * 4px
+    '7': '28px',            // 7 * 4px
+    '8': '32px',            // 8 * 4px
+    '9': '36px',            // 9 * 4px
+    '10': '40px',           // 10 * 4px
+    '11': '44px',           // 11 * 4px
+    '12': '48px',           // 12 * 4px
+    '14': '56px',           // 14 * 4px
+    '16': '64px',           // 16 * 4px
+    '20': '80px',           // 20 * 4px
+    '24': '96px',           // 24 * 4px
+    '28': '112px',          // 28 * 4px
+    '32': '128px',          // 32 * 4px
+    '36': '144px',          // 36 * 4px
+    '40': '160px',          // 40 * 4px
+    '44': '176px',          // 44 * 4px
+    '48': '192px',          // 48 * 4px
+    '52': '208px',          // 52 * 4px
+    '56': '224px',          // 56 * 4px
+    '60': '240px',          // 60 * 4px
+    '64': '256px',          // 64 * 4px
+    '72': '288px',          // 72 * 4px
+    '80': '320px',          // 80 * 4px
+    '96': '384px',          // 96 * 4px
+
+    // Premium Named Spacing
+    'section': '160px',     // 40 * 4px - Between sections
+    'card': '48px',         // 12 * 4px - Card internal padding
+    'element': '32px',      // 8 * 4px - Element spacing
+    'tight': '24px',        // 6 * 4px - Tight spacing
+    'base': '32px',         // 8 * 4px - Base spacing
+    'generous': '64px',     // 16 * 4px - Generous spacing
   },
 
   // === PREMIUM CONTAINER SYSTEM ===
@@ -180,6 +217,49 @@ const theme = extendTheme({
       700: '#F8F8F8',        // Text white
       800: '#F7F7F7',        // Background white
       900: '#F6F6F6',        // Card white
+    },
+
+    // ULTRA-PREMIUM BLACK FOUNDATION
+    ultraBlack: {
+      50: '#F8F9FA',         // Gallery gray
+      100: '#F1F3F4',        // Minimal contrast
+      200: '#E8EAED',        // Light separator
+      300: '#DADCE0',        // Medium separator
+      400: '#BDC1C6',        // Subtle text
+      500: '#9AA0A6',        // Secondary text
+      600: '#5F6368',        // Primary text on light
+      700: '#3C4043',        // Dark text
+      800: '#1C1C1E',        // Apple charcoal
+      900: '#0A0A0A',        // Rich black
+      950: '#000000',        // Pure black - maximum sophistication
+    },
+
+    // MUSEUM WHITE SYSTEM
+    museumWhite: {
+      50: '#FFFFFF',         // Pure white - crisp gallery white
+      100: '#FEFEFE',        // Warm white - subtle warmth for text
+      200: '#FDFDFD',        // Card white
+      300: '#FCFCFC',        // Background white
+      400: '#FAFAFA',        // Soft white
+      500: '#F8F9FA',        // Gallery gray
+      600: '#F1F3F4',        // Minimal contrast backgrounds
+      700: '#E8EAED',        // Light borders
+      800: '#DADCE0',        // Medium borders
+      900: '#BDC1C6',        // Strong borders
+    },
+
+    // SUPPORTING PLATINUM
+    platinum: {
+      50: '#FFFFFF',         // Pure platinum
+      100: '#F8F9FA',        // Light platinum
+      200: '#F1F3F4',        // Soft platinum
+      300: '#E8EAED',        // Medium platinum
+      400: '#DADCE0',        // Strong platinum
+      500: '#E5E4E2',        // Ultra-subtle accents
+      600: '#BDC1C6',        // Platinum text
+      700: '#9AA0A6',        // Dark platinum
+      800: '#5F6368',        // Deep platinum
+      900: '#3C4043',        // Darkest platinum
     },
 
     // SEMANTIC COLORS - Minimal usage
@@ -364,41 +444,41 @@ const theme = extendTheme({
         },
       },
       variants: {
-        // Primary Button: Monochromatic White/Dark System
+        // Primary Button: Champagne Gold Luxury System
         primary: {
-          bg: 'white.50',
-          color: 'black.900',
+          bg: 'gold.500',
+          color: 'ultraBlack.950',
           border: '1px solid',
-          borderColor: 'rgba(255, 255, 255, 0.2)',
-          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
+          borderColor: 'gold.600',
+          boxShadow: '0 8px 24px rgba(212, 175, 55, 0.25)',
           transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
           _hover: {
             transform: 'scale(1.05) translateY(-4px)',
-            boxShadow: '0 16px 48px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.1), 0 0 32px rgba(255, 255, 255, 0.15)',
-            bg: 'white.100',
+            boxShadow: '0 16px 48px rgba(212, 175, 55, 0.4), 0 4px 12px rgba(212, 175, 55, 0.2), 0 0 32px rgba(212, 175, 55, 0.3)',
+            bg: 'gold.400',
           },
           _active: {
             transform: 'scale(1.02) translateY(-2px)',
           },
           _focus: {
             outline: '3px solid',
-            outlineColor: 'rgba(255, 255, 255, 0.5)',
+            outlineColor: 'gold.400',
             outlineOffset: '2px',
           },
         },
-        // Secondary Button: Transparent with white border
+        // Secondary Button: Transparent with champagne gold border
         secondary: {
           bg: 'transparent',
-          color: 'white.50',
+          color: 'gold.500',
           border: '2px solid',
-          borderColor: 'rgba(255, 255, 255, 0.3)',
+          borderColor: 'gold.500',
           transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
           _hover: {
-            bg: 'white.50',
-            color: 'black.900',
-            borderColor: 'white.50',
+            bg: 'gold.500',
+            color: 'ultraBlack.950',
+            borderColor: 'gold.400',
             transform: 'scale(1.05) translateY(-4px)',
-            boxShadow: '0 12px 40px rgba(255, 255, 255, 0.25), 0 0 24px rgba(255, 255, 255, 0.1)',
+            boxShadow: '0 12px 40px rgba(212, 175, 55, 0.4), 0 0 24px rgba(212, 175, 55, 0.3)',
           },
           _active: {
             transform: 'scale(1.02) translateY(-2px)',
@@ -614,8 +694,8 @@ const theme = extendTheme({
         scrollBehavior: 'smooth',
       },
       body: {
-        bg: 'linear-gradient(180deg, #FDFDFD 0%, #FAFBFC 100%)',
-        color: 'black.900',
+        bg: 'linear-gradient(135deg, #1A1A1A 0%, #2A2A2A 100%)',
+        color: 'white',
         fontFamily: 'body',
         lineHeight: 'body',
         fontFeatureSettings: '"kern" 1, "liga" 1, "calt" 1',
@@ -631,7 +711,7 @@ const theme = extendTheme({
           left: 0,
           right: 0,
           bottom: 0,
-          bg: 'radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.03) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(59, 130, 246, 0.02) 0%, transparent 50%)',
+          bg: 'radial-gradient(circle at 20% 80%, rgba(212, 175, 55, 0.02) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(212, 175, 55, 0.01) 0%, transparent 50%)',
           pointerEvents: 'none',
           zIndex: -1,
         },
@@ -698,19 +778,20 @@ const theme = extendTheme({
         },
       },
 
-      // FLOATING WHITE CARDS - Premium Elevation
+      // FLOATING WHITE CARDS - Premium Elevation with Gold Glow
       '.floating-card': {
-        bg: 'white.50',
-        color: 'black.900',
+        bg: 'museumWhite.50',
+        color: 'ultraBlack.900',
         borderRadius: '24px',
         p: 'card',  // 48px premium internal padding
         boxShadow: '0 32px 64px rgba(0, 0, 0, 0.25), 0 8px 16px rgba(0, 0, 0, 0.1), 0 0 40px rgba(255, 255, 255, 0.08)',
         border: '1px solid',
-        borderColor: 'rgba(255, 255, 255, 0.1)',
+        borderColor: 'rgba(212, 175, 55, 0.1)',
         transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
         _hover: {
           transform: 'translateY(-12px)',
-          boxShadow: '0 40px 80px rgba(0, 0, 0, 0.3), 0 12px 24px rgba(0, 0, 0, 0.15), 0 0 60px rgba(255, 255, 255, 0.12)',
+          boxShadow: '0 40px 80px rgba(0, 0, 0, 0.3), 0 12px 24px rgba(0, 0, 0, 0.15), 0 0 60px rgba(212, 175, 55, 0.3)',
+          borderColor: 'rgba(212, 175, 55, 0.2)',
         },
       },
 

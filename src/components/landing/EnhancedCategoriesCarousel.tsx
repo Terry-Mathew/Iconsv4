@@ -22,7 +22,7 @@ import 'swiper/css/navigation'
 import 'swiper/css/pagination'
 import 'swiper/css/free-mode'
 
-const MotionBox = motion(Box)
+const MotionBox = motion.create(Box)
 
 interface Category {
   title: string

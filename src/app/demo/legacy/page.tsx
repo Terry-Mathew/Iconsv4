@@ -1,5 +1,6 @@
 import { LegacyTemplate } from '@/components/templates/LegacyTemplate'
 import { EnhancedProfileData } from '@/types/profile'
+import { PageLayout } from '@/components/layout/PageLayout'
 
 // Sample Legacy Profile Data for Eternal Showcase
 const sampleLegacyProfile = {
@@ -108,5 +109,9 @@ export const metadata = {
 }
 
 export default function LegacyDemoPage() {
-  return <LegacyTemplate profile={sampleLegacyProfile} />
+  return (
+    <PageLayout>
+      <LegacyTemplate profile={sampleLegacyProfile} />
+    </PageLayout>
+  )
 }

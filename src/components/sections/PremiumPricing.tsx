@@ -1,56 +1,63 @@
 'use client'
 
-import { Box, Container, Heading, Text, VStack, HStack, Button, Badge, SimpleGrid } from '@chakra-ui/react'
+import { Box, Container, Heading, Text, VStack, HStack, Button, SimpleGrid, useDisclosure } from '@chakra-ui/react'
 import { motion } from 'framer-motion'
-import { Check, Crown } from 'lucide-react'
+import { Eye } from 'lucide-react'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { TemplatePreviewModal } from '@/components/modals/TemplatePreviewModal'
+import { ProfileTier } from '@/types/profile'
 
 const MotionBox = motion.create(Box)
 
 const pricingPlans = [
   {
     name: "Emerging",
+    tier: "emerging" as ProfileTier,
     price: "₹3,000",
-    period: "per year",
-    description: "For emerging talents making their mark",
-    features: ["4 content sections", "Basic profile template", "1-year visibility"],
-    featured: false
+    period: "per year"
   },
   {
     name: "Accomplished",
+    tier: "accomplished" as ProfileTier,
     price: "₹10,000",
-    period: "per year",
-    description: "For established leaders and innovators",
-    features: ["6 content sections", "Enhanced template", "Priority placement", "Analytics"],
-    featured: true
+    period: "per year"
   },
   {
     name: "Distinguished",
+    tier: "distinguished" as ProfileTier,
     price: "₹15,000",
-    period: "per year",
-    description: "For distinguished professionals and thought leaders",
-    features: ["8 content sections", "Premium template", "Featured placement", "Advanced analytics"],
-    featured: false
+    period: "per year"
   },
   {
     name: "Legacy",
+    tier: "legacy" as ProfileTier,
     price: "₹20,000",
-    period: "one-time",
-    description: "For icons whose legacies endure forever",
-    features: ["10 content sections", "Custom template", "Permanent archive", "Bespoke design"],
-    featured: false
+    period: "one-time"
   }
 ]
 
 export function PremiumPricing() {
+  const router = useRouter()
+  const { isOpen: isPreviewOpen, onOpen: onPreviewOpen, onClose: onPreviewClose } = useDisclosure()
+  const [selectedTier, setSelectedTier] = useState<ProfileTier>('emerging')
+
+  const handlePreviewTemplate = (tier: ProfileTier) => {
+    setSelectedTier(tier)
+    onPreviewOpen()
+  }
+
+
+
   return (
     <Box
-      py="section"
+      py={18}
       bg="linear-gradient(135deg, #1A1A1A 0%, #2A2A2A 100%)"
       position="relative"
       className="dark-section"
     >
       <Container maxW="1400px" position="relative" zIndex={1}>
-        <VStack spacing={20}>
+        <VStack spacing={14}>
           {/* Header - Dark Optimized */}
           <VStack spacing={6} textAlign="center" maxW="700px">
             <Box>
@@ -77,7 +84,7 @@ export function PremiumPricing() {
                   color="white.50"
                   textShadow="0 2px 4px rgba(0, 0, 0, 0.3)"
                 >
-                  Your Legacy
+                  Eternal Recognition
                 </Text>
               </Heading>
 
@@ -96,13 +103,17 @@ export function PremiumPricing() {
             <Text
               variant="dark-large"
             >
-              Choose the tier that reflects your impact and aspirations.
-              Each level offers increasing sophistication and permanence.
+              Choose the tier that reflects your impact and aspirations. Each level offers increasing sophistication and prominence.
             </Text>
           </VStack>
 
-          {/* Pricing Cards */}
-          <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={6} w="full">
+          {/* Pricing Cards - Perfect Alignment */}
+          <SimpleGrid
+            columns={{ base: 1, md: 2, lg: 4 }}
+            spacing={8}
+            w="full"
+            alignItems="stretch"
+          >
             {pricingPlans.map((plan, index) => (
               <MotionBox
                 key={plan.name}
@@ -110,13 +121,24 @@ export function PremiumPricing() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
+                h="full"
               >
-                <PricingCard plan={plan} />
+                <PricingCard
+                  plan={plan}
+                  onPreviewTemplate={() => handlePreviewTemplate(plan.tier)}
+                />
               </MotionBox>
             ))}
           </SimpleGrid>
         </VStack>
       </Container>
+
+      {/* Template Preview Modal */}
+      <TemplatePreviewModal
+        isOpen={isPreviewOpen}
+        onClose={onPreviewClose}
+        tier={selectedTier}
+      />
     </Box>
   )
 }
@@ -124,76 +146,39 @@ export function PremiumPricing() {
 interface PricingCardProps {
   plan: {
     name: string
+    tier: ProfileTier
     price: string
     period: string
-    description: string
-    features: string[]
-    featured: boolean
   }
+  onPreviewTemplate: () => void
 }
 
-function PricingCard({ plan }: PricingCardProps) {
+function PricingCard({ plan, onPreviewTemplate }: PricingCardProps) {
   return (
     <MotionBox
       bg="white.50"
       border="1px solid"
-      borderColor={plan.featured ? "rgba(212, 175, 55, 0.3)" : "rgba(255, 255, 255, 0.1)"}
+      borderColor="rgba(255, 255, 255, 0.1)"
       borderRadius="24px"
       p={8}
       position="relative"
       overflow="hidden"
-      boxShadow={plan.featured
-        ? "0 30px 60px rgba(0, 0, 0, 0.3), 0 12px 24px rgba(0, 0, 0, 0.15), 0 0 60px rgba(212, 175, 55, 0.1)"
-        : "0 25px 50px rgba(0, 0, 0, 0.25), 0 8px 16px rgba(0, 0, 0, 0.1), 0 0 40px rgba(255, 255, 255, 0.05)"
-      }
+      h="full"
+      display="flex"
+      flexDirection="column"
+      boxShadow="0 25px 50px rgba(0, 0, 0, 0.25), 0 8px 16px rgba(0, 0, 0, 0.1), 0 0 40px rgba(255, 255, 255, 0.05)"
       whileHover={{
         y: -12,
-        boxShadow: plan.featured
-          ? "0 40px 80px rgba(0, 0, 0, 0.4), 0 16px 32px rgba(0, 0, 0, 0.2), 0 0 80px rgba(212, 175, 55, 0.15)"
-          : "0 35px 70px rgba(0, 0, 0, 0.3), 0 12px 24px rgba(0, 0, 0, 0.15), 0 0 60px rgba(255, 255, 255, 0.08)"
+        boxShadow: "0 35px 70px rgba(0, 0, 0, 0.3), 0 12px 24px rgba(0, 0, 0, 0.15), 0 0 60px rgba(255, 255, 255, 0.08)"
       }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      _before={plan.featured ? {
-        content: '""',
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        bg: 'linear-gradient(135deg, rgba(212, 175, 55, 0.03) 0%, transparent 100%)',
-        borderRadius: '24px',
-        pointerEvents: 'none',
-      } : undefined}
     >
-      {/* Featured Badge - Gold Accent */}
-      {plan.featured && (
-        <Badge
-          position="absolute"
-          top={-4}
-          left="50%"
-          transform="translateX(-50%)"
-          bg="linear-gradient(135deg, #D4AF37 0%, #B8941F 100%)"
-          color="black.900"
-          px={6}
-          py={2}
-          borderRadius="full"
-          fontSize="sm"
-          fontWeight="700"
-          letterSpacing="1px"
-          textTransform="uppercase"
-          boxShadow="0 8px 32px rgba(212, 175, 55, 0.4), 0 0 20px rgba(212, 175, 55, 0.3)"
-          border="1px solid"
-          borderColor="rgba(212, 175, 55, 0.5)"
-          className="gold-accent"
-        >
-          Most Popular
-        </Badge>
-      )}
 
-      <VStack spacing={8} align="start" position="relative" zIndex={1}>
-        {/* Header */}
-        <VStack align="start" spacing={3}>
-          <HStack>
+
+      <VStack spacing={8} align="start" position="relative" zIndex={1} h="full" justify="space-between">
+        <VStack spacing={6} align="start" w="full">
+          {/* Header */}
+          <VStack align="start" spacing={3}>
             <Heading
               fontSize="2xl"
               color="black.900"
@@ -202,78 +187,57 @@ function PricingCard({ plan }: PricingCardProps) {
             >
               {plan.name}
             </Heading>
-            {plan.featured && <Crown size={24} color="#3B82F6" />}
-          </HStack>
-          <Text
-            fontSize="sm"
-            color="neutral.600"
-            lineHeight="relaxed"
-            fontWeight="400"
-          >
-            {plan.description}
-          </Text>
-        </VStack>
+          </VStack>
 
-        {/* Price */}
-        <VStack align="start" spacing={2}>
-          <HStack align="baseline" spacing={2}>
-            <Heading
-              fontSize="4xl"
-              color="black.900"
-              fontWeight="700"
-              letterSpacing="-0.02em"
-            >
-              {plan.price}
-            </Heading>
-            <Text
-              fontSize="md"
-              color="neutral.500"
-              fontWeight="500"
-            >
-              {plan.period}
-            </Text>
-          </HStack>
-        </VStack>
-
-        {/* Features */}
-        <VStack align="start" spacing={4} w="full">
-          {plan.features.map((feature, index) => (
-            <HStack key={index} spacing={4} align="start">
-              <Box
-                color="brand.500"
-                bg="rgba(59, 130, 246, 0.1)"
-                p={1}
-                borderRadius="full"
-                mt={0.5}
+          {/* Price */}
+          <VStack align="start" spacing={2}>
+            <HStack align="baseline" spacing={2}>
+              <Heading
+                fontSize="4xl"
+                color="black.900"
+                fontWeight="700"
+                letterSpacing="-0.02em"
               >
-                <Check size={14} />
-              </Box>
+                {plan.price}
+              </Heading>
               <Text
-                fontSize="sm"
-                color="neutral.700"
-                lineHeight="relaxed"
-                fontWeight="400"
+                fontSize="md"
+                color="neutral.500"
+                fontWeight="500"
               >
-                {feature}
+                {plan.period}
               </Text>
             </HStack>
-          ))}
+          </VStack>
+
+          {/* Elegant Spacing */}
+          <Box flex="1" />
         </VStack>
 
-        {/* CTA - Dark Optimized */}
+        {/* Template Preview Action */}
         <Button
           w="full"
           size="lg"
-          variant={plan.featured ? "dark-accent" : "primary"}
-          py={6}
+          variant="outline"
+          borderColor="rgba(212, 175, 55, 0.3)"
+          color="black.900"
+          bg="transparent"
+          py={4}
           h="auto"
           borderRadius="12px"
-          minH="44px"
-          fontWeight="600"
-          fontSize="md"
+          minH="48px"
+          fontWeight="500"
+          fontSize="sm"
+          leftIcon={<Eye size={16} />}
+          _hover={{
+            bg: 'rgba(212, 175, 55, 0.05)',
+            borderColor: 'rgba(212, 175, 55, 0.5)',
+            transform: 'translateY(-1px)',
+          }}
           transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+          onClick={onPreviewTemplate}
         >
-          Get Started
+          View Template
         </Button>
       </VStack>
     </MotionBox>

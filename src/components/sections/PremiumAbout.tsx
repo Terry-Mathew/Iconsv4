@@ -42,7 +42,7 @@ const features = [
 export function PremiumAbout() {
   return (
     <Box
-      py="section"
+      py={16}
       bg="linear-gradient(135deg, #1A1A1A 0%, #2A2A2A 100%)"
       position="relative"
       className="dark-section"
@@ -54,30 +54,36 @@ export function PremiumAbout() {
         right: 0,
         bottom: 0,
         bg: 'radial-gradient(circle at 20% 30%, rgba(212, 175, 55, 0.03) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.02) 0%, transparent 50%)',
+        backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(229, 228, 226, 0.03) 1px, transparent 0)',
+        backgroundSize: '20px 20px',
         pointerEvents: 'none',
       }}
     >
-      <Container maxW="2xl">
-        <VStack spacing="section" align="center">
-          {/* Section Header - Dark Optimized */}
-          <VStack spacing={6} textAlign="center" maxW="800px">
+      <Container maxW="6xl">
+        <VStack spacing={12} align="center">
+          {/* Optimized Section Header */}
+          <VStack spacing={4} textAlign="center" maxW="700px">
             <Box>
               <Text
-                fontSize="sm"
+                fontSize="xs"
                 color="gold.500"
-                fontWeight="700"
-                letterSpacing="2px"
+                fontWeight="600"
+                letterSpacing="1.5px"
                 textTransform="uppercase"
-                mb={4}
+                mb={3}
                 className="gold-accent"
               >
                 About Icons Herald
               </Text>
               <Heading
-                variant="dark-section"
+                fontSize={{ base: "3xl", md: "4xl", lg: "5xl" }}
                 fontFamily="heading"
+                fontWeight="700"
+                lineHeight="1.1"
+                color="white"
+                textShadow="0 2px 4px rgba(0, 0, 0, 0.3)"
               >
-                A Premium Digital
+                A Digital
                 <Text
                   as="span"
                   display="block"
@@ -85,47 +91,49 @@ export function PremiumAbout() {
                   color="white.50"
                   textShadow="0 2px 4px rgba(0, 0, 0, 0.3)"
                 >
-                  Archive
+                  Pantheon
                 </Text>
               </Heading>
 
-              {/* Elegant gold underline */}
+              {/* Refined gold underline */}
               <Box
-                w="140px"
-                h="3px"
+                w="120px"
+                h="2px"
                 bg="linear-gradient(90deg, #D4AF37 0%, rgba(212, 175, 55, 0.3) 100%)"
                 mx="auto"
-                mt={8}
+                mt={6}
                 borderRadius="full"
-                boxShadow="0 0 20px rgba(212, 175, 55, 0.3)"
+                boxShadow="0 0 16px rgba(212, 175, 55, 0.3)"
               />
             </Box>
 
             <Text
-              variant="dark-large"
+              fontSize={{ base: "lg", md: "xl" }}
+              color="rgba(255, 255, 255, 0.8)"
+              lineHeight="1.6"
+              fontWeight="400"
+              maxW="600px"
             >
-              Transform achievements into lasting digital legacies. Our platform creates
-              editorial-quality profiles for visionaries and leaders across every field,
-              preserving their contributions for future generations.
+              Not a directory. Not a database. A carefully curated sanctuary where the world's most influential figures are immortalized through editorial excellence and visual mastery.
             </Text>
           </VStack>
 
-          {/* Features Grid */}
+          {/* Optimized Features Grid */}
           <SimpleGrid
             columns={{ base: 1, md: 2, lg: 3 }}
-            spacing={8}
+            spacing={5}
             w="full"
             maxW="1200px"
           >
             {features.map((feature, index) => (
               <MotionBox
                 key={feature.title}
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-50px" }}
-                transition={{ 
-                  duration: 0.6, 
-                  delay: index * 0.1,
+                viewport={{ once: true, margin: "-30px" }}
+                transition={{
+                  duration: 0.5,
+                  delay: index * 0.08,
                   ease: "easeOut"
                 }}
               >
@@ -153,41 +161,58 @@ function FeatureCard({ feature }: FeatureCardProps) {
   return (
     <VStack
       align="center"
-      spacing="element"
+      spacing={4}
       textAlign="center"
+      p={6}
+      bg="rgba(255, 255, 255, 0.05)"
+      backdropFilter="blur(10px)"
+      borderRadius="20px"
+      border="1px solid"
+      borderColor="rgba(255, 255, 255, 0.1)"
       className="floating-card"
       _hover={{
-        transform: 'translateY(-12px)',
+        transform: 'translateY(-8px)',
+        bg: "rgba(255, 255, 255, 0.08)",
+        borderColor: "rgba(212, 175, 55, 0.3)",
+        boxShadow: "0 20px 40px rgba(0, 0, 0, 0.3), 0 0 30px rgba(212, 175, 55, 0.1)"
       }}
       transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
+      cursor="pointer"
+      h="full"
     >
-      {/* Icon - Gold Accent */}
+      {/* Enhanced Icon */}
       <Box
-        p={4}
-        bg="linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, rgba(212, 175, 55, 0.05) 100%)"
-        borderRadius="16px"
-        color="gold.500"
+        p={3}
+        bg="linear-gradient(135deg, rgba(212, 175, 55, 0.15) 0%, rgba(212, 175, 55, 0.08) 100%)"
+        borderRadius="14px"
+        color="gold.400"
         border="1px solid"
-        borderColor="rgba(212, 175, 55, 0.2)"
+        borderColor="rgba(212, 175, 55, 0.25)"
         className="gold-accent"
+        _groupHover={{
+          bg: "linear-gradient(135deg, rgba(212, 175, 55, 0.2) 0%, rgba(212, 175, 55, 0.1) 100%)",
+          borderColor: "rgba(212, 175, 55, 0.4)"
+        }}
+        transition="all 0.3s ease"
       >
-        <IconComponent size={32} />
+        <IconComponent size={28} />
       </Box>
 
-      {/* Content */}
-      <VStack spacing={3}>
+      {/* Optimized Content */}
+      <VStack spacing={2} flex="1">
         <Heading
-          fontSize="xl"
-          color="black.900"
+          fontSize="lg"
+          color="white"
           fontWeight="600"
-          lineHeight="heading"
+          lineHeight="1.3"
+          fontFamily="heading"
         >
           {feature.title}
         </Heading>
         <Text
           fontSize="sm"
-          color="gray.600"
-          lineHeight="relaxed"
+          color="rgba(255, 255, 255, 0.7)"
+          lineHeight="1.5"
           fontWeight="400"
         >
           {feature.description}

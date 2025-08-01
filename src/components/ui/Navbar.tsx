@@ -29,7 +29,6 @@ import { UnifiedSignInModal } from '@/components/modals/UnifiedSignInModal'
 const navLinks = [
   { href: '/', label: 'Home', isAnchor: false },
   { href: '/profiles', label: 'Icons', isAnchor: false },
-  { href: '/builder', label: 'Create', isAnchor: false },
 ]
 
 export function Navbar() {
@@ -43,13 +42,13 @@ export function Navbar() {
   // Temporary: disable impersonation features for now
   const isImpersonating = false
 
-  // Handle scroll for sticky header with shadow
+  // Enhanced scroll detection for seamless integration
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10)
+      setIsScrolled(window.scrollY > 50) // Increased threshold for smoother transition
     }
 
-    window.addEventListener('scroll', handleScroll)
+    window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
@@ -111,25 +110,44 @@ export function Navbar() {
         <Text
           fontFamily="body"
           fontWeight={isActiveLink(href) ? 'semibold' : 'medium'}
-          color={isActiveLink(href) ? 'gold.500' : 'white.50'}
+          color={isActiveLink(href) ? '#D4AF37' : 'white'}
           fontSize={mobile ? 'lg' : 'md'}
+          position="relative"
           _hover={{
-            color: 'gold.400',
+            color: '#D4AF37',
             transform: 'translateY(-1px)',
-            textShadow: '0 0 8px rgba(212, 175, 55, 0.3)'
+            textShadow: '0 0 12px rgba(212, 175, 55, 0.4)',
+            _after: {
+              transform: 'scaleX(1)',
+              opacity: 1
+            }
+          }}
+          _after={{
+            content: '""',
+            position: 'absolute',
+            bottom: '-4px',
+            left: '0',
+            right: '0',
+            height: '2px',
+            bg: '#D4AF37',
+            transform: isActiveLink(href) ? 'scaleX(1)' : 'scaleX(0)',
+            transformOrigin: 'center',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            opacity: isActiveLink(href) ? 1 : 0,
+            borderRadius: '1px'
           }}
           _focus={{
             outline: '2px solid',
-            outlineColor: 'gold.500',
+            outlineColor: '#D4AF37',
             outlineOffset: '2px',
-            color: 'gold.500'
+            color: '#D4AF37'
           }}
           _focusVisible={{
             outline: '2px solid',
-            outlineColor: 'gold.500',
+            outlineColor: '#D4AF37',
             outlineOffset: '2px'
           }}
-          transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+          transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
           cursor="pointer"
           tabIndex={0}
         >
@@ -165,47 +183,69 @@ export function Navbar() {
         </Box>
       )} */}
 
-      {/* Main Navbar */}
+      {/* Invisibly Integrated Navbar - Perfect Dark Blend */}
       <Box
-        bg="rgba(26, 26, 26, 0.95)"
-        borderBottom="1px solid"
-        borderColor="rgba(255, 255, 255, 0.1)"
+        bg="transparent"
         position="sticky"
         top="0"
         zIndex="sticky"
-        shadow={isScrolled ? "0 8px 40px rgba(0, 0, 0, 0.4)" : "0 4px 30px rgba(0, 0, 0, 0.3)"}
-        backdropFilter="blur(20px)"
-        transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+        shadow="none"
+        backdropFilter="none"
+        transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
+        borderBottom="none"
+        border="none"
+        _before={{
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          bg: isScrolled ? 'rgba(26, 26, 26, 0.95)' : 'transparent',
+          backdropFilter: isScrolled ? 'blur(20px)' : 'none',
+          transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+          pointerEvents: 'none',
+          borderRadius: 'none'
+        }}
       >
-        <Container maxW="7xl">
-          <Flex h="16" align="center" justify="space-between">
-            {/* Logo */}
+        <Container maxW="6xl" position="relative" zIndex={1} bg="transparent">
+          <Flex h="20" align="center" justify="space-between" bg="transparent">
+            {/* Premium Logo - Museum Quality */}
             <Link href="/">
               <HStack
-                spacing={3}
+                spacing={4}
                 cursor="pointer"
                 _hover={{
                   transform: 'scale(1.02)',
+                  filter: 'brightness(1.1)'
                 }}
-                transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+                transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
               >
-                <Text fontSize="2xl" color="gold.500">👑</Text>
+                <Text
+                  fontSize="3xl"
+                  color="#D4AF37"
+                  filter="drop-shadow(0 2px 4px rgba(212, 175, 55, 0.3))"
+                >
+                  👑
+                </Text>
                 <Text
                   fontFamily="heading"
-                  fontSize="xl"
+                  fontSize="2xl"
                   fontWeight="bold"
-                  color="white.50"
+                  color="white"
                   letterSpacing="tight"
-                  textShadow="0 1px 2px rgba(0, 0, 0, 0.3)"
+                  textShadow="0 2px 4px rgba(0, 0, 0, 0.5)"
+                  bgGradient="linear(to-r, white, rgba(255, 255, 255, 0.9))"
+                  bgClip="text"
                 >
                   ICONS HERALD
                 </Text>
               </HStack>
             </Link>
 
-            {/* Desktop Navigation */}
+            {/* Premium Desktop Navigation */}
             <HStack
-              spacing={8}
+              spacing={10}
               display={{ base: 'none', md: 'flex' }}
               role="menubar"
               aria-label="Main navigation"
@@ -222,10 +262,16 @@ export function Navbar() {
                   {isAdmin && (
                     <Link href="/admin">
                       <Badge
-                        colorScheme="purple"
+                        bg="rgba(147, 51, 234, 0.2)"
+                        color="purple.300"
                         variant="subtle"
                         cursor="pointer"
-                        _hover={{ bg: 'purple.200' }}
+                        border="1px solid"
+                        borderColor="purple.500"
+                        _hover={{
+                          bg: 'rgba(147, 51, 234, 0.3)',
+                          borderColor: 'purple.400'
+                        }}
                       >
                         Admin
                       </Badge>
@@ -233,18 +279,33 @@ export function Navbar() {
                   )}
                   <Link href="/dashboard">
                     <Button
-                      variant="secondary"
+                      bg="transparent"
+                      color="white"
+                      border="1px solid"
+                      borderColor="rgba(255, 255, 255, 0.2)"
                       size="sm"
+                      _hover={{
+                        bg: 'rgba(255, 255, 255, 0.1)',
+                        borderColor: 'rgba(255, 255, 255, 0.3)'
+                      }}
                     >
                       Dashboard
                     </Button>
                   </Link>
-                  <Text fontSize="sm" color="gray.600">
+                  <Text fontSize="sm" color="rgba(255, 255, 255, 0.7)">
                     {user.email}
                   </Text>
                   <Button
-                    variant="outline"
+                    bg="transparent"
+                    color="rgba(255, 255, 255, 0.8)"
+                    border="1px solid"
+                    borderColor="rgba(255, 255, 255, 0.2)"
                     size="sm"
+                    _hover={{
+                      bg: 'rgba(255, 255, 255, 0.1)',
+                      color: 'white',
+                      borderColor: 'rgba(255, 255, 255, 0.3)'
+                    }}
                     onClick={signOut}
                   >
                     Sign Out
@@ -252,11 +313,26 @@ export function Navbar() {
                 </HStack>
               ) : (
                 <Button
-                  variant="primary"
+                  bg="linear-gradient(135deg, #D4AF37 0%, #B8941F 100%)"
+                  color="white"
                   size="sm"
+                  fontWeight="semibold"
+                  px={6}
+                  py={2}
+                  borderRadius="full"
+                  _hover={{
+                    bg: "linear-gradient(135deg, #F6D547 0%, #D4AF37 100%)",
+                    transform: 'translateY(-1px)',
+                    shadow: '0 8px 25px rgba(212, 175, 55, 0.3)'
+                  }}
+                  _active={{
+                    transform: 'translateY(0)',
+                    shadow: '0 4px 15px rgba(212, 175, 55, 0.2)'
+                  }}
+                  transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
                   onClick={onSignInOpen}
                 >
-                  🔐 Sign In
+                  Sign In
                 </Button>
               )}
             </HStack>
@@ -268,12 +344,19 @@ export function Navbar() {
               aria-expanded={isOpen}
               aria-controls="mobile-navigation"
               variant="ghost"
+              bg="transparent"
+              color="#D4AF37"
               onClick={onOpen}
               fontSize="xl"
+              _hover={{
+                bg: 'transparent',
+                color: '#F6D547'
+              }}
               _focus={{
                 outline: '2px solid',
-                outlineColor: 'brand.500',
-                outlineOffset: '2px'
+                outlineColor: '#D4AF37',
+                outlineOffset: '2px',
+                bg: 'transparent'
               }}
             >
               ☰

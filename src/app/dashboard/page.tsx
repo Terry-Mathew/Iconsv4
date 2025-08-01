@@ -38,9 +38,11 @@ import {
   AlertCircle
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth/auth-context'
+import { PageLayout } from '@/components/layout/PageLayout'
+import { FloatingCard } from '@/components/ui/FloatingCard'
 
-const MotionBox = motion(Box)
-const MotionCard = motion(Card)
+const MotionBox = motion.create(Box)
+const MotionCard = motion.create(Card)
 
 interface ProfileStatus {
   hasDraft: boolean
@@ -112,14 +114,16 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <Box minH="100vh" bg="#D2B48C" display="flex" alignItems="center" justifyContent="center">
-        <VStack spacing={4}>
-          <Spinner size="xl" color="#D4AF37" thickness="4px" />
-          <Text fontFamily="'Lato', sans-serif" color="#1A1A1A">
-            Loading your dashboard...
-          </Text>
-        </VStack>
-      </Box>
+      <PageLayout>
+        <Box minH="100vh" display="flex" alignItems="center" justifyContent="center">
+          <VStack spacing={4}>
+            <Spinner size="xl" color="#D4AF37" thickness="4px" />
+            <Text fontFamily="'Lato', sans-serif" color="white">
+              Loading your dashboard...
+            </Text>
+          </VStack>
+        </Box>
+      </PageLayout>
     )
   }
 
@@ -144,7 +148,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <Box minH="100vh" bg="#D2B48C" py={{ base: 8, md: 16 }}>
+    <PageLayout containerPadding={{ base: 8, md: 16 }}>
       <Container maxW="6xl">
         <MotionBox
           variants={containerVariants}
@@ -564,6 +568,6 @@ export default function DashboardPage() {
           </MotionBox>
         </MotionBox>
       </Container>
-    </Box>
+    </PageLayout>
   )
 }

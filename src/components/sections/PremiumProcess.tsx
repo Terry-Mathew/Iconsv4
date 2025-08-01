@@ -24,7 +24,7 @@ const steps = [
   {
     number: "03",
     icon: Edit3,
-    title: "Profile Creation",
+    title: "Icon Creation",
     description: "Work with our editorial team to craft your story. Professional writers and designers create a lasting digital monument to your legacy.",
     color: "rgba(59, 130, 246, 0.2)"
   },
@@ -32,7 +32,7 @@ const steps = [
     number: "04",
     icon: Globe,
     title: "Digital Archive",
-    description: "Your profile joins our permanent collection, preserved forever and accessible to future generations seeking inspiration and knowledge.",
+    description: "Your icon joins our permanent collection, preserved forever and accessible to future generations seeking inspiration and knowledge.",
     color: "rgba(59, 130, 246, 0.25)"
   }
 ]
@@ -40,13 +40,13 @@ const steps = [
 export function PremiumProcess() {
   return (
     <Box
-      py="section"
+      py={16}
       bg="linear-gradient(135deg, #1A1A1A 0%, #2A2A2A 100%)"
       position="relative"
       className="dark-section"
     >
       <Container maxW="1400px" position="relative" zIndex={1}>
-        <VStack spacing={20} align="center">
+        <VStack spacing={14} align="center">
           {/* Section Header - Dark Optimized */}
           <VStack spacing={6} textAlign="center" maxW="700px">
             <Box>
@@ -65,7 +65,7 @@ export function PremiumProcess() {
                 variant="dark-section"
                 fontFamily="heading"
               >
-                Your Journey to
+                Your Path to
                 <Text
                   as="span"
                   display="block"
@@ -92,17 +92,17 @@ export function PremiumProcess() {
             <Text
               variant="dark-large"
             >
-              A carefully curated process that transforms your life's work
-              into a lasting digital legacy worthy of your achievements
+              A rigorous curation process ensures only the most exceptional individuals join this exclusive pantheon of human achievement.
             </Text>
           </VStack>
 
-          {/* Process Steps */}
+          {/* Process Steps - Perfect Alignment */}
           <SimpleGrid
             columns={{ base: 1, lg: 4 }}
             spacing={8}
             w="full"
-            maxW="1200px"
+            maxW="1400px"
+            alignItems="stretch"
           >
             {steps.map((step, index) => (
               <MotionBox
@@ -110,11 +110,12 @@ export function PremiumProcess() {
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
-                transition={{ 
-                  duration: 0.6, 
+                transition={{
+                  duration: 0.6,
                   delay: index * 0.2,
                   ease: "easeOut"
                 }}
+                h="full"
               >
                 <ProcessStep step={step} isLast={index === steps.length - 1} />
               </MotionBox>

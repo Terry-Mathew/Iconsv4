@@ -30,9 +30,11 @@ import { motion } from 'framer-motion'
 import { Search, Filter, Eye, ArrowRight, Crown, Star, Users } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { ProfileGridSkeleton, FeaturedGridSkeleton } from '@/components/ui/ProfileSkeleton'
+import { PageLayout } from '@/components/layout/PageLayout'
+import { FloatingCard } from '@/components/ui/FloatingCard'
 
-const MotionCard = motion(Card)
-const MotionBox = motion(Box)
+const MotionCard = motion.create(Card)
+const MotionBox = motion.create(Box)
 
 interface Profile {
   id: string
@@ -190,9 +192,9 @@ export default function ProfilesPage() {
   }
 
   return (
-    <Box minH="100vh" bg="ivory.50">
+    <PageLayout>
       {/* Header Section */}
-      <Box bg="white" borderBottom="1px solid" borderColor="cream.300">
+      <FloatingCard variant="default" hoverEffect={false} mt={8} mx={8}>
         <Container maxW="6xl" py={16}>
           <VStack spacing={6} textAlign="center">
             <MotionBox
@@ -216,9 +218,9 @@ export default function ProfilesPage() {
               <Text
                 fontSize={{ base: "lg", md: "xl" }}
                 color="#666"
-                fontFamily="'Lora', serif"
+                fontFamily="'Lato', sans-serif"
                 maxW="3xl"
-                lineHeight="1.6"
+                lineHeight="1.7"
               >
                 Discover extraordinary individuals featured in our exclusive digital archive.
                 Each profile represents a legacy of excellence and achievement.
@@ -226,12 +228,12 @@ export default function ProfilesPage() {
             </MotionBox>
           </VStack>
         </Container>
-      </Box>
+      </FloatingCard>
 
       {/* Featured Examples Section */}
       {loading ? (
-        <Box py={16}>
-          <Container maxW="6xl">
+        <FloatingCard variant="default" hoverEffect={false} mt={8} mx={8}>
+          <Container maxW="6xl" py={16}>
             <VStack spacing={8}>
               <VStack spacing={4} textAlign="center">
                 <Heading
@@ -246,8 +248,9 @@ export default function ProfilesPage() {
                 <Text
                   fontSize="lg"
                   color="#666"
-                  fontFamily="'Lora', serif"
+                  fontFamily="'Lato', sans-serif"
                   maxW="2xl"
+                  lineHeight="1.7"
                 >
                   Discover exceptional individuals who have shaped our world through their extraordinary achievements
                 </Text>
@@ -255,10 +258,10 @@ export default function ProfilesPage() {
               <FeaturedGridSkeleton count={3} />
             </VStack>
           </Container>
-        </Box>
+        </FloatingCard>
       ) : demoProfiles.length > 0 && (
-        <Box py={16}>
-          <Container maxW="6xl">
+        <FloatingCard variant="default" hoverEffect={false} mt={8} mx={8}>
+          <Container maxW="6xl" py={16}>
             <VStack spacing={8}>
               <VStack spacing={4} textAlign="center">
                 <Heading
@@ -273,8 +276,9 @@ export default function ProfilesPage() {
                 <Text
                   fontSize="lg"
                   color="#666"
-                  fontFamily="'Lora', serif"
+                  fontFamily="'Lato', sans-serif"
                   maxW="2xl"
+                  lineHeight="1.7"
                 >
                   Discover exceptional individuals who have shaped our world through their extraordinary achievements
                 </Text>
@@ -284,15 +288,17 @@ export default function ProfilesPage() {
                 {demoProfiles.map((profile, index) => (
                   <MotionCard
                     key={profile.id}
-                    bg="white"
+                    bg="rgba(255, 255, 255, 0.95)"
                     borderRadius="xl"
                     overflow="hidden"
                     border="2px solid #D4AF37"
                     shadow="lg"
+                    backdropFilter="blur(10px)"
                     _hover={{
                       transform: "translateY(-4px)",
                       shadow: "xl",
-                      borderColor: "#B8941F"
+                      borderColor: "#B8941F",
+                      bg: "rgba(255, 255, 255, 1)"
                     }}
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -320,8 +326,9 @@ export default function ProfilesPage() {
                           <Text
                             fontSize="sm"
                             color="#666"
-                            fontFamily="'Lora', serif"
+                            fontFamily="'Lato', sans-serif"
                             noOfLines={2}
+                            lineHeight="1.6"
                           >
                             {profile.content.tagline}
                           </Text>
@@ -378,14 +385,12 @@ export default function ProfilesPage() {
               </SimpleGrid>
             </VStack>
           </Container>
-        </Box>
+        </FloatingCard>
       )}
 
-      <Divider borderColor="cream.300" />
-
       {/* Search and Filter Section */}
-      <Box py={8} bg="gray.50">
-        <Container maxW="6xl">
+      <FloatingCard variant="glass" hoverEffect={false} mt={8} mx={8}>
+        <Container maxW="6xl" py={8}>
           <VStack spacing={6}>
             <Heading
               as="h2"
@@ -415,7 +420,8 @@ export default function ProfilesPage() {
                   onChange={(e) => setSearchTerm(e.target.value)}
                   borderColor="#D4AF37"
                   _focus={{ borderColor: "#B8941F", boxShadow: "0 0 0 1px #B8941F" }}
-                  bg="white"
+                  bg="rgba(255, 255, 255, 0.9)"
+                  backdropFilter="blur(10px)"
                 />
               </InputGroup>
 
@@ -424,7 +430,8 @@ export default function ProfilesPage() {
                 onChange={(e) => setSelectedTier(e.target.value)}
                 borderColor="#D4AF37"
                 _focus={{ borderColor: "#B8941F", boxShadow: "0 0 0 1px #B8941F" }}
-                bg="white"
+                bg="rgba(255, 255, 255, 0.9)"
+                backdropFilter="blur(10px)"
                 maxW={{ base: "full", md: "200px" }}
               >
                 <option value="all">All Tiers</option>
@@ -438,7 +445,8 @@ export default function ProfilesPage() {
                 onChange={(e) => setSortBy(e.target.value)}
                 borderColor="#D4AF37"
                 _focus={{ borderColor: "#B8941F", boxShadow: "0 0 0 1px #B8941F" }}
-                bg="white"
+                bg="rgba(255, 255, 255, 0.9)"
+                backdropFilter="blur(10px)"
                 maxW={{ base: "full", md: "200px" }}
               >
                 <option value="newest">Newest First</option>
@@ -449,20 +457,20 @@ export default function ProfilesPage() {
             </Flex>
           </VStack>
         </Container>
-      </Box>
+      </FloatingCard>
 
       {/* Main Profiles Grid */}
-      <Box py={12}>
-        <Container maxW="6xl">
+      <FloatingCard variant="default" hoverEffect={false} mt={8} mx={8} mb={8}>
+        <Container maxW="6xl" py={12}>
           {loading && profiles.length === 0 ? (
             <ProfileGridSkeleton count={12} />
           ) : profiles.length === 0 ? (
             <Center py={20}>
               <VStack spacing={4}>
-                <Text fontSize="xl" color="#666" fontFamily="'Lora', serif">
+                <Text fontSize="xl" color="#666" fontFamily="'Lato', sans-serif">
                   No profiles found
                 </Text>
-                <Text color="#666" fontFamily="'Lora', serif">
+                <Text color="#666" fontFamily="'Lato', sans-serif">
                   Try adjusting your search or filter criteria
                 </Text>
               </VStack>
@@ -473,16 +481,18 @@ export default function ProfilesPage() {
                 {profiles.map((profile, index) => (
                   <MotionCard
                     key={profile.id}
-                    bg="white"
+                    bg="rgba(255, 255, 255, 0.95)"
                     borderRadius="xl"
                     overflow="hidden"
                     border="1px solid"
-                    borderColor="cream.300"
+                    borderColor="rgba(212, 175, 55, 0.3)"
                     shadow="md"
+                    backdropFilter="blur(10px)"
                     _hover={{
                       transform: "translateY(-2px)",
                       shadow: "lg",
-                      borderColor: "#D4AF37"
+                      borderColor: "#D4AF37",
+                      bg: "rgba(255, 255, 255, 1)"
                     }}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -511,9 +521,10 @@ export default function ProfilesPage() {
                           <Text
                             fontSize="xs"
                             color="#666"
-                            fontFamily="'Lora', serif"
+                            fontFamily="'Lato', sans-serif"
                             noOfLines={2}
                             minH="32px"
+                            lineHeight="1.6"
                           >
                             {profile.content.tagline}
                           </Text>
@@ -582,7 +593,7 @@ export default function ProfilesPage() {
             </VStack>
           )}
         </Container>
-      </Box>
-    </Box>
+      </FloatingCard>
+    </PageLayout>
   )
 }

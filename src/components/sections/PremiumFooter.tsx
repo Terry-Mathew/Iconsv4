@@ -47,7 +47,7 @@ export function PremiumFooter() {
 
       <Container maxW="1400px" position="relative" zIndex={1}>
         {/* Main Footer Content */}
-        <Box py={20}>
+        <Box py={16}>
           <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={12}>
             {/* Brand Section */}
             <VStack align="start" spacing={6}>

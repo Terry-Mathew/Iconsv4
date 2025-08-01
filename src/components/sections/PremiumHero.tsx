@@ -1,12 +1,17 @@
 'use client'
 
-import { Box, Container, Heading, Text, Button, VStack, HStack } from '@chakra-ui/react'
+import { Box, Container, Heading, Text, Button, VStack, HStack, useDisclosure } from '@chakra-ui/react'
 import { motion } from 'framer-motion'
 import { ArrowRight, Sparkles } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { RequestInvitationModal } from '../modals/RequestInvitationModal'
 
 const MotionBox = motion.create(Box)
 
 export function PremiumHero() {
+  const router = useRouter()
+  const { isOpen, onOpen, onClose } = useDisclosure()
+
   return (
     <Box
       minH="100vh"
@@ -61,22 +66,24 @@ export function PremiumHero() {
         transition={{ duration: 2.5, ease: "easeOut", delay: 0.6 }}
       />
 
-      <Container maxW="2xl" h="100vh" py="generous">
+      <Container maxW="7xl" h="100vh" py="generous">
         <Box
           display="grid"
-          gridTemplateColumns={{ base: "1fr", lg: "7fr 3fr" }}
+          gridTemplateColumns={{ base: "1fr", lg: "3fr 2fr" }}
           alignItems="center"
           h="full"
-          gap={16}
+          gap={{ base: 8, lg: 24 }}
+          px={{ base: 4, lg: 8 }}
         >
-          {/* Content - Asymmetrical Left */}
+          {/* Content - Perfectly Centered */}
           <MotionBox
-            pl={{ base: 0, lg: 16 }} // Asymmetrical positioning
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
+            maxW="800px"
+            mx={{ base: "auto", lg: 0 }}
           >
-            <VStack align="start" spacing="generous" maxW="700px">
+            <VStack align={{ base: "center", lg: "start" }} spacing={8} w="full" textAlign={{ base: "center", lg: "left" }}>
               {/* Premium Badge - Dark Optimized */}
               <MotionBox
                 initial={{ opacity: 0, y: 20 }}
@@ -113,7 +120,7 @@ export function PremiumHero() {
                   variant="dark-hero"
                   fontFamily="heading"
                 >
-                  Where Legacies
+                  Where Legends
                   <Text
                     as="span"
                     display="block"
@@ -121,7 +128,7 @@ export function PremiumHero() {
                     color="white.50"
                     textShadow="0 2px 4px rgba(0, 0, 0, 0.3)"
                   >
-                    Endure Forever
+                    Live Forever
                   </Text>
                 </Heading>
 
@@ -141,44 +148,59 @@ export function PremiumHero() {
                 variant="dark-large"
                 maxW="600px"
               >
-                An exclusive digital sanctuary celebrating extraordinary individuals
-                whose contributions shape our world.
-                <Text as="span" color="white.50" fontWeight="500">
+                An invitation-only sanctuary for history's most extraordinary minds.
+                <Text as="span" display="block" mt={2} color="white.200">
+                  Meticulously curated profiles of world-shaping individuals whose contributions transcend time.
+                </Text>
+                <Text as="span" color="gold.400" fontWeight="600" display="block" mt={3}>
                   By invitation only.
                 </Text>
               </Text>
 
-              {/* CTA Buttons - Dark Optimized */}
-              <HStack spacing={6} pt={8}>
-                <Button
-                  variant="dark-primary"
-                  size="lg"
-                  px={10}
-                  py={7}
-                  h="auto"
-                  fontSize="lg"
-                  borderRadius="16px"
-                  rightIcon={<ArrowRight size={20} />}
-                  minH="44px"
-                  transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+              {/* CTA Buttons - Perfectly Aligned */}
+              <VStack spacing={4} align={{ base: "center", lg: "start" }} pt={8} w="full">
+                <HStack
+                  spacing={6}
+                  flexWrap="wrap"
+                  justify={{ base: "center", lg: "start" }}
+                  w="full"
                 >
-                  Request Invitation
-                </Button>
+                  <Button
+                    variant="dark-primary"
+                    size="lg"
+                    px={10}
+                    py={7}
+                    h="auto"
+                    fontSize="lg"
+                    borderRadius="16px"
+                    rightIcon={<ArrowRight size={20} />}
+                    minH="44px"
+                    minW="200px"
+                    transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+                    onClick={onOpen}
+                    cursor="pointer"
+                  >
+                    Request Invitation
+                  </Button>
 
-                <Button
-                  variant="dark-secondary"
-                  size="lg"
-                  px={10}
-                  py={7}
-                  h="auto"
-                  fontSize="lg"
-                  borderRadius="16px"
-                  minH="44px"
-                  transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-                >
-                  Explore Profiles
-                </Button>
-              </HStack>
+                  <Button
+                    variant="dark-secondary"
+                    size="lg"
+                    px={10}
+                    py={7}
+                    h="auto"
+                    fontSize="lg"
+                    borderRadius="16px"
+                    minH="44px"
+                    minW="180px"
+                    transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+                    onClick={() => router.push('/profiles')}
+                    cursor="pointer"
+                  >
+                    Explore Icons
+                  </Button>
+                </HStack>
+              </VStack>
             </VStack>
           </MotionBox>
 
@@ -293,6 +315,9 @@ export function PremiumHero() {
           </MotionBox>
         </Box>
       </Container>
+
+      {/* Request Invitation Modal */}
+      <RequestInvitationModal isOpen={isOpen} onClose={onClose} />
     </Box>
   )
 }

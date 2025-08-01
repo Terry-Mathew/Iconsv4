@@ -43,7 +43,7 @@ import { AccomplishedTemplate } from '@/components/templates/AccomplishedTemplat
 import { DistinguishedTemplate } from '@/components/templates/DistinguishedTemplate'
 import { LegacyTemplate } from '@/components/templates/LegacyTemplate'
 
-const MotionBox = motion(Box)
+const MotionBox = motion.create(Box)
 
 interface TemplatePreviewModalProps {
   isOpen: boolean
@@ -144,51 +144,71 @@ export function TemplatePreviewModal({ isOpen, onClose, tier }: TemplatePreviewM
         <ModalHeader
           bg="rgba(255, 255, 255, 0.1)"
           backdropFilter="blur(20px)"
-          borderBottom="1px solid rgba(255, 255, 255, 0.2)"
+          borderBottom="1px solid rgba(212, 175, 55, 0.3)"
           color="white"
-          py={6}
+          py={8}
+          px={8}
         >
           <Flex justify="space-between" align="center">
-            <HStack spacing={4}>
+            <HStack spacing={6}>
               <Box
-                w="60px"
-                h="60px"
-                background={tierConfig.gradient}
-                borderRadius="lg"
+                w="64px"
+                h="64px"
+                background="linear-gradient(135deg, #D4AF37 0%, #B8941F 100%)"
+                borderRadius="16px"
                 display="flex"
                 alignItems="center"
                 justifyContent="center"
+                boxShadow="0 8px 32px rgba(212, 175, 55, 0.3)"
               >
-                <Icon size={28} color="white" />
+                <Icon size={32} color="white" />
               </Box>
-              <VStack align="start" spacing={1}>
-                <Heading size="lg" color="white">
+              <VStack align="start" spacing={2}>
+                <Heading
+                  size="xl"
+                  color="white"
+                  fontFamily="heading"
+                  letterSpacing="tight"
+                >
                   {tierConfig.name} Templates
                 </Heading>
-                <Text fontSize="md" color="rgba(255, 255, 255, 0.8)">
+                <Text
+                  fontSize="lg"
+                  color="rgba(255, 255, 255, 0.8)"
+                  fontWeight="500"
+                >
                   {tierConfig.price} • {previewData.templateCount} template{previewData.templateCount > 1 ? 's' : ''} available
                 </Text>
               </VStack>
             </HStack>
-            
+
             {previewData.templateCount > 1 && (
-              <HStack spacing={2}>
+              <HStack spacing={3}>
                 <IconButton
                   aria-label="Previous template"
                   icon={<ChevronLeft />}
                   onClick={prevTemplate}
-                  bg="rgba(255, 255, 255, 0.2)"
+                  bg="rgba(212, 175, 55, 0.2)"
                   color="white"
-                  _hover={{ bg: "rgba(255, 255, 255, 0.3)" }}
+                  border="1px solid rgba(212, 175, 55, 0.3)"
+                  _hover={{
+                    bg: "rgba(212, 175, 55, 0.3)",
+                    borderColor: "rgba(212, 175, 55, 0.5)",
+                    transform: "translateY(-1px)"
+                  }}
                   size="lg"
+                  borderRadius="12px"
+                  transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
                 />
                 <Badge
-                  bg="rgba(255, 255, 255, 0.2)"
+                  bg="rgba(212, 175, 55, 0.2)"
                   color="white"
-                  px={3}
-                  py={1}
-                  borderRadius="md"
+                  border="1px solid rgba(212, 175, 55, 0.3)"
+                  px={4}
+                  py={2}
+                  borderRadius="12px"
                   fontSize="sm"
+                  fontWeight="600"
                 >
                   {currentTemplate + 1} of {previewData.templateCount}
                 </Badge>
@@ -196,21 +216,37 @@ export function TemplatePreviewModal({ isOpen, onClose, tier }: TemplatePreviewM
                   aria-label="Next template"
                   icon={<ChevronRight />}
                   onClick={nextTemplate}
-                  bg="rgba(255, 255, 255, 0.2)"
+                  bg="rgba(212, 175, 55, 0.2)"
                   color="white"
-                  _hover={{ bg: "rgba(255, 255, 255, 0.3)" }}
+                  border="1px solid rgba(212, 175, 55, 0.3)"
+                  _hover={{
+                    bg: "rgba(212, 175, 55, 0.3)",
+                    borderColor: "rgba(212, 175, 55, 0.5)",
+                    transform: "translateY(-1px)"
+                  }}
                   size="lg"
+                  borderRadius="12px"
+                  transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
                 />
               </HStack>
             )}
           </Flex>
         </ModalHeader>
 
-        <ModalCloseButton 
-          color="white" 
+        <ModalCloseButton
+          color="white"
           size="lg"
-          bg="rgba(255, 255, 255, 0.2)"
-          _hover={{ bg: "rgba(255, 255, 255, 0.3)" }}
+          bg="rgba(212, 175, 55, 0.2)"
+          border="1px solid rgba(212, 175, 55, 0.3)"
+          borderRadius="12px"
+          _hover={{
+            bg: "rgba(212, 175, 55, 0.3)",
+            borderColor: "rgba(212, 175, 55, 0.5)",
+            transform: "translateY(-1px)"
+          }}
+          transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+          top={6}
+          right={6}
         />
 
         <ModalBody p={0} overflow="hidden">
@@ -231,68 +267,156 @@ export function TemplatePreviewModal({ isOpen, onClose, tier }: TemplatePreviewM
               </AnimatePresence>
             </Box>
 
-            {/* Features Sidebar */}
+            {/* Professional Features Sidebar */}
             <Box
-              w="400px"
+              w="420px"
               bg="rgba(255, 255, 255, 0.1)"
               backdropFilter="blur(20px)"
-              borderLeft="1px solid rgba(255, 255, 255, 0.2)"
-              p={6}
+              borderLeft="1px solid rgba(212, 175, 55, 0.3)"
+              p={8}
               overflow="auto"
             >
-              <VStack spacing={6} align="stretch">
+              <VStack spacing={8} align="stretch" h="full">
+                {/* Tier Features Section */}
                 <Box>
-                  <Heading size="md" color="white" mb={4}>
-                    ✨ Tier Features
-                  </Heading>
-                  <List spacing={3}>
+                  <HStack spacing={3} mb={6}>
+                    <Box
+                      w="32px"
+                      h="32px"
+                      bg="linear-gradient(135deg, #D4AF37 0%, #B8941F 100%)"
+                      borderRadius="8px"
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                    >
+                      <CheckCircle size={18} color="white" />
+                    </Box>
+                    <Heading
+                      size="lg"
+                      color="white"
+                      fontFamily="heading"
+                      letterSpacing="tight"
+                    >
+                      ✨ Tier Features
+                    </Heading>
+                  </HStack>
+                  <VStack spacing={4} align="stretch">
                     {previewData.features.map((feature, index) => (
-                      <ListItem key={index} color="white" fontSize="sm">
-                        <ListIcon as={CheckCircle} color="green.300" />
-                        {feature}
-                      </ListItem>
+                      <HStack key={index} spacing={4} align="start">
+                        <Box
+                          w="20px"
+                          h="20px"
+                          bg="rgba(34, 197, 94, 0.2)"
+                          borderRadius="full"
+                          display="flex"
+                          alignItems="center"
+                          justifyContent="center"
+                          mt={0.5}
+                          flexShrink={0}
+                        >
+                          <CheckCircle size={12} color="#22c55e" />
+                        </Box>
+                        <Text
+                          color="white"
+                          fontSize="sm"
+                          lineHeight="relaxed"
+                          fontWeight="400"
+                        >
+                          {feature}
+                        </Text>
+                      </HStack>
                     ))}
-                  </List>
+                  </VStack>
                 </Box>
 
-                <Divider borderColor="rgba(255, 255, 255, 0.2)" />
+                <Divider borderColor="rgba(212, 175, 55, 0.3)" />
 
+                {/* Limitations Section */}
                 <Box>
-                  <Heading size="md" color="white" mb={4}>
-                    ⚠️ Limitations
-                  </Heading>
-                  <List spacing={3}>
+                  <HStack spacing={3} mb={6}>
+                    <Box
+                      w="32px"
+                      h="32px"
+                      bg="rgba(251, 146, 60, 0.2)"
+                      borderRadius="8px"
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                    >
+                      <XCircle size={18} color="#fb923c" />
+                    </Box>
+                    <Heading
+                      size="lg"
+                      color="white"
+                      fontFamily="heading"
+                      letterSpacing="tight"
+                    >
+                      ⚠️ Limitations
+                    </Heading>
+                  </HStack>
+                  <VStack spacing={4} align="stretch">
                     {previewData.limitations.map((limitation, index) => (
-                      <ListItem key={index} color="rgba(255, 255, 255, 0.8)" fontSize="sm">
-                        <ListIcon as={XCircle} color="orange.300" />
-                        {limitation}
-                      </ListItem>
+                      <HStack key={index} spacing={4} align="start">
+                        <Box
+                          w="20px"
+                          h="20px"
+                          bg="rgba(251, 146, 60, 0.2)"
+                          borderRadius="full"
+                          display="flex"
+                          alignItems="center"
+                          justifyContent="center"
+                          mt={0.5}
+                          flexShrink={0}
+                        >
+                          <XCircle size={12} color="#fb923c" />
+                        </Box>
+                        <Text
+                          color="rgba(255, 255, 255, 0.8)"
+                          fontSize="sm"
+                          lineHeight="relaxed"
+                          fontWeight="400"
+                        >
+                          {limitation}
+                        </Text>
+                      </HStack>
                     ))}
-                  </List>
+                  </VStack>
                 </Box>
 
-                <Divider borderColor="rgba(255, 255, 255, 0.2)" />
+                <Divider borderColor="rgba(212, 175, 55, 0.3)" />
 
-                <VStack spacing={4}>
+                {/* Call to Action */}
+                <VStack spacing={6} mt="auto">
                   <Button
                     w="full"
                     size="lg"
-                    background={tierConfig.gradient}
-                    color="white"
+                    bg="linear-gradient(135deg, #D4AF37 0%, #B8941F 100%)"
+                    color="black.900"
+                    py={6}
+                    h="auto"
+                    borderRadius="16px"
+                    fontWeight="600"
+                    fontSize="md"
+                    rightIcon={<ExternalLink size={18} />}
                     _hover={{
                       transform: "translateY(-2px)",
-                      boxShadow: "lg"
+                      boxShadow: "0 12px 32px rgba(212, 175, 55, 0.4)"
                     }}
+                    _active={{
+                      transform: "translateY(0)"
+                    }}
+                    transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
                     onClick={handleGetStarted}
-                    rightIcon={<ExternalLink size={18} />}
                   >
                     Get Started with {tierConfig.name}
                   </Button>
-                  
+
                   <Text
                     fontSize="xs"
                     color="rgba(255, 255, 255, 0.6)"
                     textAlign="center"
+                    lineHeight="relaxed"
+                    px={4}
                   >
                     This is a preview with sample data. Your actual profile will use your own content and photos.
                   </Text>

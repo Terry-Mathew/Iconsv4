@@ -52,6 +52,8 @@ import {
 import { useAuth } from '@/lib/auth/auth-context'
 import { createClient } from '@/lib/supabase/client'
 import { useImpersonation } from '../../../lib/auth/impersonation'
+import { PageLayout } from '@/components/layout/PageLayout'
+import { FloatingCard } from '@/components/ui/FloatingCard'
 
 // Import admin components with relative paths to fix module resolution
 import { UsersManagement } from '../../components/admin/UsersManagement'
@@ -288,19 +290,22 @@ export default function AdminPage() {
   // Loading state
   if (loading || isLoading || !adminUser) {
     return (
-      <Flex minH="100vh" align="center" justify="center" bg="#D2B48C">
-        <VStack spacing={4}>
-          <Spinner size="xl" color="#D4AF37" thickness="4px" />
-          <Text fontFamily="'Lato', sans-serif" color="#1A1A1A" fontSize="lg">
-            Loading admin dashboard...
-          </Text>
-        </VStack>
-      </Flex>
+      <PageLayout>
+        <Flex minH="100vh" align="center" justify="center">
+          <VStack spacing={4}>
+            <Spinner size="xl" color="#D4AF37" thickness="4px" />
+            <Text fontFamily="'Lato', sans-serif" color="white" fontSize="lg">
+              Loading admin dashboard...
+            </Text>
+          </VStack>
+        </Flex>
+      </PageLayout>
     )
   }
 
   return (
-    <Flex minH="100vh" bg="#F7F7F7">
+    <PageLayout showNavbar={false} showFooter={false}>
+      <Flex minH="100vh">
       {/* Desktop Sidebar */}
       <Box
         display={{ base: 'none', lg: 'block' }}
@@ -388,7 +393,8 @@ export default function AdminPage() {
           />
         </Box>
       </Flex>
-    </Flex>
+      </Flex>
+    </PageLayout>
   )
 }
 

@@ -10,13 +10,13 @@ const MotionBox = motion.create(Box)
 export function PremiumCategories() {
   return (
     <Box
-      py="section"
+      py={16}
       bg="linear-gradient(135deg, #1A1A1A 0%, #2A2A2A 100%)"
       position="relative"
       className="dark-section"
     >
       <Container maxW="1400px" position="relative" zIndex={1}>
-        <VStack spacing={20} align="center">
+        <VStack spacing={14} align="center">
           {/* Section Header - Dark Optimized */}
           <VStack spacing={6} textAlign="center" maxW="700px">
             <Box>
@@ -35,7 +35,7 @@ export function PremiumCategories() {
                 variant="dark-section"
                 fontFamily="heading"
               >
-                Icons Across
+                Legends Across
                 <Text
                   as="span"
                   display="block"
@@ -43,7 +43,7 @@ export function PremiumCategories() {
                   color="white.50"
                   textShadow="0 2px 4px rgba(0, 0, 0, 0.3)"
                 >
-                  Every Field
+                  Every Domain
                 </Text>
               </Heading>
 
@@ -62,17 +62,16 @@ export function PremiumCategories() {
             <Text
               variant="dark-large"
             >
-              Celebrating extraordinary individuals whose contributions
-              shape our world and inspire future generations
+              From Nobel laureates to industry titans, from cultural revolutionaries to scientific pioneers—each icon is a masterpiece worthy of the legacy it represents.
             </Text>
           </VStack>
 
-          {/* Masonry Grid */}
+          {/* Perfectly Aligned Grid */}
           <Box w="full">
             <SimpleGrid
               columns={{ base: 1, md: 2, lg: 3, xl: 4 }}
-              spacing={6}
-              alignItems="start"
+              spacing={8}
+              alignItems="stretch"
             >
               {categories.map((category, index) => (
                 <MotionBox
@@ -85,8 +84,7 @@ export function PremiumCategories() {
                     delay: index * 0.15,
                     ease: "easeOut"
                   }}
-                  // Stagger heights for visual interest
-                  transform={index % 2 === 0 ? "translateY(20px)" : "translateY(0)"}
+                  h="full"
                 >
                   <CategoryCard category={category} />
                 </MotionBox>
@@ -119,6 +117,9 @@ function CategoryCard({ category }: CategoryCardProps) {
       role="group"
       position="relative"
       overflow="hidden"
+      h="full"
+      display="flex"
+      flexDirection="column"
       whileHover={{
         y: -16,
       }}
